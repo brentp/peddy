@@ -10,4 +10,6 @@ family_3	dad_3	-9	-9	1	1	caucasian
 family_3	mom_3	-9	-9	2	1	caucasian
 family_4	child_4	dad_4	mom_4	1	2	caucasianNEuropean
 family_4	dad_4	-9	-9	1	1	caucasianNEuropean
-family_4	mom_4	-9	-9	2	1	caucasianNEuropean
+family_4	mom_4	dad_4	mom_4	2	1	caucasianNEuropean
+family_4	kid_4	dad_4	mom_4	2	2	caucasianNEuropean
+family_4	kid_4.1	dad_4	mom_4	2	2	caucasianNEuropean

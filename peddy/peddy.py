@@ -163,6 +163,13 @@ class Family(object):
             if s.affected is False:
                 yield s
 
+    def trios(self, affected=True):
+        for s in self.samples:
+            if affected is not None:
+                if affected != s.affected:
+                    continue
+            if s.mom and s.dad:
+                yield (s, s.mom, s.dad)
 
 class Ped(object):
     """Handle pedigree files

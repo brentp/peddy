@@ -37,10 +37,20 @@ def test_family():
     assert list(f) == [kid, mom, dad]
 
 
+def test_trios():
+    p = Ped('peddy/tests/a.ped')
+    f = p.families['family_4']
+    trios = list(f.trios())
+    assert len(trios) == 3
+
+    assert [t[0] for t in trios] == list(f.affecteds)
+
+
+
 def test_ped():
 
     p = Ped('peddy/tests/a.ped')
     assert len(p.families) == 4
 
-    assert len(list(p.samples())) == 12
+    assert len(list(p.samples())) == 14
 

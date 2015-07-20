@@ -1,6 +1,8 @@
 tools for pedigree files
 ------------------------
 
+[![PyPI version](https://badge.fury.io/py/peddy.svg)](http://badge.fury.io/py/peddy)
+
 This is currently under development. It already has a nice API for dealing with pedigree files.
 
 It currently makes it simple to extract things like:

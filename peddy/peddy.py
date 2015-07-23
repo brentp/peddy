@@ -43,7 +43,8 @@ UNKNOWN = UNKNOWN()
 
 class Sample(object):
 
-    def __init__(self, family_id, sample_id, paternal_id, maternal_id, sex, phenotype, *args):
+    def __init__(self, family_id, sample_id, paternal_id, maternal_id, sex,
+                 phenotype, extra_attrs=None, header=None):
         self.family_id = family_id
         self.sample_id = sample_id
         self.dad = None
@@ -59,17 +60,25 @@ class Sample(object):
         self.sex = SEX.lookup(sex)
         self.affected = PHENOTYPE.lookup(phenotype)
         self.kids = []
+        self.header = header
+        self.attrs = []
+        for a in (extra_attrs or []):
+            self.attrs.append(a)
 
     def __eq__(self, other):
         return (self.sample_id == other.sample_id) and (self.family_id ==
                                                         other.family_id)
     def __repr__(self):
-        return "%s('%s', '%s', '%s', '%s', '%s', '%s')" % (self.__class__.__name__,
+        v = "%s('%s', '%s', '%s', '%s', '%s', '%s'" % (self.__class__.__name__,
                                                  self.family_id, self.sample_id,
                                                  self.paternal_id,
                                                  self.maternal_id,
                                                  SEX.rlookup(self.sex),
                                                  PHENOTYPE.rlookup(self.affected))
+        if self.attrs:
+            v += ", " + str(self.attrs)
+        v += ")"
+        return v
 
 
     @property
@@ -89,16 +98,19 @@ class Sample(object):
         return [s for s in self.mom.kids if s in self.dad.kids and s != self]
 
     @classmethod
-    def from_row(cls, row):
+    def from_row(cls, row, header=None):
         if isinstance(row, basestring):
             row = row.strip("\n").split()
-        return cls(*row)
+        return cls(row[0], row[1], row[2], row[3], row[4], row[5], row[6:], header=header)
 
     def __str__(self):
-        return "%s %s %s %s %s %s" % (self.family_id, self.sample_id,
-                                         self.paternal_id,
-                                         self.maternal_id,
-                                         self._sex, self._phenotype)
+        v = "%s %s %s %s %s %s" % (self.family_id, self.sample_id,
+                                   self.paternal_id,
+                                   self.maternal_id,
+                                   self._sex, self._phenotype)
+        if self.attrs:
+            v += " " + " ".join(self.attrs)
+        return v
 
 class Family(object):
     def __init__(self, samples):
@@ -189,10 +201,9 @@ class Ped(object):
     Sample('family_1', 'mom_1', '-9', '-9', 'female', 'unaffected')
 
     >>> list(p.samples(phenotype=PHENOTYPE.AFFECTED, sex=SEX.FEMALE))
-    []
+    [Sample('family_4', 'kid_4', 'dad_4', 'mom_4', 'female', 'affected'), Sample('family_4', 'kid_4.1', 'dad_4', 'mom_4', 'female', 'affected')]
 
-    >>> p.summary()
-
+    #>>> p.summary()
 
     """
 
@@ -210,9 +221,9 @@ class Ped(object):
 
         for i, toks in enumerate(l.rstrip().split() for l in fh):
             if i == 0 and toks[0][0] == "#":
-                #header = toks
+                header = toks
                 continue
-            sample = Sample.from_row(toks)
+            sample = Sample.from_row(toks, header=header)
             if not sample.family_id in families:
                 families[sample.family_id] = []
 

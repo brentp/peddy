@@ -54,3 +54,7 @@ def test_ped():
 
     assert len(list(p.samples())) == 14
 
+def test_attrs():
+    kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2', ['asdf', 'hello'])
+    assert str(kid) == "fam1 kid dad mom 2 2 asdf hello", str(kid)
+    assert repr(kid) == "Sample('fam1', 'kid', 'dad', 'mom', 'female', 'affected', ['asdf', 'hello'])", repr(kid)

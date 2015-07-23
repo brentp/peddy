@@ -2,6 +2,7 @@ tools for pedigree files
 ------------------------
 
 [![PyPI version](https://badge.fury.io/py/peddy.svg)](http://badge.fury.io/py/peddy)
+[![Build Status](https://travis-ci.org/brentp/peddy.svg?branch=master)](https://travis-ci.org/brentp/peddy)
 
 This is currently under development. It already has a nice API for dealing with pedigree files.
 

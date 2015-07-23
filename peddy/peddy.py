@@ -2,8 +2,7 @@
 
 from __future__ import print_function
 import sys
-
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 
 if sys.version_info[0] == 3:
     basestring = str
@@ -192,16 +191,16 @@ class Ped(object):
 
     >>> s = next(p.samples())
     >>> s
-    Sample('family_1', 'child_1', 'dad_1', 'mom_1', 'male', 'affected')
+    Sample('family_1', 'child_1', 'dad_1', 'mom_1', 'male', 'affected', ['caucasian'])
 
     >>> next(p.samples(phenotype=PHENOTYPE.UNAFFECTED))
-    Sample('family_1', 'dad_1', '-9', '-9', 'male', 'unaffected')
+    Sample('family_1', 'dad_1', '-9', '-9', 'male', 'unaffected', ['caucasian'])
 
     >>> next(p.samples(phenotype=PHENOTYPE.UNAFFECTED, sex=SEX.FEMALE))
-    Sample('family_1', 'mom_1', '-9', '-9', 'female', 'unaffected')
+    Sample('family_1', 'mom_1', '-9', '-9', 'female', 'unaffected', ['caucasian'])
 
-    >>> list(p.samples(phenotype=PHENOTYPE.AFFECTED, sex=SEX.FEMALE))
-    [Sample('family_4', 'kid_4', 'dad_4', 'mom_4', 'female', 'affected'), Sample('family_4', 'kid_4.1', 'dad_4', 'mom_4', 'female', 'affected')]
+    >>> [x.sample_id for x in p.samples(phenotype=PHENOTYPE.AFFECTED, sex=SEX.FEMALE)]
+    ['kid_4', 'kid_4.1']
 
     #>>> p.summary()
 

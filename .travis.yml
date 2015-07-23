@@ -1,12 +1,12 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
   - "3.3"
   - "3.4"
+  - "3.5"
 script: 
     - python setup.py test
-    - python peddy/tests/test_peddy.py
+    - python peddy/peddy.py
 
 install:
   - pip install -e .

@@ -25,6 +25,7 @@ class PHENOTYPE(object):
     def rlookup(cls, i):
         return {cls.AFFECTED: 'affected', cls.UNAFFECTED: 'unaffected'}.get(i, cls.UNKNOWN)
 
+
 class SEX(object):
     MALE = 'male'
     FEMALE = 'female'
@@ -39,6 +40,7 @@ class SEX(object):
         return {cls.MALE: 'male', cls.FEMALE: 'female'}.get(i, cls.UNKNOWN)
 
 UNKNOWN = UNKNOWN()
+
 
 class Sample(object):
 
@@ -65,6 +67,8 @@ class Sample(object):
             self.attrs.append(a)
 
     def __eq__(self, other):
+        if self is None or other is None:
+            return False
         return (self.sample_id == other.sample_id) and (self.family_id ==
                                                         other.family_id)
     def __repr__(self):
@@ -111,11 +115,16 @@ class Sample(object):
             v += " " + " ".join(self.attrs)
         return v
 
+
 class Family(object):
     def __init__(self, samples):
         assert len(set(s.family_id for s in samples)) == 1
+        self.unknown_samples = []
         self.samples = samples
         self._build()
+        for u in self.unknown_samples:
+            print("unknown sample: %s in family: %s" % (u,
+                samples[0].family_id), file=sys.stderr)
 
     def __iter__(self):
         self._index = 0
@@ -156,11 +165,19 @@ class Family(object):
         by_id[None] = None
         for s in self.samples:
             if s.paternal_id != UNKNOWN:
-                s.dad = by_id[s.paternal_id]
-                s.dad.kids.append(s)
+                try:
+                    s.dad = by_id[s.paternal_id]
+                    s.dad.kids.append(s)
+                except KeyError:
+                    s.dad = None
+                    self.unknown_samples.append(s.paternal_id)
             if s.maternal_id != UNKNOWN:
-                s.mom = by_id[s.maternal_id]
-                s.mom.kids.append(s)
+                try:
+                    s.mom = by_id[s.maternal_id]
+                    s.mom.kids.append(s)
+                except KeyError:
+                    s.mom = None
+                    self.unknown_samples.append(s.maternal_id)
 
     @property
     def affecteds(self):
@@ -247,6 +264,65 @@ class Ped(object):
 
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.filename)
+
+    def relation(self, sample_a, sample_b):
+        a = [x for x in self.samples() if x.sample_id == sample_a]
+        assert len(a) == 1, (sample_a, "not found in ped file")
+        b = [x for x in self.samples() if x.sample_id == sample_b]
+        assert len(b) == 1, (sample_b, "not found in ped file")
+        a, b = a[0], b[0]
+
+        if a.mom == b or b.mom == a or a.dad == b or b.dad == a:
+            return 'parent-child'
+
+        if a.family_id != b.family_id:
+            return 'unrelated'
+
+        if a.mom is None and a.dad is None:
+            return 'unrelated'
+
+        if a.mom == b.mom and a.dad == b.dad:
+            return 'full siblings'
+
+        if (a.mom is not None and a.mom == b.mom) or (a.dad is not None and a.dad == b.dad):
+            return 'siblings'
+
+        else:
+            return 'related level 2'
+
+    def validate(self, vcf_path, plot=False):
+        from cyvcf2 import VCF
+        vcf = VCF(vcf_path, gts012=True, lazy=True)
+        rels = list(vcf.relatedness(n_variants=9000, gap=25000))
+
+        print("sample_1\tsample_2\tped_relation\tvcf_relation\trel\tIBS")
+        for rel in rels:
+            sample_a, sample_b = rel['pair']
+            ped_rel = self.relation(sample_a, sample_b)
+            out_line = "%s\t%s\t%s\t%s\t%.2f\t%.3f" % (sample_a, sample_b,
+                    ped_rel, "|".join(rel['tags']), rel['rel'], rel['ibs'])
+            if rel['rel'] < 0.04: # likely unrelated
+                if ped_rel not in ('related level 2', 'unrelated'):
+                    print(out_line)
+                continue
+            if rel['rel'] < 0.15:
+                if ped_rel not in ('unrelated', 'related level 2', 'distant relations'):
+                    print(out_line)
+                continue
+            if 0.26 < rel['rel'] < 0.78:
+                if ped_rel not in ('parent-child', 'full siblings'):
+                    print(out_line)
+                continue
+
+            if 0.15 < rel['rel'] < 0.3:
+                if ped_rel not in ('related level 2', 'unrelated'):
+                    print(out_line)
+                continue
+
+            if ped_rel > 0.78:
+                if ped_rel not in ('identical twins', 'self'):
+                    print(out_line)
+                continue
 
     def summary(self):
         atrios, aquads = 0, 0

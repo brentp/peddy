@@ -54,7 +54,17 @@ def test_ped():
 
     assert len(list(p.samples())) == 14
 
+
+def test_getattr():
+    p = Ped('peddy/tests/a.ped')
+    li = list(p.samples(ethnicity='caucasianNEuropean'))
+    assert len(li) == 5
+    for item in li:
+        assert item.ethnicity == 'caucasianNEuropean'
+
+
 def test_attrs():
     kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2', ['asdf', 'hello'])
     assert str(kid) == "fam1 kid dad mom 2 2 asdf hello", str(kid)
     assert repr(kid) == "Sample('fam1', 'kid', 'dad', 'mom', 'female', 'affected', ['asdf', 'hello'])", repr(kid)
+

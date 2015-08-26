@@ -66,3 +66,16 @@ Usage
 
 >>> s.kids
 ```
+
+Quality Control
+---------------
+
+If cyvcf2 is installed, then, given a ped-file and a VCF, we can look for cases where the relationships
+defined in the ped file do not match the relationships derived from the genotypes in the VCF.
+
+```Python
+>>> from peddy import Ped
+>>> p = Ped('cohort.ped')
+>>> p.validate('cohort.vcf.gz')
+... LIST of QUESTIONABLE SAMPLES
+```

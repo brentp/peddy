@@ -62,9 +62,7 @@ class Sample(object):
         self.affected = PHENOTYPE.lookup(phenotype)
         self.kids = []
         self.header = header
-        self.attrs = []
-        for a in (extra_attrs or []):
-            self.attrs.append(a)
+        self.attrs = extra_attrs or []
 
     def __eq__(self, other):
         if self is None or other is None:
@@ -83,13 +81,18 @@ class Sample(object):
         v += ")"
         return v
 
+    def __getattr__(self, key):
+        if not key in self.header:
+            raise AttributeError(key)
+        return self.attrs[self.header.index(key) - 6]
+
 
     @property
     def siblings(self):
         sibs = []
         for parent in (self.mom, self.dad):
             if parent is UNKNOWN: continue
-            sibs.extend([x for x in parent.kids if not x in sibs and x != self])
+            sibs.extend(x for x in parent.kids if not x in sibs and x != self)
         return sibs
 
     @property
@@ -209,6 +212,9 @@ class Ped(object):
     >>> s = next(p.samples())
     >>> s
     Sample('family_1', 'child_1', 'dad_1', 'mom_1', 'male', 'affected', ['caucasian'])
+    >>> s.ethnicity
+    'caucasian'
+
 
     >>> next(p.samples(phenotype=PHENOTYPE.UNAFFECTED))
     Sample('family_1', 'dad_1', '-9', '-9', 'male', 'unaffected', ['caucasian'])
@@ -250,7 +256,7 @@ class Ped(object):
         for family_id, samples in families.items():
             self.families[family_id] = Family(samples)
 
-    def samples(self, phenotype=None, sex=None):
+    def samples(self, phenotype=None, sex=None, **kwargs):
 
         if phenotype is None:
             samps = (x for fam in self.families.values() for x in fam)
@@ -258,9 +264,12 @@ class Ped(object):
             samps = (x for fam in self.families.values() for x in fam if x.affected == phenotype)
 
         if sex is not None:
-            return (x for x in samps if x.sex == sex)
+            samps = [x for x in samps if x.sex == sex]
 
-        return samps
+        for k, v in kwargs.items():
+            samps = [x for x in samps if getattr(x, k) == v]
+
+        return iter(samps)
 
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.filename)

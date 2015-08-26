@@ -83,7 +83,10 @@ def kingped(ped_obj, king_pairs, sib_pairs, parent_child, cutoff=0.13):
     for (a, b), v in high:
         if (a, b) in pair_seen: continue
         if (b, a) in pair_seen: continue
-        ao, bo = ped_obj[a], ped_obj[b]
+        try:
+            ao, bo = ped_obj[a], ped_obj[b]
+        except KeyError:
+            continue
         if ao.family_id != bo.family_id:
             print(fmt % (a, b, "high kinship", v))
         pair_seen[(b, a)] = True

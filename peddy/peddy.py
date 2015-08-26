@@ -294,6 +294,8 @@ class Ped(object):
         from cyvcf2 import VCF
         vcf = VCF(vcf_path, gts012=True, lazy=True)
         rels = list(vcf.relatedness(n_variants=9000, gap=25000))
+        if plot:
+            vcf.plot_relatedness(rels)
 
         print("sample_1\tsample_2\tped_relation\tvcf_relation\trel\tIBS")
         for rel in rels:
@@ -301,14 +303,16 @@ class Ped(object):
             ped_rel = self.relation(sample_a, sample_b)
             out_line = "%s\t%s\t%s\t%s\t%.2f\t%.3f" % (sample_a, sample_b,
                     ped_rel, "|".join(rel['tags']), rel['rel'], rel['ibs'])
-            if rel['rel'] < 0.04: # likely unrelated
+            if rel['rel'] < 0.04:  # likely unrelated
                 if ped_rel not in ('related level 2', 'unrelated'):
                     print(out_line)
                 continue
+
             if rel['rel'] < 0.15:
                 if ped_rel not in ('unrelated', 'related level 2', 'distant relations'):
                     print(out_line)
                 continue
+
             if 0.26 < rel['rel'] < 0.78:
                 if ped_rel not in ('parent-child', 'full siblings'):
                     print(out_line)

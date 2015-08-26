@@ -333,48 +333,83 @@ class Ped(object):
     def validate(self, vcf_path, plot=False, king=False):
         if king:
             from .king import run_king
-            return run_king(vcf_path, self)
+            run_king(vcf_path, self)
 
+        else:
+            from cyvcf2 import VCF
+            vcf = VCF(vcf_path, gts012=True, lazy=True)
+            rels = list(vcf.relatedness(min_af=0.02, n_variants=39000, gap=10000, linkage_max=1.5))
+            if plot:
+                fig = vcf.plot_relatedness(rels[:])
+                fig.show()
+                fig.savefig('t.png')
+
+            print("sample_1\tsample_2\tped_relation\tvcf_relation\trel\tIBS")
+            for rel in rels:
+                sample_a, sample_b = rel['pair']
+                ped_rel = self.relation(sample_a, sample_b)
+                if ped_rel is None: continue
+                out_line = "%s\t%s\t%s\t%s\t%.2f\t%.3f" % (sample_a, sample_b,
+                        ped_rel, "|".join(rel['tags']), rel['rel'], rel['ibs'])
+                if rel['rel'] < 0.04:  # likely unrelated
+                    if ped_rel not in ('related level 2', 'unrelated'):
+                        print(out_line)
+                    continue
+
+                if rel['rel'] < 0.15:
+                    if ped_rel not in ('unrelated', 'related level 2', 'distant relations'):
+                        print(out_line)
+                    continue
+
+                if 0.26 < rel['rel'] < 0.78:
+                    if ped_rel not in ('parent-child', 'full siblings'):
+                        print(out_line)
+                    continue
+
+                if 0.15 < rel['rel'] < 0.3:
+                    if ped_rel not in ('related level 2', 'unrelated'):
+                        print(out_line)
+                    continue
+
+                if ped_rel > 0.78:
+                    if ped_rel not in ('identical twins', 'self'):
+                        print(out_line)
+                    continue
+
+    def sex_check(self, vcf_path, min_depth=6,
+                  pars=('X:10000-2781479', 'X:155701382-156030895')):
         from cyvcf2 import VCF
+        import numpy as np
         vcf = VCF(vcf_path, gts012=True, lazy=True)
-        rels = list(vcf.relatedness(min_af=0.02, n_variants=39000, gap=10000, linkage_max=1.5))
-        if plot:
-            fig = vcf.plot_relatedness(rels[:])
-            fig.show()
-            fig.savefig('t.png')
+        pars = [x.split(':') for x in pars]
+        pars = [(x[0], map(int, x[1].split('-'))) for x in pars]
 
+        chrom = pars[0][0]
 
-        print("sample_1\tsample_2\tped_relation\tvcf_relation\trel\tIBS")
-        for rel in rels:
-            sample_a, sample_b = rel['pair']
-            ped_rel = self.relation(sample_a, sample_b)
-            if ped_rel is None: continue
-            out_line = "%s\t%s\t%s\t%s\t%.2f\t%.3f" % (sample_a, sample_b,
-                    ped_rel, "|".join(rel['tags']), rel['rel'], rel['ibs'])
-            if rel['rel'] < 0.04:  # likely unrelated
-                if ped_rel not in ('related level 2', 'unrelated'):
-                    print(out_line)
+        hom_ref = np.zeros(len(vcf.samples), dtype=int)
+        hom_alt = np.zeros(len(vcf.samples), dtype=int)
+        hom_alt = np.zeros(len(vcf.samples), dtype=int)
+        het = [0] * len(vcf.samples)
+        for variant in VCF(chrom):
+            depth_filter = variant.gt_depths >= min_depth
+            if any(s <= variant.end and e >= variant.end for chrom, (s, e) in pars):
                 continue
+            hom_ref += (variant.gt_types == 0) & depth_filter
+            hom_alt += (variant.gt_types == 2) & depth_filter
+            het += (variant.gt_types == 1) & depth_filter
 
-            if rel['rel'] < 0.15:
-                if ped_rel not in ('unrelated', 'related level 2', 'distant relations'):
-                    print(out_line)
-                continue
+        het_homref_ratio = het.astype(float) / hom_ref
 
-            if 0.26 < rel['rel'] < 0.78:
-                if ped_rel not in ('parent-child', 'full siblings'):
-                    print(out_line)
-                continue
-
-            if 0.15 < rel['rel'] < 0.3:
-                if ped_rel not in ('related level 2', 'unrelated'):
-                    print(out_line)
-                continue
-
-            if ped_rel > 0.78:
-                if ped_rel not in ('identical twins', 'self'):
-                    print(out_line)
-                continue
+        print("sample\tped_sex\thom_ref_count\thet_count\thomalt_count\thet_ref_ratio\tpredicted_sex\terror")
+        for i, s in enumerate(vcf.samples):
+            try:
+                ped_gender = self[s].sex
+            except KeyError:
+                ped_gender = "NA"
+            predicted_sex = SEX.MALE if het_homref_ratio[i] < 0.33 else SEX.FEMALE
+            error = predicted_sex != ped_gender
+            print("%s\t%s\t%d\t%d\t%d\t%.2f" % (s, ped_gender, hom_ref[i],
+                    het[i], hom_alt[i], het_homref_ratio[i], predicted_sex, error))
 
     def summary(self):
         atrios, aquads = 0, 0

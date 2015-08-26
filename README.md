@@ -79,3 +79,9 @@ defined in the ped file do not match the relationships derived from the genotype
 >>> p.validate('cohort.vcf.gz')
 ... LIST of QUESTIONABLE SAMPLES
 ```
+If `plot=True` is sent into the validate() method. Then a plot will be created
+that shows the how `peddy` classified the pairwise relations:
+
+[![relplot](https://raw.githubusercontent.com/brentp/peddy/master/images/t.png)](http://github.com/brentp/cyvcf2/)
+
+

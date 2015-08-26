@@ -377,10 +377,11 @@ class Ped(object):
                     continue
 
     def sex_check(self, vcf_path, min_depth=6,
+                  skip_missing=True,
                   pars=('X:10000-2781479', 'X:155701382-156030895')):
         from cyvcf2 import VCF
         import numpy as np
-        vcf = VCF(vcf_path, gts012=True, lazy=True)
+        vcf = VCF(vcf_path, gts012=True, lazy=False)
         pars = [x.split(':') for x in pars]
         pars = [(x[0], map(int, x[1].split('-'))) for x in pars]
 
@@ -390,26 +391,31 @@ class Ped(object):
         hom_alt = np.zeros(len(vcf.samples), dtype=int)
         hom_alt = np.zeros(len(vcf.samples), dtype=int)
         het = [0] * len(vcf.samples)
-        for variant in VCF(chrom):
+        for variant in vcf(chrom):
             depth_filter = variant.gt_depths >= min_depth
+            gt_types = variant.gt_types
             if any(s <= variant.end and e >= variant.end for chrom, (s, e) in pars):
                 continue
-            hom_ref += (variant.gt_types == 0) & depth_filter
-            hom_alt += (variant.gt_types == 2) & depth_filter
-            het += (variant.gt_types == 1) & depth_filter
+            hom_ref += (gt_types == 0) & depth_filter
+            hom_alt += (gt_types == 2) & depth_filter
+            het += (gt_types == 1) & depth_filter
 
-        het_homref_ratio = het.astype(float) / hom_ref
+        het_ratio = het.astype(float) / (hom_ref + hom_alt)
 
         print("sample\tped_sex\thom_ref_count\thet_count\thomalt_count\thet_ref_ratio\tpredicted_sex\terror")
         for i, s in enumerate(vcf.samples):
             try:
                 ped_gender = self[s].sex
             except KeyError:
+                if skip_missing:
+                    continue
                 ped_gender = "NA"
-            predicted_sex = SEX.MALE if het_homref_ratio[i] < 0.33 else SEX.FEMALE
-            error = predicted_sex != ped_gender
-            print("%s\t%s\t%d\t%d\t%d\t%.2f" % (s, ped_gender, hom_ref[i],
-                    het[i], hom_alt[i], het_homref_ratio[i], predicted_sex, error))
+            predicted_sex = SEX.MALE if het_ratio[i] < 0.05 else SEX.FEMALE
+            error = str(predicted_sex != ped_gender).upper()
+            if ped_gender == "NA":
+                error = "NA"
+            print("%s\t%s\t%d\t%d\t%d\t%.3f\t%s\t%s" % (s, ped_gender, hom_ref[i],
+                    het[i], hom_alt[i], het_ratio[i], predicted_sex, error))
 
     def summary(self):
         atrios, aquads = 0, 0

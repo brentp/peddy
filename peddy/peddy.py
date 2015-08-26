@@ -7,7 +7,6 @@ from collections import OrderedDict
 if sys.version_info[0] == 3:
     basestring = str
 
-
 class UNKNOWN(object):
     def __str__(self):
         return "-9"
@@ -149,7 +148,6 @@ class Family(object):
         sex = {SEX.MALE: 0, SEX.FEMALE: 0, SEX.UNKNOWN: 0}
 
         trios, quads = 0, 0
-        generations = 1
 
         for s in self.samples:
             affection[s.affected] += 1
@@ -160,6 +158,27 @@ class Family(object):
                 quads += 1
 
         return affection, sex, trios, quads
+
+    @property
+    def sib_pairs(self):
+        seen = set()
+        for s in self.samples:
+            sibs = list(s.full_siblings)
+            for sib in sibs:
+                if (s.sample_id, sib.sample_id) in seen: continue
+                if (sib.sample_id, s.sample_id) in seen: continue
+                seen.add((s.sample_id, sib.sample_id))
+                yield s, sib
+
+    @property
+    def parent_child(self):
+        seen = set()
+        for s in self.samples:
+            for parent in (p for p in [s.mom, s.dad] if p is not None):
+                if (s.sample_id, parent.sample_id) in seen: continue
+                if (parent.sample_id, s.sample_id) in seen: continue
+                seen.add((s.sample_id, parent.sample_id))
+                yield s, parent
 
     def _build(self):
         by_id = OrderedDict()
@@ -256,6 +275,14 @@ class Ped(object):
         for family_id, samples in families.items():
             self.families[family_id] = Family(samples)
 
+    def __getitem__(self, sample_id):
+        sample = [s for s in self.samples() if s.sample_id == sample_id]
+        if len(sample) == 0:
+            raise KeyError("%s not found" % sample_id)
+        elif len(sample) > 1:
+            raise Exception("multiple samples with id %s found" % sample_id)
+        return sample[0]
+
     def samples(self, phenotype=None, sex=None, **kwargs):
 
         if phenotype is None:
@@ -299,12 +326,19 @@ class Ped(object):
         else:
             return 'related level 2'
 
-    def validate(self, vcf_path, plot=False):
+    def validate(self, vcf_path, plot=False, king=False):
+        if king:
+            from .king import run_king
+            return run_king(vcf_path, self)
+
         from cyvcf2 import VCF
         vcf = VCF(vcf_path, gts012=True, lazy=True)
-        rels = list(vcf.relatedness(n_variants=9000, gap=25000))
+        rels = list(vcf.relatedness(min_af=0.02, n_variants=39000, gap=10000, linkage_max=1.5))
         if plot:
-            vcf.plot_relatedness(rels)
+            fig = vcf.plot_relatedness(rels[:])
+            fig.show()
+            fig.savefig('t.png')
+
 
         print("sample_1\tsample_2\tped_relation\tvcf_relation\trel\tIBS")
         for rel in rels:

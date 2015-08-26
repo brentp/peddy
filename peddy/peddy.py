@@ -303,9 +303,13 @@ class Ped(object):
 
     def relation(self, sample_a, sample_b):
         a = [x for x in self.samples() if x.sample_id == sample_a]
-        assert len(a) == 1, (sample_a, "not found in ped file")
+        if len(a) != 1:
+            print(sample_a, "not found in ped file", file=sys.stderr)
+            return None
         b = [x for x in self.samples() if x.sample_id == sample_b]
-        assert len(b) == 1, (sample_b, "not found in ped file")
+        if len(b) != 1:
+            print(sample_b, "not found in ped file", file=sys.stderr)
+            return None
         a, b = a[0], b[0]
 
         if a.mom == b or b.mom == a or a.dad == b or b.dad == a:
@@ -344,6 +348,7 @@ class Ped(object):
         for rel in rels:
             sample_a, sample_b = rel['pair']
             ped_rel = self.relation(sample_a, sample_b)
+            if ped_rel is None: continue
             out_line = "%s\t%s\t%s\t%s\t%.2f\t%.3f" % (sample_a, sample_b,
                     ped_rel, "|".join(rel['tags']), rel['rel'], rel['ibs'])
             if rel['rel'] < 0.04:  # likely unrelated

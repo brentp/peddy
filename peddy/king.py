@@ -52,7 +52,7 @@ def read_king(king_file):
 def kingped(ped_obj, king_pairs, sib_pairs, parent_child, cutoff=0.13):
 
     seen = set()
-    print "sample_a\tsample_b\terror\tkinship"
+    print("sample_a\tsample_b\terror\tkinship")
     fmt = "%s\t%s\t%s\t%.3f"
 
     for s in sib_pairs:

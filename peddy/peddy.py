@@ -378,6 +378,7 @@ class Ped(object):
 
     def sex_check(self, vcf_path, min_depth=6,
                   skip_missing=True,
+                  plot=False,
                   pars=('X:10000-2781479', 'X:155701382-156030895')):
         from cyvcf2 import VCF
         import numpy as np
@@ -403,6 +404,8 @@ class Ped(object):
         het_ratio = het.astype(float) / (hom_ref + hom_alt)
 
         print("sample\tped_sex\thom_ref_count\thet_count\thomalt_count\thet_ref_ratio\tpredicted_sex\terror")
+        plot_vals = {'male': [], 'female': [], 'male_errors': [],
+                'female_errors': [], 'male_samples': [], 'female_samples':[]}
         for i, s in enumerate(vcf.samples):
             try:
                 ped_gender = self[s].sex
@@ -414,8 +417,45 @@ class Ped(object):
             error = str(predicted_sex != ped_gender).upper()
             if ped_gender == "NA":
                 error = "NA"
+            else:
+                plot_vals[ped_gender].append(het_ratio[i])
+
+            plot_vals[ped_gender + '_errors'].append(error == "TRUE")
+            plot_vals[ped_gender + '_samples'].append(s)
+
             print("%s\t%s\t%d\t%d\t%d\t%.3f\t%s\t%s" % (s, ped_gender, hom_ref[i],
                     het[i], hom_alt[i], het_ratio[i], predicted_sex, error))
+        if not plot:
+            return
+
+        from matplotlib import pyplot as plt
+        import seaborn as sns
+        colors = sns.color_palette('Set1', 2)
+
+        fcolors=[colors[1] if e else colors[0] for e in plot_vals['female_errors']]
+        plt.scatter([0] * len(plot_vals['female']), plot_vals['female'],
+                 c=fcolors, edgecolors=fcolors, marker='o')
+
+        mcolors=[colors[0] if e else colors[1] for e in plot_vals['male_errors']]
+        plt.scatter([1] * len(plot_vals['male']), plot_vals['male'],
+                 c=mcolors, edgecolors=mcolors, marker='o')
+
+        for i, e in enumerate(plot_vals['female_errors']):
+            if not e: continue
+            plt.text(0, plot_vals['female'][i], plot_vals['female_samples'][i],
+                     color=colors[1], fontsize=7)
+
+        for i, e in enumerate(plot_vals['male_errors']):
+            if not e: continue
+            plt.text(0, plot_vals['male'][i], plot_vals['male_samples'][i],
+                     color=colors[0], fontsize=7)
+
+        plt.xticks([0, 1], ['female', 'male'])
+        plt.xlim(-0.1, 1.1)
+        plt.ylim(ymin=0)
+        plt.xlabel('Gender From Ped')
+        plt.ylabel('HET / (HOM_REF + HOM_ALT) [higher is more likely female]')
+        plt.savefig(plot)
 
     def summary(self):
         atrios, aquads = 0, 0

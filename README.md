@@ -85,3 +85,17 @@ that shows the how `peddy` classified the pairwise relations:
 [![relplot](https://raw.githubusercontent.com/brentp/peddy/master/images/t.png)](http://github.com/brentp/cyvcf2/)
 
 
+By looking for the frequency of heterozygotes in the not PAR regions of
+the X chromosome, we can determine gender from a VCF:
+
+```Python
+>>> from peddy import Ped
+>>> p = Ped('cohort.ped')
+>>> p.sex_check('cohort.vcf.gz', plot=True)
+... List of all samples with number of HETs, HOMREF, HOMALT on X
+```
+This will also create an image like this one where we can
+see a clear sample mixup.
+
+[![sex_plot](https://raw.githubusercontent.com/brentp/peddy/master/images/sex_check.png)](http://github.com/brentp/cyvcf2/)
+

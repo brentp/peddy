@@ -68,6 +68,47 @@ class Sample(object):
             return False
         return (self.sample_id == other.sample_id) and (self.family_id ==
                                                         other.family_id)
+
+    def _get_mom(self):
+        return self._mom
+
+    def _set_mom(self, mom):
+        if isinstance(mom, Sample):
+            if mom.sex == SEX.MALE:
+                sys.stderr.write("pedigree warning: '%s' is mom but has male gender\n" % mom.sample_id)
+            elif mom.sex == SEX.UNKNOWN:
+                sys.stderr.write("pedigree notice: '%s' is mom but has unknown gender. Setting to female\n" % mom.sample_id)
+
+            if mom.family_id != self.family_id:
+                sys.stderr.write("pedigree warning: '%s' is mom has different family_id from %s\n" % (mom.sample_id, self.sample_id))
+
+            if mom.sample_id == self.sample_id:
+                sys.stderr.write("pedigree warning: '%s' is mom of self\n" % (self.sample_id))
+
+        self._mom = mom
+
+    mom = property(_get_mom, _set_mom)
+
+    def _get_dad(self):
+        return self._dad
+
+    def _set_dad(self, dad):
+        if isinstance(dad, Sample):
+            if dad.sex == SEX.FEMALE:
+                sys.stderr.write("pedigree warning: '%s' is dad but has female gender\n" % dad.sample_id)
+            elif dad.sex == SEX.UNKNOWN:
+                sys.stderr.write("pedigree notice: '%s' is dad but has unknown gender. Setting to male\n" % dad.sample_id)
+
+            if dad.family_id != self.family_id:
+                sys.stderr.write("pedigree warning: '%s' is dad has different family_id from %s\n" % (dad.sample_id, self.sample_id))
+
+            if dad.sample_id == self.sample_id:
+                sys.stderr.write("pedigree warning: '%s' is dad of self\n" % (self.sample_id))
+
+        self._dad = dad
+
+    dad = property(_get_dad, _set_dad)
+
     def __repr__(self):
         v = "%s('%s', '%s', '%s', '%s', '%s', '%s'" % (self.__class__.__name__,
                                                  self.family_id, self.sample_id,

@@ -99,3 +99,19 @@ see a clear sample mixup.
 
 [![sex_plot](https://raw.githubusercontent.com/brentp/peddy/master/images/sex_check.png)](http://github.com/brentp/cyvcf2/)
 
+
+On creating a pedigree object (via Ped('some.ped'). Peddy will print warnings to STDERR as appropriate like:
+
+```
+pedigree warning: '101811-101811' is dad but has female gender
+pedigree warning: '101897-101897' is dad but has female gender
+pedigree warning: '101896-101896' is mom of self
+pedigree warning: '102110-102110' is mom but has male gender
+pedigree warning: '102110-102110' is mom of self
+pedigree warning: '101381-101381' is dad but has female gender
+pedigree warning: '101393-101393' is mom but has male gender
+
+unknown sample: 102498-102498 in family: K34175
+unknown sample: 11509-11509 in family: K567331
+unknown sample: 5180-5180 in family: K8565
+```

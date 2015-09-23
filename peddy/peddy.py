@@ -381,43 +381,55 @@ class Ped(object):
             from cyvcf2 import VCF
             vcf = VCF(vcf_path, gts012=True, lazy=True,
                       samples=[x.sample_id for x in self.samples()])
-            rels = list(vcf.relatedness(min_af=0.02, n_variants=39000, gap=10000, linkage_max=1.5))
-            if plot:
-                fig = vcf.plot_relatedness(rels[:])
-                fig.show()
-                fig.savefig('t.png')
+            rels = list(vcf.relatedness(min_af=0.02, n_variants=89000, gap=5000, linkage_max=1.5))
 
-            print("sample_1\tsample_2\tped_relation\tvcf_relation\trel\tIBS")
+            print("sample_a\tsample_b\tped_relation\tvcf_relation\trel\tIBS0\terror")
+            df = []
             for rel in rels:
-                sample_a, sample_b = rel['pair']
-                ped_rel = self.relation(sample_a, sample_b)
+                rel['sample_a'], rel['sample_b'] = rel['pair']
+                ped_rel = self.relation(rel['sample_a'], rel['sample_b'])
                 if ped_rel is None: continue
-                out_line = "%s\t%s\t%s\t%s\t%.2f\t%.3f" % (sample_a, sample_b,
-                        ped_rel, "|".join(rel['tags']), rel['rel'], rel['ibs'])
+                out_line = "%s\t%s\t%s\t%s\t%.2f\t%.3f\t" % (rel['sample_a'],
+                        rel['sample_b'], ped_rel, "|".join(rel['tags']), rel['rel'], rel['ibs0'])
                 if rel['rel'] < 0.04:  # likely unrelated
                     if ped_rel not in ('related level 2', 'unrelated'):
-                        print(out_line)
-                    continue
+                        rel["error"] = "error"
+                    else:
+                        rel["error"] = "ok"
 
-                if rel['rel'] < 0.15:
+                elif rel['rel'] < 0.15:
                     if ped_rel not in ('unrelated', 'related level 2', 'distant relations'):
-                        print(out_line)
-                    continue
+                        rel["error"] = "error"
+                    else:
+                        rel["error"] = "ok"
 
-                if 0.26 < rel['rel'] < 0.78:
+                elif 0.26 < rel['rel'] < 0.78:
                     if ped_rel not in ('parent-child', 'full siblings'):
-                        print(out_line)
-                    continue
+                        rel["error"] = "error"
+                    else:
+                        rel["error"] = "ok"
 
-                if 0.15 < rel['rel'] < 0.3:
+                elif 0.15 < rel['rel'] < 0.3:
                     if ped_rel not in ('related level 2', 'unrelated'):
-                        print(out_line)
-                    continue
+                        rel["error"] = "error"
+                    else:
+                        rel["error"] = "ok"
 
-                if ped_rel > 0.78:
+                elif ped_rel > 0.78:
                     if ped_rel not in ('identical twins', 'self'):
-                        print(out_line)
-                    continue
+                        rel["error"] = "error"
+                    else:
+                        rel["error"] = "ok"
+                else:
+                    rel["error"] = "ok"
+                df.append(rel)
+                print(out_line + rel["error"])
+            if plot:
+                fig = vcf.plot_relatedness(df[:])
+                fig.show()
+                if plot is True:
+                    fig.savefig('t.png')
+                fig.savefig(plot)
 
     def sex_check(self, vcf_path, min_depth=6,
                   skip_missing=True,

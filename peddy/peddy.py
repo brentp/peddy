@@ -378,7 +378,8 @@ class Ped(object):
 
         else:
             from cyvcf2 import VCF
-            vcf = VCF(vcf_path, gts012=True, lazy=True)
+            vcf = VCF(vcf_path, gts012=True, lazy=True,
+                      samples=[x.sample_id for x in self.samples()])
             rels = list(vcf.relatedness(min_af=0.02, n_variants=39000, gap=10000, linkage_max=1.5))
             if plot:
                 fig = vcf.plot_relatedness(rels[:])

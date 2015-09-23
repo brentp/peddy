@@ -167,7 +167,7 @@ class Family(object):
         self._build()
         for u in self.unknown_samples:
             print("unknown sample: %s in family: %s" % (u,
-                samples[0].family_id), file=sys.stderr)
+                  samples[0].family_id), file=sys.stderr)
 
     def __iter__(self):
         self._index = 0
@@ -275,7 +275,6 @@ class Ped(object):
     >>> s.ethnicity
     'caucasian'
 
-
     >>> next(p.samples(phenotype=PHENOTYPE.UNAFFECTED))
     Sample('family_1', 'dad_1', '-9', '-9', 'male', 'unaffected', ['caucasian'])
 
@@ -353,16 +352,18 @@ class Ped(object):
             return None
         a, b = a[0], b[0]
 
-        if a.mom == b or b.mom == a or a.dad == b or b.dad == a:
-            return 'parent-child'
-
+        # TODO: should we check anyway or just bail early like this
         if a.family_id != b.family_id:
             return 'unrelated'
 
-        if a.mom is None and a.dad is None:
+        if a.mom == b or b.mom == a or a.dad == b or b.dad == a:
+            return 'parent-child'
+
+        # TODO: do BFS
+        if a.mom is None and a.dad is None and b.mom is None and b.dad is None:
             return 'unrelated'
 
-        if a.mom == b.mom and a.dad == b.dad:
+        if a.mom == b.mom and a.dad == b.dad and None not in (a.mom, a.dad):
             return 'full siblings'
 
         if (a.mom is not None and a.mom == b.mom) or (a.dad is not None and a.dad == b.dad):

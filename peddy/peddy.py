@@ -356,6 +356,9 @@ class Ped(object):
         if a.family_id != b.family_id:
             return 'unrelated'
 
+        if set(a.kids).intersection(b.kids):
+            return "mom-dad"
+
         if a.mom == b or b.mom == a or a.dad == b or b.dad == a:
             return 'parent-child'
 

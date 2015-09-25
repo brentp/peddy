@@ -40,9 +40,11 @@ def test_distance():
     mom.mom = gma
     gma.mom = ggma
 
+    unrelated = Sample('fam1', 'un', '-9', '-9', '2', '2')
+
     from io import StringIO
     p = Ped(StringIO())
-    p.families['fam1'] = Family([kid, mom, dad, gma, ggma])
+    p.families['fam1'] = Family([kid, mom, dad, gma, ggma, unrelated])
     assert p.distance("mom", "dad") == float("inf")
     d = p.distance("mom", "kid")
     assert d == 1, d
@@ -59,6 +61,8 @@ def test_distance():
     assert d == 3, d
 
     assert p.distance("mom", "mom") == 0
+
+    assert p.distance("mom", "un") == float("inf")
 
 import sys
 from contextlib import contextmanager

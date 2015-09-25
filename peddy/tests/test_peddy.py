@@ -17,6 +17,49 @@ def test_sample_str_and_from_row():
     assert s2.family_id == s.family_id
 
 
+def test_relation():
+    kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2')
+    dad = Sample('fam1', 'dad', '-9', '-9', '1', '2')
+    mom = Sample('fam1', 'mom', '-9', '-9', '2', '2')
+    kid.mom = mom
+    kid.dad = dad
+
+    from io import StringIO
+    p = Ped(StringIO())
+    p.families['fam1'] = Family([kid, mom, dad])
+    assert p.relation("mom", "dad") == "mom-dad"
+
+def test_distance():
+    kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2')
+    dad = Sample('fam1', 'dad', '-9', '-9', '1', '2')
+    mom = Sample('fam1', 'mom', '-9', '-9', '2', '2')
+    gma = Sample('fam1', 'gma', '-9', '-9', '2', '2')
+    ggma = Sample('fam1', 'ggma', '-9', '-9', '2', '2')
+    kid.mom = mom
+    kid.dad = dad
+    mom.mom = gma
+    gma.mom = ggma
+
+    from io import StringIO
+    p = Ped(StringIO())
+    p.families['fam1'] = Family([kid, mom, dad, gma, ggma])
+    assert p.distance("mom", "dad") == float("inf")
+    d = p.distance("mom", "kid")
+    assert d == 1, d
+    d = p.distance("dad", "gma")
+    assert d == float('inf'), d
+
+    d = p.distance("mom", "gma")
+    assert d == 1, d
+
+    d = p.distance("kid", "gma")
+    assert d == 2, d
+
+    d = p.distance("kid", "ggma")
+    assert d == 3, d
+
+    assert p.distance("mom", "mom") == 0
+
 import sys
 from contextlib import contextmanager
 

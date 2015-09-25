@@ -2,7 +2,28 @@
 
 from __future__ import print_function
 import sys
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
+from heapq import *
+
+# https://gist.github.com/kachayev/5990802
+def dijkstra(edges, f, t):
+    g = defaultdict(list)
+    for l, r, c in edges:
+        g[l].append((c, r))
+
+    q, seen = [(0, f, ())], set()
+    while q:
+        (cost, v1, path) = heappop(q)
+        if v1 not in seen:
+            seen.add(v1)
+            path = (v1, path)
+            if v1 == t: return (cost, path)
+
+            for c, v2 in g.get(v1, ()):
+                if v2 not in seen:
+                    heappush(q, (cost+c, v2, path))
+
+    return float("inf"), []
 
 if sys.version_info[0] == 3:
     basestring = str
@@ -342,15 +363,12 @@ class Ped(object):
         return "%s('%s')" % (self.__class__.__name__, self.filename)
 
     def relation(self, sample_a, sample_b):
-        a = [x for x in self.samples() if x.sample_id == sample_a]
-        if len(a) != 1:
-            print(sample_a, "not found in ped file", file=sys.stderr)
-            return None
-        b = [x for x in self.samples() if x.sample_id == sample_b]
-        if len(b) != 1:
-            print(sample_b, "not found in ped file", file=sys.stderr)
-            return None
-        a, b = a[0], b[0]
+        a = self.get(sample_a)
+        b = self.get(sample_b)
+        if isinstance(a, list):
+            a = a[0]
+        if isinstance(b, list):
+            b = b[0]
 
         # TODO: should we check anyway or just bail early like this
         if a.family_id != b.family_id:
@@ -374,6 +392,52 @@ class Ped(object):
 
         else:
             return 'related level 2'
+
+    def get(self, sample_id, family_id=None):
+        a = [x for x in self.samples() if x.sample_id == sample_id]
+        if len(a) == 0:
+            return None
+        if len(a) > 1 and family_id is None:
+            print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
+
+        if family_id is not None:
+            a = [x for x in a if x.family_id == family_id]
+        if len(a) > 1:
+            print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
+        elif len(a) == 0:
+            print("no sample found in ped file for %s" % sample_id, file=sys.stderr)
+        elif len(a) == 1:
+            a = a[0]
+        return a
+
+    def distance(self, sample_a, sample_b):
+        """distance returns the number of meioses separating the 2 samples."""
+        a = self.get(sample_a)
+        b = self.get(sample_b)
+        if isinstance(a, list):
+            a = a[0]
+        if isinstance(b, list):
+            b = b[0]
+
+        def recurse(a, rels):
+            if a.mom is not None:
+                rels.append((a.sample_id, a.mom.sample_id, 1))
+                recurse(a.mom, rels)
+            if a.dad is not None:
+                rels.append((a.sample_id, a.dad.sample_id, 1))
+                recurse(a.dad, rels)
+
+        rels = []
+        recurse(a, rels)
+        recurse(b, rels)
+        if (a.sample_id, b.sample_id, 1) in rels: return 1
+        if (b.sample_id, a.sample_id, 1) in rels: return 1
+
+        v, path = dijkstra(rels, b.sample_id, a.sample_id)
+        if path == []:
+            v, path = dijkstra(rels, a.sample_id, b.sample_id)
+        return v
+
 
     def validate(self, vcf_path, plot=False, king=False):
         if king:

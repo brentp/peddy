@@ -422,10 +422,10 @@ class Ped(object):
             b = b[0]
 
         def recurse(a, rels):
-            if a.mom is not None:
+            if a.mom is not None and a.mom != a:
                 rels.append((a.sample_id, a.mom.sample_id, 1))
                 recurse(a.mom, rels)
-            if a.dad is not None:
+            if a.dad is not None and a.dad != a:
                 rels.append((a.sample_id, a.dad.sample_id, 1))
                 recurse(a.dad, rels)
 

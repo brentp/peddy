@@ -89,6 +89,8 @@ class Sample(object):
             return False
         return (self.sample_id == other.sample_id) and (self.family_id ==
                                                         other.family_id)
+    def __hash__(self):
+        return hash((self.sample_id, self.family_id))
 
     def _get_mom(self):
         return self._mom

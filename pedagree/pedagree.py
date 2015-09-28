@@ -23,7 +23,7 @@ def dijkstra(edges, f, t):
                 if v2 not in seen:
                     heappush(q, (cost+c, v2, path))
 
-    return float("inf"), []
+    return -1, []
 
 if sys.version_info[0] == 3:
     basestring = str
@@ -580,6 +580,66 @@ class Ped(object):
         plt.xlabel('Gender From Ped')
         plt.ylabel('HET / (HOM_REF + HOM_ALT) [higher is more likely female]')
         plt.savefig(plot)
+
+    def ped_check(self, vcf, **kwargs):
+        """
+        Given the current pedigree and a VCF of genotypes, find sample-pairs where
+        the relationship reported in the pedigree file do not match those inferred
+        from the genotypes. Returns a dataframe containing all sample-pairs with
+        columns for IBS0, IBS2, rel, IBS2*, pedigree_distance (# of meioses), distance
+        inferred (via SVM or a classifier passed as clf) and an "error" column
+        indicating if those differ.
+        """
+        import cyvcf2
+        import numpy as np
+        import pandas as pd
+        from sklearn.ensemble import RandomForestClassifier
+
+        samps = list(self.samples())
+        if isinstance(vcf, basestring):
+            samps = kwargs.pop("samples", None)
+            vcf = cyvcf2.VCF(vcf, samples=samps, gts012=True)
+        clf = kwargs.pop('clf', RandomForestClassifier(min_samples_split=3,
+                                                       min_samples_leaf=3,
+                                                       bootstrap=True, max_depth=6))
+
+        kws = dict(n_variants=28000, gap=9500, linkage_max=0.4, min_af=0.01)
+        kws.update(kwargs)
+        df = pd.DataFrame(list(vcf.relatedness(**kws)))
+        df["pedigree_distance"] = np.array([self.distance(a, b) for a, b in
+            zip(df.sample_a, df.sample_b)], dtype=int)
+
+        X = df[["ibs2*", "ibs2", "ibs0", "rel"]]
+        clf.fit(X, df["pedigree_distance"])
+
+        df["predicted_distance"] = clf.predict(X)
+        df["error"] = df["predicted_distance"] != df["pedigree_distance"]
+        del df["tags"]
+
+        """
+        colors = sns.color_palette("Set1", 7) + [mc.hex2color('#b6b6b6')]
+        patches = [mpatches.Patch(color=c, label=str(i) if i != -1 else "unrelated") for i, c in enumerate(colors)]
+        ocolors = [colors[i] for i in df["ped_dist"]]
+        for i, (a, b) in enumerate(combinations(("ibs0", "ibs2", "ibs2*", "rel"), 2)):
+            subplots[i].scatter(df.ix[:, a], df.ix[:, b], c=ocolors, s=18)
+            subplots[i].set_xlabel(a)
+            subplots[i].set_ylabel(b)
+
+        plt.tight_layout()
+        plt.legend(handles=patches)
+        plt.show()
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+        ax.scatter(df.ix[:, 'ibs0'], df.ix[:, 'ibs2*'], df.ix[:, 'rel'], c=ocolors)
+        ax.set_xlabel("ibs0")
+        ax.set_ylabel("ibs2")
+        ax.set_zlabel("rel")
+        plt.legend(handles=patches)
+        plt.show()
+
+        """
+        return df
 
     def summary(self):
         atrios, aquads = 0, 0

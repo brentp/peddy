@@ -92,22 +92,22 @@ def test_warnings():
         kid.dad = dad
 
         v = out.getvalue()
-        assert "'dad' is dad but has female gender" in v, v
-        assert "'mom' is mom but has male gender" in v, v
+        assert "'dad' is dad but has female sex" in v, v
+        assert "'mom' is mom but has male sex" in v, v
 
     with redirect_err() as out:
         kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2')
         mom = Sample('fam1', 'mom', '-9', '-9', '-9', '2')
         kid.mom = mom
         v = out.getvalue()
-        assert "'mom' is mom but has unknown gender. Setting to female" in v
+        assert "'mom' is mom but has unknown sex. Setting to female" in v
 
     with redirect_err() as out:
         kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2')
         dad = Sample('fam1', 'dad', '-9', '-9', '-9', '2')
         kid.dad = dad
         v = out.getvalue()
-        assert "'dad' is dad but has unknown gender. Setting to male" in v
+        assert "'dad' is dad but has unknown sex. Setting to male" in v
 
     with redirect_err() as out:
         kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2')

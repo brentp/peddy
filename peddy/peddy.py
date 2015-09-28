@@ -98,9 +98,9 @@ class Sample(object):
     def _set_mom(self, mom):
         if isinstance(mom, Sample):
             if mom.sex == SEX.MALE:
-                sys.stderr.write("pedigree warning: '%s' is mom but has male gender\n" % mom.sample_id)
+                sys.stderr.write("pedigree warning: '%s' is mom but has male sex\n" % mom.sample_id)
             elif mom.sex == SEX.UNKNOWN:
-                sys.stderr.write("pedigree notice: '%s' is mom but has unknown gender. Setting to female\n" % mom.sample_id)
+                sys.stderr.write("pedigree notice: '%s' is mom but has unknown sex. Setting to female\n" % mom.sample_id)
 
             if mom.family_id != self.family_id:
                 sys.stderr.write("pedigree warning: '%s' is mom has different family_id from %s\n" % (mom.sample_id, self.sample_id))
@@ -118,9 +118,9 @@ class Sample(object):
     def _set_dad(self, dad):
         if isinstance(dad, Sample):
             if dad.sex == SEX.FEMALE:
-                sys.stderr.write("pedigree warning: '%s' is dad but has female gender\n" % dad.sample_id)
+                sys.stderr.write("pedigree warning: '%s' is dad but has female sex\n" % dad.sample_id)
             elif dad.sex == SEX.UNKNOWN:
-                sys.stderr.write("pedigree notice: '%s' is dad but has unknown gender. Setting to male\n" % dad.sample_id)
+                sys.stderr.write("pedigree notice: '%s' is dad but has unknown sex. Setting to male\n" % dad.sample_id)
 
             if dad.family_id != self.family_id:
                 sys.stderr.write("pedigree warning: '%s' is dad has different family_id from %s\n" % (dad.sample_id, self.sample_id))
@@ -532,22 +532,22 @@ class Ped(object):
                 'female_errors': [], 'male_samples': [], 'female_samples':[]}
         for i, s in enumerate(vcf.samples):
             try:
-                ped_gender = self[s].sex
+                ped_sex = self[s].sex
             except KeyError:
                 if skip_missing:
                     continue
-                ped_gender = "NA"
+                ped_sex = "NA"
             predicted_sex = SEX.MALE if het_ratio[i] < 0.05 else SEX.FEMALE
-            error = str(predicted_sex != ped_gender).upper()
-            if ped_gender == "NA":
+            error = str(predicted_sex != ped_sex).upper()
+            if ped_sex == "NA":
                 error = "NA"
             else:
-                plot_vals[ped_gender].append(het_ratio[i])
+                plot_vals[ped_sex].append(het_ratio[i])
 
-            plot_vals[ped_gender + '_errors'].append(error == "TRUE")
-            plot_vals[ped_gender + '_samples'].append(s)
+            plot_vals[ped_sex + '_errors'].append(error == "TRUE")
+            plot_vals[ped_sex + '_samples'].append(s)
 
-            print("%s\t%s\t%d\t%d\t%d\t%.3f\t%s\t%s" % (s, ped_gender, hom_ref[i],
+            print("%s\t%s\t%d\t%d\t%d\t%.3f\t%s\t%s" % (s, ped_sex, hom_ref[i],
                     het[i], hom_alt[i], het_ratio[i], predicted_sex, error))
         if not plot:
             return

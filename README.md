@@ -23,7 +23,7 @@ We are working on adding support for the following:
 Given a pedigree file and a VCF file:
 
  + find likely sample mixups (or PED errors)
-   - gender mixups on X-Chrom
+   - sex mixups on X-Chrom
    - family mixups by inferring relatedness with VCF
 
  + mendelian errors
@@ -86,7 +86,7 @@ that shows the how `peddy` classified the pairwise relations:
 
 
 By looking for the frequency of heterozygotes in the not PAR regions of
-the X chromosome, we can determine gender from a VCF:
+the X chromosome, we can determine sex from a VCF:
 
 ```Python
 >>> from peddy import Ped
@@ -103,13 +103,13 @@ see a clear sample mixup.
 On creating a pedigree object (via Ped('some.ped'). Peddy will print warnings to STDERR as appropriate like:
 
 ```
-pedigree warning: '101811-101811' is dad but has female gender
-pedigree warning: '101897-101897' is dad but has female gender
+pedigree warning: '101811-101811' is dad but has female sex
+pedigree warning: '101897-101897' is dad but has female sex
 pedigree warning: '101896-101896' is mom of self
-pedigree warning: '102110-102110' is mom but has male gender
+pedigree warning: '102110-102110' is mom but has male sex
 pedigree warning: '102110-102110' is mom of self
-pedigree warning: '101381-101381' is dad but has female gender
-pedigree warning: '101393-101393' is mom but has male gender
+pedigree warning: '101381-101381' is dad but has female sex
+pedigree warning: '101393-101393' is mom but has male sex
 
 unknown sample: 102498-102498 in family: K34175
 unknown sample: 11509-11509 in family: K567331

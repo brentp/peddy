@@ -1,8 +1,10 @@
 tools for pedigree files
 ------------------------
 
-[![PyPI version](https://badge.fury.io/py/peddy.svg)](http://badge.fury.io/py/peddy)
-[![Build Status](https://travis-ci.org/brentp/peddy.svg?branch=master)](https://travis-ci.org/brentp/peddy)
+[![PyPI version](https://badge.fury.io/py/pedagree.svg)](http://badge.fury.io/py/pedagree)
+[![Build Status](https://travis-ci.org/brentp/pedagree.svg?branch=master)](https://travis-ci.org/brentp/pedagree)
+
+**NOTE** this module used to be named to "peddy".
 
 This is currently under development. It already has a nice API for dealing with pedigree files.
 
@@ -33,7 +35,7 @@ Usage
 -----
 
 ```Python
->>> from peddy import Ped, SEX, PHENOTYPE
+>>> from pedagree import Ped, SEX, PHENOTYPE
 
 >>> p = Ped('my.ped')
 # not yet.
@@ -74,22 +76,22 @@ If cyvcf2 is installed, then, given a ped-file and a VCF, we can look for cases 
 defined in the ped file do not match the relationships derived from the genotypes in the VCF.
 
 ```Python
->>> from peddy import Ped
+>>> from pedagree import Ped
 >>> p = Ped('cohort.ped')
 >>> p.validate('cohort.vcf.gz')
 ... LIST of QUESTIONABLE SAMPLES
 ```
 If `plot=True` is sent into the validate() method. Then a plot will be created
-that shows the how `peddy` classified the pairwise relations:
+that shows the how `pedagree` classified the pairwise relations:
 
-[![relplot](https://raw.githubusercontent.com/brentp/peddy/master/images/t.png)](http://github.com/brentp/cyvcf2/)
+[![relplot](https://raw.githubusercontent.com/brentp/pedagree/master/images/t.png)](http://github.com/brentp/cyvcf2/)
 
 
 By looking for the frequency of heterozygotes in the not PAR regions of
 the X chromosome, we can determine sex from a VCF:
 
 ```Python
->>> from peddy import Ped
+>>> from pedagree import Ped
 >>> p = Ped('cohort.ped')
 >>> p.sex_check('cohort.vcf.gz', plot=True)
 ... List of all samples with number of HETs, HOMREF, HOMALT on X
@@ -97,10 +99,10 @@ the X chromosome, we can determine sex from a VCF:
 This will also create an image like this one where we can
 see a clear sample mixup.
 
-[![sex_plot](https://raw.githubusercontent.com/brentp/peddy/master/images/sex_check.png)](http://github.com/brentp/cyvcf2/)
+[![sex_plot](https://raw.githubusercontent.com/brentp/pedagree/master/images/sex_check.png)](http://github.com/brentp/cyvcf2/)
 
 
-On creating a pedigree object (via Ped('some.ped'). Peddy will print warnings to STDERR as appropriate like:
+On creating a pedigree object (via Ped('some.ped'). `pedagree` will print warnings to STDERR as appropriate like:
 
 ```
 pedigree warning: '101811-101811' is dad but has female sex

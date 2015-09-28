@@ -1,4 +1,4 @@
-from peddy import Ped, Family, Sample, PHENOTYPE, SEX
+from pedagree import Ped, Family, Sample, PHENOTYPE, SEX
 
 def test_sample():
     s = Sample('fam1', 'sample1', '-9', '-9', '2', '2')
@@ -136,7 +136,7 @@ def test_family():
 
 
 def test_trios():
-    p = Ped('peddy/tests/a.ped')
+    p = Ped('pedagree/tests/a.ped')
     f = p.families['family_4']
     trios = list(f.trios())
     assert len(trios) == 3
@@ -147,14 +147,14 @@ def test_trios():
 
 def test_ped():
 
-    p = Ped('peddy/tests/a.ped')
+    p = Ped('pedagree/tests/a.ped')
     assert len(p.families) == 4
 
     assert len(list(p.samples())) == 14
 
 
 def test_getattr():
-    p = Ped('peddy/tests/a.ped')
+    p = Ped('pedagree/tests/a.ped')
     li = list(p.samples(ethnicity='caucasianNEuropean'))
     assert len(li) == 5
     for item in li:

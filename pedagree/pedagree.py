@@ -288,9 +288,9 @@ class Family(object):
 class Ped(object):
     """Handle pedigree files
 
-    >>> p = Ped('peddy/tests/a.ped')
+    >>> p = Ped('pedagree/tests/a.ped')
     >>> p
-    Ped('peddy/tests/a.ped')
+    Ped('pedagree/tests/a.ped')
 
     >>> s = next(p.samples())
     >>> s

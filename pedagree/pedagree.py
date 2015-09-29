@@ -135,11 +135,12 @@ class Sample(object):
 
     def __repr__(self):
         v = "%s('%s', '%s', '%s', '%s', '%s', '%s'" % (self.__class__.__name__,
-                                                 self.family_id, self.sample_id,
-                                                 self.paternal_id,
-                                                 self.maternal_id,
-                                                 SEX.rlookup(self.sex),
-                                                 PHENOTYPE.rlookup(self.affected))
+                                                       self.family_id,
+                                                       self.sample_id,
+                                                       self.paternal_id,
+                                                       self.maternal_id,
+                                                       SEX.rlookup(self.sex),
+                                                       PHENOTYPE.rlookup(self.affected))
         if self.attrs:
             v += ", " + str(self.attrs)
         v += ")"
@@ -156,7 +157,7 @@ class Sample(object):
         sibs = []
         for parent in (self.mom, self.dad):
             if parent is UNKNOWN: continue
-            sibs.extend(x for x in parent.kids if not x in sibs and x != self)
+            sibs.extend(x for x in parent.kids if x not in sibs and x != self)
         return sibs
 
     @property
@@ -171,7 +172,8 @@ class Sample(object):
     def from_row(cls, row, header=None):
         if isinstance(row, basestring):
             row = row.strip("\n").split()
-        return cls(row[0], row[1], row[2], row[3], row[4], row[5], row[6:], header=header)
+        return cls(row[0], row[1], row[2], row[3], row[4], row[5], row[6:],
+                   header=header)
 
     def __str__(self):
         v = "%s %s %s %s %s %s" % (self.family_id, self.sample_id,

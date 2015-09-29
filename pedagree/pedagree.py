@@ -335,7 +335,7 @@ class Ped(object):
         self._parse(ped)
 
     def _parse(self, fh):
-        #header = None
+        header = None
         families = OrderedDict()
 
         for i, toks in enumerate(l.rstrip().split() for l in fh):

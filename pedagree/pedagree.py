@@ -561,6 +561,7 @@ class Ped(object):
 
         :param vcf str:  path to vcf
         :param clf: scikit-learn classifier
+        :param kwargs: sent to vcf.relatedness()
         :return: pandas.DataFrame
         """
         import cyvcf2

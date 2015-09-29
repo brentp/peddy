@@ -65,13 +65,14 @@ UNKNOWN = UNKNOWN()
 class Sample(object):
 
     def __init__(self, family_id, sample_id, paternal_id, maternal_id, sex,
-                 phenotype, extra_attrs=None, header=None):
+                 phenotype, extra_attrs=None, header=None,
+                 missing=('-9', '0', '.')):
         self.family_id = family_id
         self.sample_id = sample_id
         self.dad = None
         self.mom = None
-        self.paternal_id = paternal_id if paternal_id != '-9' else UNKNOWN
-        self.maternal_id = maternal_id if maternal_id != '-9' else UNKNOWN
+        self.paternal_id = UNKNOWN if paternal_id in missing else paternal_id
+        self.maternal_id = UNKNOWN if maternal_id in missing else maternal_id
         if self.paternal_id != UNKNOWN:
             self.dad = self.paternal_id
         if self.maternal_id != UNKNOWN:

@@ -504,6 +504,19 @@ class Ped(object):
                   skip_missing=True,
                   plot=False,
                   pars=('X:10000-2781479', 'X:155701382-156030895')):
+        """
+        Check that the sex reported in the ped file matches that inferred
+        using the genotypes in `vcf_path` using the ratio of HET / (HOM_REF +
+        HOM_ALT)
+
+        :param vcf str:  path to vcf
+        :param min_depth int: minimum depth of variants to consider (in at least 50% of samples).
+        :param skip_missing bool: don't consider samples that are not in the ped file
+        :param plot bool: render a plot of the distributions by gender.
+        :param pars tuple(str): pseudo autosmal regions
+
+        :return: pandas.DataFrame
+        """
         from cyvcf2 import VCF
         import numpy as np
         vcf = VCF(vcf_path, gts012=True, lazy=False)
@@ -589,6 +602,10 @@ class Ped(object):
         columns for IBS0, IBS2, rel, IBS2*, pedigree_distance (# of meioses), distance
         inferred (via SVM or a classifier passed as clf) and an "error" column
         indicating if those differ.
+
+        :param vcf str:  path to vcf
+        :param clf: scikit-learn classifier
+        :return: pandas.DataFrame
         """
         import cyvcf2
         import numpy as np

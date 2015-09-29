@@ -20,15 +20,13 @@ It currently makes it simple to extract things like:
  + [not yet] families with at least N generations
 
 
-We are working on adding support for the following:
-
-Given a pedigree file and a VCF file:
+Also, given a pedigree file and a VCF file pedagree provides tools to:
 
  + find likely sample mixups (or PED errors)
    - sex mixups on X-Chrom
    - family mixups by inferring relatedness with VCF
 
- + mendelian errors
+ + find mendelian errors
 
 
 Usage

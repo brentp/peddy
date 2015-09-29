@@ -6,7 +6,7 @@ tools for pedigree files
 
 **NOTE** this module used to be named to "peddy".
 
-This is currently under development. It already has a nice API for dealing with pedigree files.
+`pedagree` is a python library for querying, QC'ing, and manipulating pedigree files.
 
 It currently makes it simple to extract things like:
 

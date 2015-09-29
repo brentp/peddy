@@ -183,6 +183,12 @@ class Sample(object):
 
 
 class Family(object):
+    """Family groups samples in the same family.
+    A new object is created with a list of `Sample` objects with
+    the same `family_id`.
+    Iterating over the family gives the samples in the order they were given to
+    the constructor.
+    """
     def __init__(self, samples):
         assert len(set(s.family_id for s in samples)) == 1
         self.unknown_samples = []
@@ -225,6 +231,7 @@ class Family(object):
 
     @property
     def sib_pairs(self):
+        "yield pairs of siblings."
         seen = set()
         for s in self.samples:
             sibs = list(s.full_siblings)
@@ -236,6 +243,7 @@ class Family(object):
 
     @property
     def parent_child(self):
+        "yield child, parent pairs"
         seen = set()
         for s in self.samples:
             for parent in (p for p in [s.mom, s.dad] if p is not None):
@@ -267,23 +275,27 @@ class Family(object):
 
     @property
     def affecteds(self):
+        "generate all the affecteds in a family"
         for s in self.samples:
             if s.affected:
                 yield s
 
     @property
     def unaffecteds(self):
+        "generate all the unaffecteds in a family"
         for s in self.samples:
             if s.affected is False:
                 yield s
 
     def trios(self, affected=True):
+        "generate all the trios in a family"
         for s in self.samples:
             if affected is not None:
                 if affected != s.affected:
                     continue
             if s.mom and s.dad:
                 yield (s, s.mom, s.dad)
+
 
 class Ped(object):
     """Manipulate pedigree data
@@ -635,4 +647,4 @@ unknown: {sex_unknown}""".format(**d))
 
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+    print(doctest.testmod(verbose=0))

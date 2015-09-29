@@ -76,16 +76,15 @@ defined in the ped file do not match the relationships derived from the genotype
 ```Python
 >>> from pedagree import Ped
 >>> p = Ped('cohort.ped')
->>> p.validate('cohort.vcf.gz')
-... LIST of QUESTIONABLE SAMPLES
+>>> df = p.ped_check('cohort.vcf.gz')
+>>> df[df.error] # show pairs of samples where the inferred differs from the reported.
+
 ```
-If `plot=True` is sent into the validate() method. Then a plot will be created
-that shows the how `pedagree` classified the pairwise relations:
 
 [![relplot](https://raw.githubusercontent.com/brentp/pedagree/master/images/t.png)](http://github.com/brentp/cyvcf2/)
 
 
-By looking for the frequency of heterozygotes in the not PAR regions of
+By looking for the frequency of heterozygotes in the non-PAR regions of
 the X chromosome, we can determine sex from a VCF:
 
 ```Python

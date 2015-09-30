@@ -22,7 +22,6 @@ def test_sex_check():
     if sys.version_info[0] == 3:
         return
 
-
     p = Ped('pedagree/tests/test.mendel.ped')
     siter = p.sex_check('pedagree/tests/test.mendel.vcf.gz')
     d = next(siter)
@@ -34,11 +33,9 @@ def test_sex_check():
     return
 
 def test_ped_check():
-    if sys.version_info[0] == 3:
-        return
-
     try:
         import pandas as pd
+        import cyvc2
     except ImportError:
         return
     p = Ped('pedagree/tests/test.mendel.ped')

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from pedagree import Ped, Family, Sample, PHENOTYPE, SEX
 
 def test_sample():
@@ -15,6 +16,35 @@ def test_sample_str_and_from_row():
     assert s2.sample_id == s.sample_id
     assert s2.sex == s.sex
     assert s2.family_id == s.family_id
+
+
+def test_ped_check():
+
+    try:
+        import pandas as pd
+    except ImportError:
+        return
+    p = Ped('pedagree/tests/test.mendel.ped')
+    v = p.ped_check('pedagree/tests/test.mendel.vcf.gz')
+    assert isinstance(v, pd.DataFrame), v
+
+    import sys
+    # remove samples
+    f = list(p.families.values())[0]
+    l = len(f.samples)
+    s = f.samples[-1]
+    f.samples = f.samples[:-1]
+    assert l -1 == len(f.samples)
+    v = p.ped_check('pedagree/tests/test.mendel.vcf.gz')
+    assert isinstance(v, pd.DataFrame), v
+    assert "ibs0" in v.columns
+
+    # changed the sample id of a sample
+    s.sample_id = "XDFSDFX"
+    f.samples.append(s)
+    v = p.ped_check('pedagree/tests/test.mendel.vcf.gz')
+    assert isinstance(v, pd.DataFrame), v
+
 
 
 def test_relation():

@@ -416,8 +416,6 @@ class Ped(object):
         associated with it.
         """
         a = [x for x in self.samples() if x.sample_id == sample_id]
-        if len(a) == 0:
-            return None
         if len(a) > 1 and family_id is None:
             print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
 
@@ -427,6 +425,7 @@ class Ped(object):
             print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
         elif len(a) == 0:
             print("no sample found in ped file for %s" % sample_id, file=sys.stderr)
+            return None
         elif len(a) == 1:
             a = a[0]
         return a
@@ -435,6 +434,8 @@ class Ped(object):
         """distance returns the number of meioses separating the 2 samples."""
         a = self.get(sample_a)
         b = self.get(sample_b)
+        if a is None or b is None:
+            return -1
         if isinstance(a, list):
             a = a[0]
         if isinstance(b, list):
@@ -591,7 +592,6 @@ class Ped(object):
 
         df["predicted_distance"] = clf.predict(X)
         df["error"] = df["predicted_distance"] != df["pedigree_distance"]
-        del df["tags"]
 
         """
         colors = sns.color_palette("Set1", 7) + [mc.hex2color('#b6b6b6')]

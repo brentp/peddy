@@ -4,7 +4,7 @@ def main(vcf, ped, prefix, plot=False):
 
     ped = Ped(ped)
 
-    siter = ped.sex_check(vcf, plot=plot)
+    siter = ped.sex_check(vcf, plot=("%s-sex-check.png" % prefix) if plot else False)
     with open("%s.sex-check.txt" % prefix, "w") as fh:
         for i, d in enumerate(siter):
             if i == 0:

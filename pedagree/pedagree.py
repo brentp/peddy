@@ -486,9 +486,8 @@ class Ped(object):
         chrom = pars[0][0]
 
         hom_ref = np.zeros(len(vcf.samples), dtype=int)
+        het     = np.zeros(len(vcf.samples), dtype=int)
         hom_alt = np.zeros(len(vcf.samples), dtype=int)
-        hom_alt = np.zeros(len(vcf.samples), dtype=int)
-        het = [0] * len(vcf.samples)
         for variant in vcf(chrom):
             depth_filter = variant.gt_depths >= min_depth
             gt_types = variant.gt_types
@@ -500,7 +499,6 @@ class Ped(object):
 
         het_ratio = het.astype(float) / (hom_ref + hom_alt)
 
-        print("sample\tped_sex\thom_ref_count\thet_count\thomalt_count\thet_ref_ratio\tpredicted_sex\terror")
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
                 'female_errors': [], 'male_samples': [], 'female_samples':[]}
         for i, s in enumerate(vcf.samples):
@@ -519,11 +517,13 @@ class Ped(object):
 
             plot_vals[ped_sex + '_errors'].append(error == "TRUE")
             plot_vals[ped_sex + '_samples'].append(s)
+            yield dict(sample=s, ped_sex=ped_sex, hom_ref_count=hom_ref[i],
+                       het_count=het[i], hom_alt_count=hom_alt[i],
+                       het_ratio=het_ratio[i], predicted_sex=predicted_sex,
+                       error=error)
 
-            print("%s\t%s\t%d\t%d\t%d\t%.3f\t%s\t%s" % (s, ped_sex, hom_ref[i],
-                    het[i], hom_alt[i], het_ratio[i], predicted_sex, error))
         if not plot:
-            return
+            raise StopIteration
 
         from matplotlib import pyplot as plt
         import seaborn as sns

@@ -22,30 +22,12 @@ def test_sex_check():
     p = Ped('pedagree/tests/test.mendel.ped')
     siter = p.sex_check('pedagree/tests/test.mendel.vcf.gz')
     d = next(siter)
-    assert "error" in d
 
     assert isinstance(d, dict)
-    assert False, d
+    assert "predicted_sex", d
+    assert "ped_sex", d
+    assert "error" in d
     return
-    assert isinstance(v, pd.DataFrame), v
-
-    if False:
-        import sys
-        # remove samples
-        f = list(p.families.values())[0]
-        l = len(f.samples)
-        s = f.samples[-1]
-        f.samples = f.samples[:-1]
-        assert l -1 == len(f.samples)
-        v = p.ped_check('pedagree/tests/test.mendel.vcf.gz')
-        assert isinstance(v, pd.DataFrame), v
-        assert "ibs0" in v.columns
-
-        # changed the sample id of a sample
-        s.sample_id = "XDFSDFX"
-        f.samples.append(s)
-        v = p.ped_check('pedagree/tests/test.mendel.vcf.gz')
-        assert isinstance(v, pd.DataFrame), v
 
 def test_ped_check():
 

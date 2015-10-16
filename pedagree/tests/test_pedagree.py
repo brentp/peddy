@@ -35,11 +35,12 @@ def test_sex_check():
 def test_ped_check():
     try:
         import pandas as pd
-        import cyvc2
+        import cyvcf2
+        cyvcf2
     except ImportError:
         return
     p = Ped('pedagree/tests/test.mendel.ped')
-    v = p.ped_check('pedagree/tests/test.mendel.vcf.gz')
+    v = p.ped_check(b'pedagree/tests/test.mendel.vcf.gz')
     assert isinstance(v, pd.DataFrame), v
 
     # remove samples
@@ -48,14 +49,14 @@ def test_ped_check():
     s = f.samples[-1]
     f.samples = f.samples[:-1]
     assert l -1 == len(f.samples)
-    v = p.ped_check('pedagree/tests/test.mendel.vcf.gz')
+    v = p.ped_check(b'pedagree/tests/test.mendel.vcf.gz')
     assert isinstance(v, pd.DataFrame), v
     assert "ibs0" in v.columns
 
     # changed the sample id of a sample
     s.sample_id = "XDFSDFX"
     f.samples.append(s)
-    v = p.ped_check('pedagree/tests/test.mendel.vcf.gz')
+    v = p.ped_check(b'pedagree/tests/test.mendel.vcf.gz')
     assert isinstance(v, pd.DataFrame), v
 
 

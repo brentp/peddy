@@ -338,7 +338,7 @@ class Ped(object):
         header = None
         families = OrderedDict()
 
-        for i, toks in enumerate(l.rstrip().split() for l in fh):
+        for i, toks in enumerate(l.rstrip('\r\n').split() for l in fh):
             if i == 0 and toks[0][0] == "#":
                 header = toks
                 continue
@@ -479,7 +479,10 @@ class Ped(object):
         """
         from cyvcf2 import VCF
         import numpy as np
+
+
         vcf = VCF(vcf_path, gts012=True, lazy=False)
+
         pars = [x.split(':') for x in pars]
         pars = [(x[0], map(int, x[1].split('-'))) for x in pars]
 
@@ -648,6 +651,7 @@ sex
 male: {male}
 female: {female}
 unknown: {sex_unknown}""".format(**d))
+        print(atrios, aquads)
 
 if __name__ == "__main__":
     import doctest

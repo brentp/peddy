@@ -2,28 +2,42 @@
 
 from __future__ import print_function
 import sys
+import collections
 from collections import OrderedDict, defaultdict
+import networkx as nx
 from heapq import *
 
-# https://gist.github.com/kachayev/5990802
-def dijkstra(edges, f, t):
-    g = defaultdict(list)
-    for l, r, c in edges:
-        g[l].append((c, r))
+# https://github.com/tmr232/Sark/blob/1b1d9a50c23e7a0774a9849137dc80998b1e9c46/sark/graph.py
+def lowest_common_ancestors(G, targets):
+    common_ancestors = None
+    all_ancestors = set()
+    for target in targets:
+        parents = set()
+        q = collections.deque()
+        q.append(target)
 
-    q, seen = [(0, f, ())], set()
-    while q:
-        (cost, v1, path) = heappop(q)
-        if v1 not in seen:
-            seen.add(v1)
-            path = (v1, path)
-            if v1 == t: return (cost, path)
+        while q:
+            n = q.popleft()
+            if n in parents:
+                continue
+            for p in G.successors_iter(n):
+                q.append(p)
+            parents.add(n)
 
-            for c, v2 in g.get(v1, ()):
-                if v2 not in seen:
-                    heappush(q, (cost+c, v2, path))
+        all_ancestors.update(parents)
 
-    return -1, []
+        if common_ancestors is None:
+            common_ancestors = parents
+        else:
+            common_ancestors &= parents
+
+    lowest_common = set()
+    if common_ancestors is not None:
+        for p in common_ancestors:
+            if any(child not in common_ancestors and child in all_ancestors for child in G.predecessors_iter(p)):
+                lowest_common.add(p)
+
+    return lowest_common
 
 if sys.version_info[0] == 3:
     basestring = str
@@ -333,6 +347,7 @@ class Ped(object):
         else:
             self.filename = ""
         self._parse(ped)
+        self._graph = None
 
     def _parse(self, fh):
         header = None
@@ -378,6 +393,7 @@ class Ped(object):
 
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.filename)
+
 
     def relation(self, sample_a, sample_b):
         a = self.get(sample_a)
@@ -430,35 +446,56 @@ class Ped(object):
             a = a[0]
         return a
 
-    def distance(self, sample_a, sample_b):
+    def _setup_graph(self):
+        gr = self._graph = nx.DiGraph()
+        for s in self.samples():
+            if s.mom is not None:
+                gr.add_edge(s.sample_id, s.mom.sample_id)
+            if s.dad is not None:
+                gr.add_edge(s.sample_id, s.dad.sample_id)
+            if s.dad is None and s.mom is None:
+                # shoudl top-node be s.family_id?
+                gr.add_edge(s.sample_id, None)
+
+    def distance(self, sample_a, sample_b, _empty=set([None])):
         """distance returns the number of meioses separating the 2 samples."""
-        a = self.get(sample_a)
-        b = self.get(sample_b)
-        if a is None or b is None:
+        # THIS is now becoming "relatedness"
+        if sample_a == sample_b: return 1.0
+        if self._graph is None:
+            self._setup_graph()
+        try:
+            lca = lowest_common_ancestors(self._graph, [sample_a, sample_b]) - _empty
+            lca.update(lowest_common_ancestors(self._graph, [sample_b, sample_a])) - _empty
+            if len(lca) == 0:
+                return 0
+
+            paths = []
+            for anc in lca:
+                paths.append(list(nx.all_shortest_paths(self._graph, sample_b, anc)))
+                paths.append(list(nx.all_shortest_paths(self._graph, sample_a, anc)))
+
+            print("===", sample_a, sample_b, "===")
+            print(lca)
+            print(paths)
+            return len(lca) / 2
+            #cc = find_shared(va, vb)
+            #if not set(va.keys()).intersection(vb.keys()):
+            #    return -1
+            #print(lca)
+            #va = [(k, v) for k, v in va if len(v) == len(va[0][1])]
+            #vb = [(k, v) for k, v in vb if len(v) == len(vb[0][1])]
+            #print(va)
+            #print(vb)
+            #print(n)
+            #print()
             return -1
-        if isinstance(a, list):
-            a = a[0]
-        if isinstance(b, list):
-            b = b[0]
 
-        def recurse(a, rels):
-            if a.mom is not None and a.mom != a:
-                rels.append((a.sample_id, a.mom.sample_id, 1))
-                recurse(a.mom, rels)
-            if a.dad is not None and a.dad != a:
-                rels.append((a.sample_id, a.dad.sample_id, 1))
-                recurse(a.dad, rels)
-
-        rels = []
-        recurse(a, rels)
-        recurse(b, rels)
-        if (a.sample_id, b.sample_id, 1) in rels: return 1
-        if (b.sample_id, a.sample_id, 1) in rels: return 1
-
-        v, path = dijkstra(rels, b.sample_id, a.sample_id)
-        if path == []:
-            v, path = dijkstra(rels, a.sample_id, b.sample_id)
-        return v
+            #print(sample_a, sample_b, nx.algorithms.bidirectional_dijkstra(self._graph, sample_a,
+            #    sample_b), v)
+            #return nx.shortest_path_length(self._graph, sample_a, sample_b)
+        except nx.exception.NetworkXNoPath:
+            raise
+            return 0
 
     def sex_check(self, vcf_path, min_depth=6,
                   skip_missing=True,
@@ -491,16 +528,19 @@ class Ped(object):
         hom_ref = np.zeros(len(vcf.samples), dtype=int)
         het     = np.zeros(len(vcf.samples), dtype=int)
         hom_alt = np.zeros(len(vcf.samples), dtype=int)
+        skipped = 0
         for variant in vcf(chrom):
             depth_filter = variant.gt_depths >= min_depth
             gt_types = variant.gt_types
             if any(s <= variant.end and e >= variant.end for chrom, (s, e) in pars):
+                skipped += 1
                 continue
             hom_ref += (gt_types == 0) & depth_filter
             hom_alt += (gt_types == 2) & depth_filter
             het += (gt_types == 1) & depth_filter
 
         het_ratio = het.astype(float) / (hom_ref + hom_alt)
+        print(skipped, file=sys.stderr)
 
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
                 'female_errors': [], 'male_samples': [], 'female_samples':[]}
@@ -584,17 +624,21 @@ class Ped(object):
                                                        min_samples_leaf=3,
                                                        bootstrap=True, max_depth=6))
 
-        kws = dict(n_variants=28000, gap=9500, linkage_max=0.4, min_af=0.01)
+        kws = dict(n_variants=28000, gap=9500, linkage_max=0.4, min_af=0,
+                max_af=1)
         kws.update(kwargs)
         df = pd.DataFrame(list(vcf.relatedness(**kws)))
         df["pedigree_distance"] = np.array([self.distance(a, b) for a, b in
             zip(df.sample_a, df.sample_b)], dtype=int)
 
         X = df[["ibs2*", "ibs2", "ibs0", "rel"]]
-        clf.fit(X, df["pedigree_distance"])
-
-        df["predicted_distance"] = clf.predict(X)
-        df["error"] = df["predicted_distance"] != df["pedigree_distance"]
+        #print(df)
+        try:
+            clf.fit(X, df["pedigree_distance"])
+            df["predicted_distance"] = clf.predict(X)
+            df["error"] = df["predicted_distance"] != df["pedigree_distance"]
+        except:
+            pass
 
         """
         colors = sns.color_palette("Set1", 7) + [mc.hex2color('#b6b6b6')]

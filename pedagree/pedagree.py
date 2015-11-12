@@ -7,6 +7,32 @@ from collections import OrderedDict, defaultdict
 import networkx as nx
 from heapq import *
 
+#https://gist.githubusercontent.com/kachayev/5956408/raw/c918417ef7f3c0deb6a0a1223a49035dcca84077/uf.py
+class UF(object):
+    __slots__ = ('p', 'rank')
+
+    def __init__(self, size):
+        self.p = [None]*size
+        self.rank = [1]*size
+
+    def make(self, el):
+        self.p[el] = el
+
+    def find(self, el):
+        if self.p[el] == el: return el
+        self.p[el] = self.find(self.p[el])
+        return self.p[el]
+
+    def unite(self, l, r):
+        li, ri = self.find(l), self.find(r)
+        if self.rank[li] < self.rank[ri]:
+            self.p[li] = ri
+        else:
+            self.p[ri] = li
+            if self.rank[li] == self.rank[ri]:
+                self.rank[li] += 1
+
+
 # https://github.com/tmr232/Sark/blob/1b1d9a50c23e7a0774a9849137dc80998b1e9c46/sark/graph.py
 def lowest_common_ancestors(G, targets):
     common_ancestors = None
@@ -457,45 +483,42 @@ class Ped(object):
                 # shoudl top-node be s.family_id?
                 gr.add_edge(s.sample_id, None)
 
-    def distance(self, sample_a, sample_b, _empty=set([None])):
-        """distance returns the number of meioses separating the 2 samples."""
+    def relatedness_coefficient(self, sample_a, sample_b, _empty=set([None])):
+        """Coefficient of relatedness between 2 samples."""
         # THIS is now becoming "relatedness"
         if sample_a == sample_b: return 1.0
         if self._graph is None:
             self._setup_graph()
-        try:
-            lca = lowest_common_ancestors(self._graph, [sample_a, sample_b]) - _empty
-            lca.update(lowest_common_ancestors(self._graph, [sample_b, sample_a])) - _empty
-            if len(lca) == 0:
-                return 0
+        if not (sample_a in self._graph and sample_b in self._graph):
+            return -1.0
+        lca = lowest_common_ancestors(self._graph, [sample_a, sample_b]) - _empty
+        if len(lca) == 0:
+            return 0.0
 
-            paths = []
-            for anc in lca:
-                paths.append(list(nx.all_shortest_paths(self._graph, sample_b, anc)))
-                paths.append(list(nx.all_shortest_paths(self._graph, sample_a, anc)))
+        a_paths, b_paths = [], []
+        for anc in lca:
+            b = list(nx.all_shortest_paths(self._graph, sample_b, anc))
+            if len(b) > 0 and len(b[-1]) > 0 and b[-1][0] == sample_b:
+                b[-1] = b[-1][1:]
+                if b[-1] == []:
+                    b = b[:-1]
+            if b:
+                b_paths.extend(b)
 
-            print("===", sample_a, sample_b, "===")
-            print(lca)
-            print(paths)
-            return len(lca) / 2
-            #cc = find_shared(va, vb)
-            #if not set(va.keys()).intersection(vb.keys()):
-            #    return -1
-            #print(lca)
-            #va = [(k, v) for k, v in va if len(v) == len(va[0][1])]
-            #vb = [(k, v) for k, v in vb if len(v) == len(vb[0][1])]
-            #print(va)
-            #print(vb)
-            #print(n)
-            #print()
-            return -1
+            a = list(nx.all_shortest_paths(self._graph, sample_a, anc))
+            if len(a) > 0 and len(a[-1]) > 0 and a[-1][0] == sample_a:
+                a[-1] = a[-1][1:]
+                if a[-1] == []:
+                    a = a[:-1]
+            if a:
+                a_paths.extend(a)
 
-            #print(sample_a, sample_b, nx.algorithms.bidirectional_dijkstra(self._graph, sample_a,
-            #    sample_b), v)
-            #return nx.shortest_path_length(self._graph, sample_a, sample_b)
-        except nx.exception.NetworkXNoPath:
-            raise
-            return 0
+        val = 0.0
+        if len(a_paths):
+            val += 0.5 ** sum(len(p) for p in a_paths)
+        if len(b_paths):
+            val += 0.5 ** sum(len(p) for p in b_paths)
+        return val
 
     def sex_check(self, vcf_path, min_depth=6,
                   skip_missing=True,
@@ -628,7 +651,7 @@ class Ped(object):
                 max_af=1)
         kws.update(kwargs)
         df = pd.DataFrame(list(vcf.relatedness(**kws)))
-        df["pedigree_distance"] = np.array([self.distance(a, b) for a, b in
+        df["pedigree_distance"] = np.array([self.relatedness_coefficient(a, b) for a, b in
             zip(df.sample_a, df.sample_b)], dtype=int)
 
         X = df[["ibs2*", "ibs2", "ibs0", "rel"]]

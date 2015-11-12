@@ -73,7 +73,7 @@ def test_relation():
     p.families['fam1'] = Family([kid, mom, dad])
     assert p.relation("mom", "dad") == "mom-dad"
 
-def test_distance():
+def test_relatedness_coefficient():
     kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2')
     dad = Sample('fam1', 'dad', '-9', '-9', '1', '2')
     mom = Sample('fam1', 'mom', '-9', '-9', '2', '2')
@@ -89,24 +89,26 @@ def test_distance():
     from io import StringIO
     p = Ped(StringIO())
     p.families['fam1'] = Family([kid, mom, dad, gma, ggma, unrelated])
-    assert p.distance("mom", "dad") == -1
-    d = p.distance("mom", "kid")
-    assert d == 1, d
-    d = p.distance("dad", "gma")
-    assert d == -1, d
+    rel = p.relatedness_coefficient("mom", "dad")
+    assert rel == 0.0, rel
+    d = p.relatedness_coefficient("mom", "kid")
+    assert d == 0.5, d
+    d = p.relatedness_coefficient("dad", "gma")
+    assert d == 0.0, d
 
-    d = p.distance("mom", "gma")
-    assert d == 1, d
+    d = p.relatedness_coefficient("mom", "gma")
+    assert d == 0.5, d
 
-    d = p.distance("kid", "gma")
-    assert d == 2, d
+    d = p.relatedness_coefficient("kid", "gma")
+    assert d == 0.25, d
 
-    d = p.distance("kid", "ggma")
-    assert d == 3, d
+    d = p.relatedness_coefficient("kid", "ggma")
+    assert d == 0.125, d
 
-    assert p.distance("mom", "mom") == 0
+    assert p.relatedness_coefficient("mom", "mom") == 1.0
 
-    assert p.distance("mom", "un") == -1
+    #assert p.relatedness_coefficient("mom", "un") == 0.0
+
 
 from contextlib import contextmanager
 

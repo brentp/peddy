@@ -18,7 +18,7 @@ It currently makes it simple to extract things like:
  + families with at least N members
  + families with at least N children
  + [not yet] families with at least N generations
-
+ + coefficient of relatedness given relation defined in the pedigree.
 
 Also, given a pedigree file and a VCF file pedagree provides tools to:
 

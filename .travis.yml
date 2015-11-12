@@ -8,4 +8,4 @@ script:
     - nosetests --with-doctest
 
 install:
-  - pip install -e .
+    - pip install -e . -r requirements.txt

@@ -8,4 +8,6 @@ script:
     - nosetests --with-doctest
 
 install:
-    - pip install -e . -r requirements.txt
+    - pip install cython
+    - pip install -r requirements.txt
+    - python setup.py install

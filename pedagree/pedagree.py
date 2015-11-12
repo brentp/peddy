@@ -479,13 +479,12 @@ class Ped(object):
                 gr.add_edge(s.sample_id, s.mom.sample_id)
             if s.dad is not None:
                 gr.add_edge(s.sample_id, s.dad.sample_id)
-            if s.dad is None and s.mom is None:
+            #if s.dad is None and s.mom is None:
                 # shoudl top-node be s.family_id?
-                gr.add_edge(s.sample_id, None)
+            #    gr.add_edge(s.sample_id, None)
 
     def relatedness_coefficient(self, sample_a, sample_b, _empty=set([None])):
         """Coefficient of relatedness between 2 samples."""
-        # THIS is now becoming "relatedness"
         if sample_a == sample_b: return 1.0
         if self._graph is None:
             self._setup_graph()
@@ -620,72 +619,53 @@ class Ped(object):
         plt.ylabel('HET / (HOM_REF + HOM_ALT) [higher is more likely female]')
         plt.savefig(plot)
 
-    def ped_check(self, vcf, **kwargs):
+    def ped_check(self, vcf, plot=False):
         """
         Given the current pedigree and a VCF of genotypes, find sample-pairs where
         the relationship reported in the pedigree file do not match those inferred
         from the genotypes. Returns a dataframe containing all sample-pairs with
-        columns for IBS0, IBS2, rel, IBS2*, pedigree_distance (# of meioses), distance
-        inferred (via SVM or a classifier passed as clf) and an "error" column
-        indicating if those differ.
+        columns for IBS0, IBS2, rel, IBS2*, pedigree_distance (relatedness
+        coefficient expected)
 
         :param vcf str:  path to vcf
         :param clf: scikit-learn classifier
-        :param kwargs: sent to vcf.relatedness()
         :return: pandas.DataFrame
         """
         import cyvcf2
         import numpy as np
         import pandas as pd
-        from sklearn.ensemble import RandomForestClassifier
 
         samps = list(self.samples())
         if isinstance(vcf, basestring):
-            samps = kwargs.pop("samples", None)
-            vcf = cyvcf2.VCF(vcf, samples=samps, gts012=True)
-        clf = kwargs.pop('clf', RandomForestClassifier(min_samples_split=3,
-                                                       min_samples_leaf=3,
-                                                       bootstrap=True, max_depth=6))
+            #samps = kwargs.pop("samples", None)
+            vcf = cyvcf2.VCF(vcf, gts012=True)
 
-        kws = dict(n_variants=28000, gap=9500, linkage_max=0.4, min_af=0,
-                max_af=1)
-        kws.update(kwargs)
-        df = pd.DataFrame(list(vcf.relatedness(**kws)))
+        df = pd.DataFrame(list(vcf.site_relatedness()))
         df["pedigree_distance"] = np.array([self.relatedness_coefficient(a, b) for a, b in
-            zip(df.sample_a, df.sample_b)], dtype=int)
+                                            zip(df.sample_a, df.sample_b)])
+        df["pedigree_parents"] = np.array([self.relation(a, b) == 'parent-child'  for a, b in
+                                            zip(df.sample_a, df.sample_b)])
+        df["predicted_parents"] = df['ibs0'] < 0.01
+        df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
+        if not plot:
+            return df
+        from matplotlib import pyplot as plt
+        import seaborn as sns
 
-        X = df[["ibs2*", "ibs2", "ibs0", "rel"]]
-        #print(df)
-        try:
-            clf.fit(X, df["pedigree_distance"])
-            df["predicted_distance"] = clf.predict(X)
-            df["error"] = df["predicted_distance"] != df["pedigree_distance"]
-        except:
-            pass
+        colors = sns.color_palette('Set1', len(set(df['pedigree_distance'])))
 
-        """
-        colors = sns.color_palette("Set1", 7) + [mc.hex2color('#b6b6b6')]
-        patches = [mpatches.Patch(color=c, label=str(i) if i != -1 else "unrelated") for i, c in enumerate(colors)]
-        ocolors = [colors[i] for i in df["ped_dist"]]
-        for i, (a, b) in enumerate(combinations(("ibs0", "ibs2", "ibs2*", "rel"), 2)):
-            subplots[i].scatter(df.ix[:, a], df.ix[:, b], c=ocolors, s=18)
-            subplots[i].set_xlabel(a)
-            subplots[i].set_ylabel(b)
-
-        plt.tight_layout()
-        plt.legend(handles=patches)
+        for i, rc in enumerate(set(df['pedigree_distance'])):
+            sel = df['pedigree_distance'] == rc
+            src = ("%.3f" % rc).rstrip('0')
+            # outline parent kid relationships
+            ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
+            plt.scatter(df['rel'][sel], df['ibs0'][sel],
+                    c=colors[i], linewidth=1, edgecolors=ec,
+                    label="ped coef: %s" % src)
+        plt.xlabel('coefficient of relatedness')
+        plt.ylabel('ibs0')
+        plt.legend()
         plt.show()
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-
-        ax.scatter(df.ix[:, 'ibs0'], df.ix[:, 'ibs2*'], df.ix[:, 'rel'], c=ocolors)
-        ax.set_xlabel("ibs0")
-        ax.set_ylabel("ibs2")
-        ax.set_zlabel("rel")
-        plt.legend(handles=patches)
-        plt.show()
-
-        """
         return df
 
     def summary(self):

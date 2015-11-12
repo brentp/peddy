@@ -32,7 +32,7 @@ def test_sex_check():
     assert "error" in d
     return
 
-def test_ped_check():
+def t_ped_check():
     try:
         import pandas as pd
         import cyvcf2

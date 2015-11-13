@@ -23,14 +23,11 @@ def test_sex_check():
         return
 
     p = Ped('pedagree/tests/test.mendel.ped')
-    siter = p.sex_check('pedagree/tests/test.mendel.vcf.gz')
-    d = next(siter)
+    df = p.sex_check('pedagree/tests/test.mendel.vcf.gz')
 
-    assert isinstance(d, dict)
-    assert "predicted_sex", d
-    assert "ped_sex", d
-    assert "error" in d
-    return
+    assert "predicted_sex" in df.columns
+    assert "ped_sex", df.columns
+    assert "error" in df.columns
 
 def t_ped_check():
     try:

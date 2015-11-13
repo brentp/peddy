@@ -522,6 +522,7 @@ class Ped(object):
     def sex_check(self, vcf_path, min_depth=6,
                   skip_missing=True,
                   plot=False,
+                  cutoff=0.1,
                   pars=('X:10000-2781479', 'X:155701382-156030895')):
         """
         Check that the sex reported in the ped file matches that inferred
@@ -538,6 +539,7 @@ class Ped(object):
         """
         from cyvcf2 import VCF
         import numpy as np
+        import pandas as pd
 
 
         vcf = VCF(vcf_path, gts012=True, lazy=False)
@@ -566,6 +568,7 @@ class Ped(object):
 
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
                 'female_errors': [], 'male_samples': [], 'female_samples':[]}
+        res = []
         for i, s in enumerate(vcf.samples):
             try:
                 ped_sex = self[s].sex
@@ -573,7 +576,7 @@ class Ped(object):
                 if skip_missing:
                     continue
                 ped_sex = "NA"
-            predicted_sex = SEX.MALE if het_ratio[i] < 0.05 else SEX.FEMALE
+            predicted_sex = SEX.MALE if het_ratio[i] < cutoff else SEX.FEMALE
             error = str(predicted_sex != ped_sex).upper()
             if ped_sex == "NA":
                 error = "NA"
@@ -582,15 +585,17 @@ class Ped(object):
 
             plot_vals[ped_sex + '_errors'].append(error == "TRUE")
             plot_vals[ped_sex + '_samples'].append(s)
-            yield dict(sample=s, ped_sex=ped_sex, hom_ref_count=hom_ref[i],
+            res.append(dict(sample=s, ped_sex=ped_sex, hom_ref_count=hom_ref[i],
                        het_count=het[i], hom_alt_count=hom_alt[i],
                        het_ratio=het_ratio[i], predicted_sex=predicted_sex,
-                       error=error)
+                       error=error))
+
 
         if not plot:
-            raise StopIteration
+            return pd.DataFrame(res)
 
         from matplotlib import pyplot as plt
+        plt.close()
         import seaborn as sns
         colors = sns.color_palette('Set1', 2)
 
@@ -618,13 +623,15 @@ class Ped(object):
         plt.xlabel('Gender From Ped')
         plt.ylabel('HET / (HOM_REF + HOM_ALT) [higher is more likely female]')
         plt.savefig(plot)
+        plt.close()
+        return pd.DataFrame(res)
 
     def ped_check(self, vcf, plot=False):
         """
         Given the current pedigree and a VCF of genotypes, find sample-pairs where
         the relationship reported in the pedigree file do not match those inferred
         from the genotypes. Returns a dataframe containing all sample-pairs with
-        columns for IBS0, IBS2, rel, IBS2*, pedigree_distance (relatedness
+        columns for IBS0, IBS2, rel, IBS2*, pedigree_relatedness (relatedness
         coefficient expected)
 
         :param vcf str:  path to vcf
@@ -641,7 +648,7 @@ class Ped(object):
             vcf = cyvcf2.VCF(vcf, gts012=True)
 
         df = pd.DataFrame(list(vcf.site_relatedness()))
-        df["pedigree_distance"] = np.array([self.relatedness_coefficient(a, b) for a, b in
+        df["pedigree_relatedness"] = np.array([self.relatedness_coefficient(a, b) for a, b in
                                             zip(df.sample_a, df.sample_b)])
         df["pedigree_parents"] = np.array([self.relation(a, b) == 'parent-child'  for a, b in
                                             zip(df.sample_a, df.sample_b)])
@@ -650,12 +657,13 @@ class Ped(object):
         if not plot:
             return df
         from matplotlib import pyplot as plt
+        plt.close()
         import seaborn as sns
 
-        colors = sns.color_palette('Set1', len(set(df['pedigree_distance'])))
+        colors = sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
 
-        for i, rc in enumerate(set(df['pedigree_distance'])):
-            sel = df['pedigree_distance'] == rc
+        for i, rc in enumerate(set(df['pedigree_relatedness'])):
+            sel = df['pedigree_relatedness'] == rc
             src = ("%.3f" % rc).rstrip('0')
             # outline parent kid relationships
             ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
@@ -665,7 +673,11 @@ class Ped(object):
         plt.xlabel('coefficient of relatedness')
         plt.ylabel('ibs0')
         plt.legend()
-        plt.show()
+        if plot is True:
+            plt.show()
+        else:
+            plt.savefig(plot)
+        plt.close()
         return df
 
     def summary(self):

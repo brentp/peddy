@@ -3,6 +3,7 @@ tools for pedigree files
 
 [![PyPI version](https://badge.fury.io/py/pedagree.svg)](http://badge.fury.io/py/pedagree)
 [![Build Status](https://travis-ci.org/brentp/pedagree.svg?branch=master)](https://travis-ci.org/brentp/pedagree)
+[![Documentation Status](https://readthedocs.org/projects/pedagree/badge/?version=latest)](http://pedagree.readthedocs.org/en/latest/?badge=latest)
 
 **NOTE** this module used to be named to "peddy".
 

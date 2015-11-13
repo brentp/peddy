@@ -2,7 +2,7 @@ manipulation, validation and exploration of pedigrees
 =====================================================
 
 Pedagree is a python module for manipulating pedigree files.
-While the python module has sever useful features,
+While the python module has several useful features,
 most users will be intereseted in `pedagree` for its 
 utility in finding discrepancies between the relationships specified
 in `.ped` files and the relationships inferred from a 

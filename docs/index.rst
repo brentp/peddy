@@ -10,9 +10,9 @@ corresponding `.vcf` file such as can occur from sample-swaps
 or pedigree misspecifications.
 
 The code to do this is quite simple. Below, we check for pedigree
-violations by looking at 5,000 sites (see docs for more details on selection)
-and for sex discrepancies by looking at the non-PA regions of the X
-chromosome where males should have very few HET calls.
+violations by looking at 5,000 sites (see :doc:`relatedness <relatedness>`
+for more details on selection) and for sex discrepancies by looking at the
+non-PA regions of the X chromosome where males should have very few HET calls.
 
 .. code-block:: python
 

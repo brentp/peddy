@@ -25,12 +25,12 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pedagree 0.1.0 documentation" href="#" /> 
   </head>
-  <body>
-      <div class="header"><h1 class="heading"><a href="#">
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="#">
           <span>pedagree 0.1.0 documentation</span></a></h1>
         <h2 class="heading"><span>manipulation, validation and exploration of pedigrees</span></h2>
       </div>
-      <div class="topnav">
+      <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
         <a class="uplink" href="#">Contents</a>
@@ -50,7 +50,7 @@ in <cite>.ped</cite> files and the relationships inferred from a
 corresponding <cite>.vcf</cite> file such as can occur from sample-swaps
 or pedigree misspecifications.</p>
 <p>The code to do this is quite simple. Below, we check for pedigree
-violations by looking at 5,000 sites (see docs for more details on selection)
+violations by looking at 5,000 sites (see <a class="reference internal" href="relatedness.html"><em>docs</em></a>  for more details on selection)
 and for sex discrepancies by looking at the non-PA regions of the X
 chromosome where males should have very few HET calls.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pedagree</span> <span class="kn">import</span> <span class="n">Ped</span>
@@ -97,7 +97,7 @@ FALSE   24774   0.11745685567987862 84482   126438  male    male    NA12893
 </div>
 <p>And we can see that there are no inferred errors along with other information used to make that inference.</p>
 <p>The <cite>ped-check</cite> file will contain <cite>n_samples</cite> * <cite>n_samples</cite> number of rows like below:</p>
-<div class="highlight-python"><div class="highlight"><pre>ibs0        ibs2    ibs2*   n       rel     sample_a        sample_b        pedigree_distance       pedigree_parents        predicted_parents       parent_error
+<div class="highlight-python"><div class="highlight"><pre>ibs0        ibs2    ibs2*   n       rel     sample_a        sample_b        pedigree_relatedness    pedigree_parents        predicted_parents       parent_error
 0.0801      0.0042  0.0165  4722    0.0245  NA12877 NA12878 0.0000  False   False   False
 0.0000      0.0125  0.0360  4723    0.5401  NA12877 NA12879 0.5000  True    True    False
 0.0000      0.0108  0.0390  4723    0.5482  NA12877 NA12880 0.5000  True    True    False
@@ -110,12 +110,14 @@ FALSE   24774   0.11745685567987862 84482   126438  male    male    NA12893
 </pre></div>
 </div>
 <p>Using <cite>IBS0</cite>, we can infer the parent-child relationship of a pair of samples. If the inferred value
-doesn&#8217;t match the relationship in the ped file, then the <cite>parent_error</cite> column will be <cite>True</cite>.</p>
+doesn&#8217;t match the relationship in the ped file, then the <cite>parent_error</cite> column will be <cite>True</cite>.
+We can see that the first line above has a high <cite>ibs0</cite> value (and low <cite>rel</cite> value) indicating it&#8217;s
+not expected to be a parent-child relation while the rest have low <cite>ibs0</cite> (and high <cite>rel</cite> values).</p>
 </div>
 
 
       </div>
-      <div class="bottomnav">
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
         <a class="uplink" href="#">Contents</a>
@@ -123,9 +125,9 @@ doesn&#8217;t match the relationship in the ped file, then the <cite>parent_erro
 
       </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Brent S Pedersen.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

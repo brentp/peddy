@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>relatedness calculations &mdash; pedagree 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pedagree 0.1.0 documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>pedagree 0.1.0 documentation</span></a></h1>
+        <h2 class="heading"><span>relatedness calculations</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="relatedness-calculations">
+<h1>relatedness calculations<a class="headerlink" href="#relatedness-calculations" title="Permalink to this headline">¶</a></h1>
+<p>Using cyvcf2, we can quickly calculate relatedness using the method
+described in <a class="reference external" href="http://www.nature.com/ng/journal/v42/n7/full/ng.608.html">http://www.nature.com/ng/journal/v42/n7/full/ng.608.html</a> in
+equation 6.</p>
+<p>This is computationally intensive to calculate for the entire genome
+and other methods, such as KING (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/20926424">http://www.ncbi.nlm.nih.gov/pubmed/20926424</a>)
+have fast methods to do this on the entire genome.</p>
+<p>The limitations of these methods is that they assume the average pair of samples
+is unrelated.</p>
+<p>In <cite>pedagree</cite>, we use about 5,000 variants described in <a class="reference external" href="http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html">http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html</a>
+that are known to be targeted by most exome platforms, in hardy weinberg equilibrium in 1000 genomes,
+and mostly unlinked.</p>
+<p>When a user requests to calculate relatedness, we use those 5K sites and
+the genotypes from the 2504 1KG samples to provide a background of samples so
+that most samples are indeed unrelated. Since we are sampling on 5K sites,
+the calculations are quite fast (~5 minutes) and match very well what
+we get from a whole-genome scan because of the properties of those sites.
+Though we use the additional 2504 1KG samples internally, only the information
+from the ped/vcf file is returned.</p>
+<p><cite>pedagree</cite> stores the relationships from the pedigree in a graph and can calculate
+the expected coefficient of relation from what is specified in the ped file.
+We can use this information to compare to what is calculated from the genotypes.</p>
+<div class="section" id="sex-qc">
+<h2>sex QC<a class="headerlink" href="#sex-qc" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Brent S Pedersen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

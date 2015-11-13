@@ -10,7 +10,7 @@ corresponding `.vcf` file such as can occur from sample-swaps
 or pedigree misspecifications.
 
 The code to do this is quite simple. Below, we check for pedigree
-violations by looking at 5,000 sites (see docs for more details on selection)
+violations by looking at 5,000 sites (see :doc:`docs <relatedness>`  for more details on selection)
 and for sex discrepancies by looking at the non-PA regions of the X
 chromosome where males should have very few HET calls.
 
@@ -70,7 +70,7 @@ And we can see that there are no inferred errors along with other information us
 
 The `ped-check` file will contain `n_samples` \* `n_samples` number of rows like below::
 
-    ibs0	ibs2	ibs2*	n	rel	sample_a	sample_b	pedigree_distance	pedigree_parents	predicted_parents	parent_error
+    ibs0	ibs2	ibs2*	n	rel	sample_a	sample_b	pedigree_relatedness	pedigree_parents	predicted_parents	parent_error
     0.0801	0.0042	0.0165	4722	0.0245	NA12877	NA12878	0.0000	False	False	False
     0.0000	0.0125	0.0360	4723	0.5401	NA12877	NA12879	0.5000	True	True	False
     0.0000	0.0108	0.0390	4723	0.5482	NA12877	NA12880	0.5000	True	True	False
@@ -83,6 +83,9 @@ The `ped-check` file will contain `n_samples` \* `n_samples` number of rows like
 
 Using `IBS0`, we can infer the parent-child relationship of a pair of samples. If the inferred value
 doesn't match the relationship in the ped file, then the `parent_error` column will be `True`.
+We can see that the first line above has a high `ibs0` value (and low `rel` value) indicating it's
+not expected to be a parent-child relation while the rest have low `ibs0` (and high `rel` values).
+
 
 ..
     .. toctree::

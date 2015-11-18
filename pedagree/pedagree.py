@@ -649,7 +649,8 @@ class Ped(object):
         samps = list(self.samples())
         if isinstance(vcf, basestring):
             #samps = kwargs.pop("samples", None)
-            vcf = cyvcf2.VCF(vcf, gts012=True)
+            vcf = cyvcf2.VCF(vcf, gts012=True, samples=[x.sample_id for x in
+                samps])
 
         df = pd.DataFrame(list(vcf.site_relatedness()))
         df["pedigree_relatedness"] = np.array([self.relatedness_coefficient(a, b) for a, b in
@@ -659,6 +660,11 @@ class Ped(object):
         df["predicted_parents"] = df['ibs0'] < 0.012
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
         df["sample_duplication_error"] = (df['ibs0'] < 0.012) & (df['rel'] > 0.75)
+        # make the column order a bit more sane.
+        cols = ['sample_a', 'sample_b']
+        cols += [c for c in df.columns if not c in ('sample_a', 'sample_b') and not c.endswith('error')]
+        cols += [c for c in df.columns if c.endswith('error')]
+        df = df[cols]
         if not plot:
             return df
         from matplotlib import pyplot as plt

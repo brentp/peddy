@@ -429,6 +429,9 @@ class Ped(object):
         if isinstance(b, list):
             b = b[0]
 
+        if a is None or b is None:
+            return 'unknown'
+
         # TODO: should we check anyway or just bail early like this
         if a.family_id != b.family_id:
             return 'unrelated'
@@ -542,7 +545,8 @@ class Ped(object):
         import pandas as pd
 
 
-        vcf = VCF(vcf_path, gts012=True, lazy=False)
+        vcf = VCF(vcf_path, gts012=True, lazy=False,
+                  samples=[s.sample_id for s in self.samples()])
 
         pars = [x.split(':') for x in pars]
         pars = [(x[0], map(int, x[1].split('-'))) for x in pars]
@@ -614,7 +618,7 @@ class Ped(object):
 
         for i, e in enumerate(plot_vals['male_errors']):
             if not e: continue
-            plt.text(0, plot_vals['male'][i], plot_vals['male_samples'][i],
+            plt.text(1, plot_vals['male'][i], plot_vals['male_samples'][i],
                      color=colors[0], fontsize=7)
 
         plt.xticks([0, 1], ['female', 'male'])

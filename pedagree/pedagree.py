@@ -656,8 +656,9 @@ class Ped(object):
                                             zip(df.sample_a, df.sample_b)])
         df["pedigree_parents"] = np.array([self.relation(a, b) == 'parent-child'  for a, b in
                                             zip(df.sample_a, df.sample_b)])
-        df["predicted_parents"] = df['ibs0'] < 0.01
+        df["predicted_parents"] = df['ibs0'] < 0.012
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
+        df["sample_duplication_error"] = (df['ibs0'] < 0.012) & (df['rel'] > 0.75)
         if not plot:
             return df
         from matplotlib import pyplot as plt

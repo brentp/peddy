@@ -630,6 +630,62 @@ class Ped(object):
         plt.close()
         return pd.DataFrame(res)
 
+    def het_check(self, vcf, plot=False, min_depth=8):
+        import cyvcf2
+        import numpy as np
+
+        samps = [x.sample_id for x in self.samples()]
+        vcf = cyvcf2.VCF(vcf, gts012=True, samples=samps)
+        assert vcf.samples == samps
+
+        sample_ranges = vcf.het_check(min_depth=min_depth)
+
+        # not find outliers.
+        ranges = [d['range'] for d in sample_ranges.values()]
+        ratios = [d['het_ratio'] for d in sample_ranges.values()]
+        for k, v in sample_ranges.items():
+            v['sample_id'] = k
+
+        ranges_mean, ranges_std = np.mean(ranges), np.std(ranges)
+        ratios_mean, ratios_std = np.mean(ratios), np.std(ratios)
+
+        rmin, rmax = ranges_mean - 1.96 * ranges_std, ranges_mean + 1.96 * ranges_std
+        ranges_outlier = [not rmin <= d <= rmax for d in ranges]
+
+        rmin, rmax = ratios_mean - 1.96 * ratios_std, ratios_mean + 1.96 * ratios_std
+        ratios_outlier = [not rmin <= d <= rmax for d in ratios]
+
+
+        for d, range_o, ratio_o in zip(sample_ranges.values(), ranges_outlier,
+                                       ratios_outlier):
+            d['range_outlier'] = range_o
+            d['ratio_outlier'] = ratio_o
+
+        import pandas as pd
+        df = pd.DataFrame(sample_ranges.values())
+        cols = ['sample_id'] + sorted([x for x in df.columns if x != 'sample_id'])
+        df = df[cols]
+        if not plot:
+            return df
+
+        from matplotlib import pyplot as plt
+        import seaborn as sns
+        colors = sns.color_palette('Set1', 4)
+
+        cs = [colors[int(v['range_outlier'])] for v in sample_ranges.values()]
+        ecs = ['none' if not v['ratio_outlier'] else 'k' for v in sample_ranges.values()]
+
+        plt.scatter(ranges, ratios, c=cs, edgecolors=ecs)
+
+        for k, v in ((k, v) for k, v in sample_ranges.items()
+                   if v['ratio_outlier'] or v['range_outlier']):
+          plt.text(v['range'], v['het_ratio'], k, color=colors[1], fontsize=7)
+
+        plt.xlabel('maf range')
+        plt.ylabel('proportion het calls')
+        plt.savefig(plot)
+        return df
+
     def ped_check(self, vcf, plot=False):
         """
         Given the current pedigree and a VCF of genotypes, find sample-pairs where

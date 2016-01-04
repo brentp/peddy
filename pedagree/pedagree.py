@@ -585,7 +585,11 @@ class Ped(object):
             if ped_sex == "NA":
                 error = "NA"
             else:
-                plot_vals[ped_sex].append(het_ratio[i])
+                try:
+                    plot_vals[ped_sex].append(het_ratio[i])
+                except KeyError:
+                    # sex unknown
+                    continue
 
             plot_vals[ped_sex + '_errors'].append(error == "TRUE")
             plot_vals[ped_sex + '_samples'].append(s)

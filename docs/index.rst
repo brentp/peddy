@@ -9,13 +9,15 @@ in `.ped` files and the relationships inferred from a
 corresponding `.vcf` file such as can occur from sample-swaps 
 or pedigree misspecifications.
 
-The code to do this is quite simple. But we can automate using the command-line.
-Below, we check for pedigree
+The python code to do this is quite simple. But we can automate multiple
+checks using the command-line interface. Below, we check for pedigree
 violations by looking at 5,000 sites (see :doc:`relatedness <relatedness>`
 for more details on selection) and for sex discrepancies by looking at the
 non-PA regions of the X chromosome where males should have very few HET calls.
 
-.. code-block::
+The command-line usage looks like:
+
+.. code-block:: bash
 
     python -m pedagree --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 

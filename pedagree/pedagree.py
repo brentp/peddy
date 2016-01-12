@@ -7,6 +7,13 @@ from collections import OrderedDict, defaultdict
 import networkx as nx
 from heapq import *
 
+try:
+    import matplotlib
+    matplotlib.use("Agg")
+except ImportError:
+    # dont have mpl installed.
+    pass
+
 #https://gist.githubusercontent.com/kachayev/5956408/raw/c918417ef7f3c0deb6a0a1223a49035dcca84077/uf.py
 class UF(object):
     __slots__ = ('p', 'rank')

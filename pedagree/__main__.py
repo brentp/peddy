@@ -3,18 +3,17 @@ def main(vcf, ped, prefix, plot=False):
     from .pedagree import Ped
 
     ped = Ped(ped)
+    prefix = prefix.rstrip(".-")
 
-    siter = ped.sex_check(vcf, plot=("%s-sex-check.png" % prefix) if plot else False)
-    with open("%s.sex-check.txt" % prefix, "w") as fh:
-        for i, d in enumerate(siter):
-            if i == 0:
-                fh.write("\t".join(d.keys()) + "\n")
-            d['het_ratio'] = "%.3f" % d['het_ratio']
-            fh.write("\t".join(map(str, d.values())) + "\n")
-
-    df = ped.ped_check(vcf)
-    df.to_csv(open("%s.ped-check.txt" % prefix, "w"), sep="\t", index=False,
-              float_format="%.3g")
+    if plot:
+        plot = prefix + ".het-check.png"
+    ped.het_check(vcf, plot=plot).to_csv(prefix + ".het-check.csv", sep=",", index=False)
+    if plot:
+        plot = prefix + ".ped-check.png"
+    ped.ped_check(vcf, plot=plot).to_csv(prefix + ".ped-check.csv", sep=",", index=False)
+    if plot:
+        plot = prefix + ".sex-check.png"
+    ped.sex_check(vcf, plot=plot).to_csv(prefix + ".sex-check.csv", sep=",", index=False)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,8 @@
+QC
+==
+
 relatedness calculations
-========================
+------------------------
 
 Using cyvcf2, we can quickly calculate relatedness using the method
 described in http://www.nature.com/ng/journal/v42/n7/full/ng.608.html in
@@ -37,3 +40,17 @@ have more heterozygotes. With that in mind, we can find sample swaps
 that involve sex by observing the proportion of heterozygote calls.
 If a sample is indicated to be male by the ped file, it should have
 a low value for the proportion of het calls.
+
+het QC
+------
+
+We also check that het-calls in general have an alternate count that is 
+about 50% of the total reads. This only makes sense for germline variant
+calling but is useful for finding contamination. The actual metric is the
+inter quartile range of the alternate ratio. For perfect calls, they should
+all be exactly 0.5 so the range will be 0. With contamination, there will
+be much more of a range around 0.5.
+
+We can also check the proportion of heterozygote calls. In a contaminated
+sample the number of het calls will be much higher.
+

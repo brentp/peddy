@@ -5,6 +5,26 @@ tools for pedigree files
 [![Build Status](https://travis-ci.org/brentp/pedagree.svg?branch=master)](https://travis-ci.org/brentp/pedagree)
 [![Documentation Status](https://readthedocs.org/projects/pedagree/badge/?version=latest)](http://pedagree.readthedocs.org/en/latest/?badge=latest)
 
+
+Quickstart
+----------
+
+Most users will only need to run as a command-line tool with a ped and VCF, e.g:
+
+```
+python -m pedagree --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
+```
+
+That will create 3 QC files and 3 QC plots where `_error` columns will 
+indicate:
++ discrepancies between reported and inferred relations
++ discrepancies between reported and inferred sex
++ higher levels of HET calls or more variance in allele frequencies for het calls.
+
+Overview
+--------
+
+
 **NOTE** this module used to be named to "peddy".
 
 `pedagree` is a python library for querying, QC'ing, and manipulating pedigree files.

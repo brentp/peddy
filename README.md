@@ -82,8 +82,10 @@ defined in the ped file do not match the relationships derived from the genotype
 
 ```
 
-[![relplot](https://raw.githubusercontent.com/brentp/pedagree/master/images/t.png)](http://github.com/brentp/cyvcf2/)
+[![relplot](http://pedagree.readthedocs.org/en/latest/_images/ped-check.png)](http://github.com/brentp/cyvcf2/)
 
+We don't see any obvious errors in this pedigree. An obvious error would be when a red colored dot clusters with blue dots. 
+The *outlined dots* have a very low IBS0 rate, indicating that they are likely parent-child pairs.
 
 By looking for the frequency of heterozygotes in the non-PAR regions of
 the X chromosome, we can determine sex from a VCF:

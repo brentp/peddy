@@ -202,6 +202,11 @@ def test_getattr():
     for item in li:
         assert item.ethnicity == 'caucasianNEuropean'
 
+def test_6():
+    p = Ped('pedagree/tests/a6.ped')
+    assert len(list(p.samples())) == 14
+    for sam in p.samples():
+        assert sam.family_id[:3] == "fam"
 
 def test_attrs():
     kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2', ['asdf', 'hello'])

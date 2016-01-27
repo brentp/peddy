@@ -219,8 +219,8 @@ class Sample(object):
     def from_row(cls, row, header=None):
         if isinstance(row, basestring):
             row = row.strip("\n").split()
-        return cls(row[0], row[1], row[2], row[3], row[4], row[5], row[6:],
-                   header=header)
+        return cls(row[0], row[1], row[2], row[3], row[4], row[5],
+                   row[6:] if len(row) > 6 else None, header=header)
 
     def __str__(self):
         v = "%s %s %s %s %s %s" % (self.family_id, self.sample_id,

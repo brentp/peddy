@@ -1,0 +1,14 @@
+family_1	child_1	dad_1	mom_1	1	2
+family_2	child_2	dad_2	mom_2	1	2
+family_2	dad_2	-9	-9	1	1
+family_2	mom_2	-9	-9	2	1
+family_1	dad_1	-9	-9	1	1
+family_1	mom_1	-9	-9	2	1
+family_3	child_3	dad_3	mom_3	1	2
+family_3	dad_3	-9	-9	1	1
+family_3	mom_3	-9	-9	2	1
+family_4	child_4	dad_4	mom_4	1	2
+family_4	dad_4	-9	-9	1	1
+family_4	mom_4	dad_4	mom_4	2	1
+family_4	kid_4	dad_4	mom_4	2	2
+family_4	kid_4.1	dad_4	mom_4	2	2

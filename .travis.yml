@@ -9,5 +9,6 @@ script:
 
 install:
     - pip install cython
+    - pip install pandas
     - pip install -r requirements.txt
     - python setup.py install

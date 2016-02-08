@@ -218,8 +218,9 @@ class Sample(object):
     @classmethod
     def from_row(cls, row, header=None):
         if isinstance(row, basestring):
-            row = row.strip("\n").split()
-        return cls(row[0], row[1], row[2], row[3], row[4], row[5],
+            sep = "\t" if row.count("\t") > row.count(" ") else " "
+            row = [x.strip() for x in row.strip("\n").split(sep)]
+        return cls(row[0], row[1], row[2] or "-9", row[3] or "-9", row[4], row[5],
                    row[6:] if len(row) > 6 else None, header=header)
 
     def __str__(self):
@@ -386,8 +387,10 @@ class Ped(object):
         header = None
         families = OrderedDict()
 
-        for i, toks in enumerate(l.rstrip('\r\n').split() for l in fh):
-            if i == 0 and toks[0][0] == "#":
+        for i, l in enumerate(l.rstrip('\r\n') for l in fh):
+            sep = "\t" if l.count("\t") > l.count(" ") else " "
+            toks = l.split(sep)
+            if i == 0 and (toks[0][0] == "#" or toks[0] == "family_id"):
                 header = toks
                 continue
             sample = Sample.from_row(toks, header=header)

@@ -566,7 +566,7 @@ class Ped(object):
         hom_ref = np.zeros(len(vcf.samples), dtype=int)
         het     = np.zeros(len(vcf.samples), dtype=int)
         hom_alt = np.zeros(len(vcf.samples), dtype=int)
-        skipped = 0
+        kept, skipped = 0, 0
         for variant in vcf(chrom):
             depth_filter = variant.gt_depths >= min_depth
             gt_types = variant.gt_types
@@ -576,9 +576,10 @@ class Ped(object):
             hom_ref += (gt_types == 0) & depth_filter
             hom_alt += (gt_types == 2) & depth_filter
             het += (gt_types == 1) & depth_filter
+            kept += 1
 
         het_ratio = het.astype(float) / (hom_ref + hom_alt)
-        print(skipped, file=sys.stderr)
+        print("%s skipped / % d kept" % (skipped, kept), file=sys.stderr)
 
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
                 'female_errors': [], 'male_samples': [], 'female_samples':[]}
@@ -590,13 +591,14 @@ class Ped(object):
                 if skip_missing:
                     continue
                 ped_sex = "NA"
-            predicted_sex = SEX.MALE if het_ratio[i] < cutoff else SEX.FEMALE
+            val = -0.04 if np.isnan(het_ratio[i]) else het_ratio[i]
+            predicted_sex = "UNKNOWN" if val < 0 else SEX.MALE if val < cutoff else SEX.FEMALE
             error = str(predicted_sex != ped_sex).upper()
             if ped_sex == "NA":
                 error = "NA"
             else:
                 try:
-                    plot_vals[ped_sex].append(het_ratio[i])
+                    plot_vals[ped_sex].append(val)
                 except KeyError:
                     # sex unknown
                     continue
@@ -605,7 +607,7 @@ class Ped(object):
             plot_vals[ped_sex + '_samples'].append(s)
             res.append(dict(sample=s, ped_sex=ped_sex, hom_ref_count=hom_ref[i],
                        het_count=het[i], hom_alt_count=hom_alt[i],
-                       het_ratio=het_ratio[i], predicted_sex=predicted_sex,
+                       het_ratio=val, predicted_sex=predicted_sex,
                        error=error))
 
 
@@ -615,15 +617,26 @@ class Ped(object):
         from matplotlib import pyplot as plt
         plt.close()
         import seaborn as sns
-        colors = sns.color_palette('Set1', 2)
+        colors = sns.color_palette('Set1', 3)
+
+        def update_colors(colors, vals, bad_color=colors[2]):
+            colors = colors[:]
+            for i, v in enumerate(vals):
+                if v < 0:
+                    colors[i] = bad_color
+            return colors
 
         fcolors=[colors[1] if e else colors[0] for e in plot_vals['female_errors']]
         plt.scatter([0] * len(plot_vals['female']), plot_vals['female'],
-                 c=fcolors, edgecolors=fcolors, marker='o')
+                    c=fcolors,
+                    edgecolors=update_colors(fcolors, plot_vals['female']),
+                    marker='o')
 
         mcolors=[colors[0] if e else colors[1] for e in plot_vals['male_errors']]
         plt.scatter([1] * len(plot_vals['male']), plot_vals['male'],
-                 c=mcolors, edgecolors=mcolors, marker='o')
+                    c=mcolors,
+                    edgecolors=update_colors(mcolors, plot_vals['male']),
+                    marker='o')
 
         for i, e in enumerate(plot_vals['female_errors']):
             if not e: continue
@@ -637,7 +650,7 @@ class Ped(object):
 
         plt.xticks([0, 1], ['female', 'male'])
         plt.xlim(-0.1, 1.1)
-        plt.ylim(ymin=0)
+        plt.ylim(ymin=-0.08)
         plt.xlabel('Gender From Ped')
         plt.ylabel('HET / (HOM_REF + HOM_ALT) [higher is more likely female]')
         plt.savefig(plot)

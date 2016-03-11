@@ -665,8 +665,10 @@ class Ped(object):
 
         samps = [x.sample_id for x in self.samples()]
         vcf = cyvcf2.VCF(vcf, gts012=True, samples=samps)
-        assert sorted(vcf.samples) == sorted(samps), (set(vcf.samples) - set(samps),
-                                                      set(samps) - set(vcf.samples))
+        if sorted(vcf.samples) != sorted(samps):
+            print("warning: sample overlap issues",
+                  (set(vcf.samples) - set(samps),
+                   set(samps) - set(vcf.samples)))
 
         sample_ranges = vcf.het_check(min_depth=min_depth)
 

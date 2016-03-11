@@ -1,20 +1,24 @@
+import multiprocessing as mp
+from .pedagree import Ped
 
-def main(vcf, ped, prefix, plot=False):
-    from .pedagree import Ped
+def run(args):
+    check, pedf, vcf, plot, prefix = args
+    p = Ped(pedf)
+    print(check)
+    if plot:
+        plot = prefix + "." + check + "-check.png"
 
-    ped = Ped(ped)
+    getattr(p, check)(vcf, plot=plot).to_csv(prefix + "%s-check.csv" % check, sep=",", index=False)
+
+
+def main(vcf, pedf, prefix, plot=False):
+
+    ped = Ped(pedf)
     prefix = prefix.rstrip(".-")
+    print("")
 
-    if plot:
-        plot = prefix + ".het-check.png"
-    ped.het_check(vcf, plot=plot).to_csv(prefix + ".het-check.csv", sep=",", index=False)
-    if plot:
-        plot = prefix + ".ped-check.png"
-    ped.ped_check(vcf, plot=plot).to_csv(prefix + ".ped-check.csv", sep=",", index=False)
-    if plot:
-        plot = prefix + ".sex-check.png"
-    ped.sex_check(vcf, plot=plot).to_csv(prefix + ".sex-check.csv", sep=",", index=False)
-
+    p = mp.Pool(4)
+    list(p.imap(run, [(check, pedf, vcf, plot, prefix) for check in ("het_check", "ped_check", "sex_check")]))
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

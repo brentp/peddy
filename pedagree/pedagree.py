@@ -3,7 +3,7 @@
 from __future__ import print_function
 import sys
 import collections
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 import networkx as nx
 from heapq import *
 
@@ -387,7 +387,7 @@ class Ped(object):
         self.header = None
         families = OrderedDict()
 
-        for i, l in enumerate(l.rstrip('\r\n') for l in fh):
+        for i, l in enumerate(l.rstrip('\r\n') for l in fh if l.strip()):
             sep = "\t" if l.count("\t") > l.count(" ") else " "
             toks = l.split(sep)
             if i == 0 and (toks[0][0] == "#" or toks[0] == "family_id"):

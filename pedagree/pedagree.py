@@ -384,16 +384,18 @@ class Ped(object):
         self._graph = None
 
     def _parse(self, fh):
-        header = None
+        self.header = None
         families = OrderedDict()
 
         for i, l in enumerate(l.rstrip('\r\n') for l in fh):
             sep = "\t" if l.count("\t") > l.count(" ") else " "
             toks = l.split(sep)
             if i == 0 and (toks[0][0] == "#" or toks[0] == "family_id"):
-                header = toks
+                if toks[0][0] == "#":
+                    toks[0] = toks[0][1:]
+                self.header = toks
                 continue
-            sample = Sample.from_row(toks, header=header)
+            sample = Sample.from_row(toks, header=self.header)
             if not sample.family_id in families:
                 families[sample.family_id] = []
 

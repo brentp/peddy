@@ -3,12 +3,13 @@ from .pedagree import Ped
 
 def run(args):
     check, pedf, vcf, plot, prefix = args
-    p = Ped(pedf)
+    # only print warnings for het_check
+    p = Ped(pedf, warn=check=="het_check")
     print(check)
     if plot:
         plot = prefix + "." + check + "-check.png"
 
-    getattr(p, check)(vcf, plot=plot).to_csv(prefix + "%s-check.csv" % check, sep=",", index=False)
+    getattr(p, check)(vcf, plot=plot).to_csv(prefix + (".%s-check.csv" % check), sep=",", index=False)
 
 
 def main(vcf, pedf, prefix, plot=False):

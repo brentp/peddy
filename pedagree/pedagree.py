@@ -113,7 +113,8 @@ class Sample(object):
 
     def __init__(self, family_id, sample_id, paternal_id, maternal_id, sex,
                  phenotype, extra_attrs=None, header=None,
-                 missing=('-9', '0', '.')):
+                 missing=('-9', '0', '.'), warn=True):
+        self.warn = warn
         self.family_id = family_id
         self.sample_id = sample_id
         self.dad = None
@@ -146,15 +147,19 @@ class Sample(object):
     def _set_mom(self, mom):
         if isinstance(mom, Sample):
             if mom.sex == SEX.MALE:
-                sys.stderr.write("pedigree warning: '%s' is mom but has male sex\n" % mom.sample_id)
+                if self.warn:
+                    sys.stderr.write("pedigree warning: '%s' is mom but has male sex\n" % mom.sample_id)
             elif mom.sex == SEX.UNKNOWN:
-                sys.stderr.write("pedigree notice: '%s' is mom but has unknown sex. Setting to female\n" % mom.sample_id)
+                if self.warn:
+                    sys.stderr.write("pedigree notice: '%s' is mom but has unknown sex. Setting to female\n" % mom.sample_id)
 
             if mom.family_id != self.family_id:
-                sys.stderr.write("pedigree warning: '%s' is mom has different family_id from %s\n" % (mom.sample_id, self.sample_id))
+                if self.warn:
+                    sys.stderr.write("pedigree warning: '%s' is mom has different family_id from %s\n" % (mom.sample_id, self.sample_id))
 
             if mom.sample_id == self.sample_id:
-                sys.stderr.write("pedigree warning: '%s' is mom of self\n" % (self.sample_id))
+                if self.warn:
+                    sys.stderr.write("pedigree warning: '%s' is mom of self\n" % (self.sample_id))
 
         self._mom = mom
 
@@ -166,15 +171,19 @@ class Sample(object):
     def _set_dad(self, dad):
         if isinstance(dad, Sample):
             if dad.sex == SEX.FEMALE:
-                sys.stderr.write("pedigree warning: '%s' is dad but has female sex\n" % dad.sample_id)
+                if self.warn:
+                    sys.stderr.write("pedigree warning: '%s' is dad but has female sex\n" % dad.sample_id)
             elif dad.sex == SEX.UNKNOWN:
-                sys.stderr.write("pedigree notice: '%s' is dad but has unknown sex. Setting to male\n" % dad.sample_id)
+                if self.warn:
+                    sys.stderr.write("pedigree notice: '%s' is dad but has unknown sex. Setting to male\n" % dad.sample_id)
 
             if dad.family_id != self.family_id:
-                sys.stderr.write("pedigree warning: '%s' is dad has different family_id from %s\n" % (dad.sample_id, self.sample_id))
+                if self.warn:
+                    sys.stderr.write("pedigree warning: '%s' is dad has different family_id from %s\n" % (dad.sample_id, self.sample_id))
 
             if dad.sample_id == self.sample_id:
-                sys.stderr.write("pedigree warning: '%s' is dad of self\n" % (self.sample_id))
+                if self.warn:
+                    sys.stderr.write("pedigree warning: '%s' is dad of self\n" % (self.sample_id))
 
         self._dad = dad
 
@@ -216,12 +225,12 @@ class Sample(object):
         return [s for s in self.mom.kids if s in self.dad.kids and s != self]
 
     @classmethod
-    def from_row(cls, row, header=None):
+    def from_row(cls, row, header=None, warn=True):
         if isinstance(row, basestring):
             sep = "\t" if row.count("\t") > row.count(" ") else " "
             row = [x.strip() for x in row.strip("\n").split(sep)]
         return cls(row[0], row[1], row[2] or "-9", row[3] or "-9", row[4], row[5],
-                   row[6:] if len(row) > 6 else None, header=header)
+                   row[6:] if len(row) > 6 else None, header=header, warn=warn)
 
     def __str__(self):
         v = "%s %s %s %s %s %s" % (self.family_id, self.sample_id,
@@ -240,14 +249,16 @@ class Family(object):
     Iterating over the family gives the samples in the order they were given to
     the constructor.
     """
-    def __init__(self, samples):
+    def __init__(self, samples, warn=True):
         assert len(set(s.family_id for s in samples)) == 1
         self.unknown_samples = []
         self.samples = samples
+        self.warn = warn
         self._build()
         for u in self.unknown_samples:
-            print("unknown sample: %s in family: %s" % (u,
-                  samples[0].family_id), file=sys.stderr)
+            if self.warn:
+                print("unknown sample: %s in family: %s" % (u,
+                      samples[0].family_id), file=sys.stderr)
 
     def __iter__(self):
         self._index = 0
@@ -374,12 +385,13 @@ class Ped(object):
 
     """
 
-    def __init__(self, ped):
+    def __init__(self, ped, warn=True):
         if isinstance(ped, basestring):
             self.filename = ped
             ped = open(ped)
         else:
             self.filename = ""
+        self.warn = warn
         self._parse(ped)
         self._graph = None
 
@@ -395,7 +407,7 @@ class Ped(object):
                     toks[0] = toks[0][1:]
                 self.header = toks
                 continue
-            sample = Sample.from_row(toks, header=self.header)
+            sample = Sample.from_row(toks, header=self.header, warn=self.warn)
             if not sample.family_id in families:
                 families[sample.family_id] = []
 
@@ -404,7 +416,7 @@ class Ped(object):
         self.families = OrderedDict()
 
         for family_id, samples in families.items():
-            self.families[family_id] = Family(samples)
+            self.families[family_id] = Family(samples, warn=self.warn)
 
     def __getitem__(self, sample_id):
         sample = [s for s in self.samples() if s.sample_id == sample_id]
@@ -768,6 +780,8 @@ class Ped(object):
             ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
             plt.scatter(df['rel'][sel], df['ibs0'][sel],
                     c=colors[i], linewidth=1, edgecolors=ec,
+                    s=14,
+                    alpha=0.85,
                     label="ped coef: %s" % src)
         plt.xlabel('coefficient of relatedness')
         plt.ylabel('ibs0')

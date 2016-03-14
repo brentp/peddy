@@ -549,7 +549,7 @@ class Ped(object):
     def sex_check(self, vcf_path, min_depth=6,
                   skip_missing=True,
                   plot=False,
-                  cutoff=0.1,
+                  cutoff=0.5,
                   pars=('X:10000-2781479', 'X:155701382-156030895')):
         """
         Check that the sex reported in the ped file matches that inferred
@@ -592,7 +592,8 @@ class Ped(object):
             het += (gt_types == 1) & depth_filter
             kept += 1
 
-        het_ratio = het.astype(float) / (hom_ref + hom_alt)
+        # this should be high for females and low for males
+        het_ratio = het.astype(float) / (hom_alt)
         print("%s skipped / % d kept" % (skipped, kept), file=sys.stderr)
 
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
@@ -603,6 +604,7 @@ class Ped(object):
                 ped_sex = self[s].sex
             except KeyError:
                 if skip_missing:
+                    print(s)
                     continue
                 ped_sex = "NA"
             val = -0.04 if np.isnan(het_ratio[i]) else het_ratio[i]
@@ -662,11 +664,17 @@ class Ped(object):
             plt.text(1, plot_vals['male'][i], plot_vals['male_samples'][i],
                      color=colors[0], fontsize=7)
 
+        import matplotlib.patches as mpatches
+        c0 = mpatches.Patch(color=colors[0], label="female")
+        c1 = mpatches.Patch(color=colors[1], label="male")
+
         plt.xticks([0, 1], ['female', 'male'])
         plt.xlim(-0.1, 1.1)
         plt.ylim(ymin=-0.08)
         plt.xlabel('Gender From Ped')
-        plt.ylabel('HET / (HOM_REF + HOM_ALT) [higher is more likely female]')
+        plt.ylabel('HET / HOM_ALT [higher is more likely female]')
+        plt.legend(handles=[c0, c1], title="Gender predicted\nfrom genotypes",
+                   loc='upper center')
         plt.savefig(plot)
         plt.close()
         return pd.DataFrame(res)

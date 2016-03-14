@@ -792,10 +792,11 @@ class Ped(object):
         from matplotlib import pyplot as plt
         plt.close()
         import seaborn as sns
+        sns.set_style('whitegrid')
 
-        colors = sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
+        colors = [(0.85, 0.85, 0.85)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
 
-        for i, rc in enumerate(set(df['pedigree_relatedness'])):
+        for i, rc in enumerate(sorted(set(df['pedigree_relatedness']))):
             sel = df['pedigree_relatedness'] == rc
             src = ("%.3f" % rc).rstrip('0')
             # outline parent kid relationships
@@ -803,7 +804,7 @@ class Ped(object):
             plt.scatter(df['rel'][sel], df['ibs0'][sel],
                     c=colors[i], linewidth=1, edgecolors=ec,
                     s=14,
-                    alpha=0.85,
+                    alpha=0.80,
                     label="ped coef: %s" % src)
         plt.xlabel('coefficient of relatedness')
         plt.ylabel('ibs0')

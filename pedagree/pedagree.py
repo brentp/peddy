@@ -794,7 +794,7 @@ class Ped(object):
         import seaborn as sns
         sns.set_style('whitegrid')
 
-        colors = [(0.85, 0.85, 0.85)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
+        colors = [(0.85, 0.85, 0.85)] + [(0.65, 0.65, 0.65)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
 
         for i, rc in enumerate(sorted(set(df['pedigree_relatedness']))):
             sel = df['pedigree_relatedness'] == rc

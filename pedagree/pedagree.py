@@ -5,6 +5,7 @@ import sys
 import collections
 from collections import OrderedDict
 import networkx as nx
+import numpy as np
 from heapq import *
 
 try:
@@ -13,6 +14,13 @@ try:
 except ImportError:
     # dont have mpl installed.
     pass
+
+def get_s(hom_ref, het, hom_alt):
+    s = 1.0 + np.nansum([hom_ref, het, hom_alt], axis=0)
+    s **= 2.5
+    s /= s.mean()
+    s *= 18.0
+    return s
 
 #https://gist.githubusercontent.com/kachayev/5956408/raw/c918417ef7f3c0deb6a0a1223a49035dcca84077/uf.py
 class UF(object):
@@ -630,6 +638,8 @@ class Ped(object):
         if not plot:
             return pd.DataFrame(res)
 
+        s = get_s(hom_ref, het, hom_alt)
+
         from matplotlib import pyplot as plt
         plt.close()
         import seaborn as sns
@@ -642,15 +652,17 @@ class Ped(object):
                     colors[i] = bad_color
             return colors
 
-        fcolors=[colors[1] if e else colors[0] for e in plot_vals['female_errors']]
+        fcolors = [colors[1] if e else colors[0] for e in plot_vals['female_errors']]
         plt.scatter([0] * len(plot_vals['female']), plot_vals['female'],
                     c=fcolors,
+                    s=s,
                     edgecolors=update_colors(fcolors, plot_vals['female']),
                     marker='o')
 
-        mcolors=[colors[0] if e else colors[1] for e in plot_vals['male_errors']]
+        mcolors = [colors[0] if e else colors[1] for e in plot_vals['male_errors']]
         plt.scatter([1] * len(plot_vals['male']), plot_vals['male'],
                     c=mcolors,
+                    s=s,
                     edgecolors=update_colors(mcolors, plot_vals['male']),
                     marker='o')
 

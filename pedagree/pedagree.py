@@ -15,8 +15,8 @@ except ImportError:
     # dont have mpl installed.
     pass
 
-def get_s(hom_ref, het, hom_alt):
-    s = 1.0 + np.nansum([hom_ref, het, hom_alt], axis=0)
+def get_s(*args):
+    s = 1.0 + np.nansum(args, axis=0)
     s **= 2.5
     s /= s.mean()
     s *= 18.0
@@ -739,7 +739,9 @@ class Ped(object):
         cs = [colors[int(v['range_outlier'])] for v in sample_ranges.values()]
         ecs = ['none' if not v['ratio_outlier'] else 'k' for v in sample_ranges.values()]
 
-        plt.scatter(ranges, ratios, c=cs, edgecolors=ecs)
+        s = get_s(np.array([v['het_count']  for v in sample_ranges.values()]))
+
+        plt.scatter(ranges, ratios, c=cs, edgecolors=ecs, s=s)
 
         for k, v in ((k, v) for k, v in sample_ranges.items()
                    if v['ratio_outlier'] or v['range_outlier']):

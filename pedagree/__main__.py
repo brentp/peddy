@@ -9,8 +9,9 @@ def run(args):
     if plot:
         plot = prefix + "." + check + "-check.png"
 
-    getattr(p, check)(vcf, plot=plot).to_csv(prefix + (".%s-check.csv" % check), sep=",", index=False)
-
+    df = getattr(p, check)(vcf, plot=plot)
+    df.to_csv(prefix + (".%s-check.csv" % check), sep=",", index=False)
+    #print(df.to_json(orient='records'))
 
 def main(vcf, pedf, prefix, plot=False):
 

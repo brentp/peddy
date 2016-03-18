@@ -1,5 +1,7 @@
-import multiprocessing as mp
 import sys
+import os.path as op
+import multiprocessing as mp
+import string
 from .pedagree import Ped
 
 def run(args):
@@ -13,22 +15,31 @@ def run(args):
 
     df = getattr(p, check)(vcf, plot=plot)
     df.to_csv(prefix + (".%s-check.csv" % check), sep=",", index=False)
+    if df.shape[0] > 50000 and check == "ped_check":
+        # remove unknown relationships that aren't in error.
+        df = df[((df.pedigree_relatedness != -1) &
+                 (~df.parent_error) &
+                 (~df.sample_duplication_error))]
+
     return (check, df.to_json(orient='records'))
 
 def main(vcf, pedf, prefix, plot=False):
+
+    tmpl = string.Template(open(op.join(op.dirname(__file__), "tmpl.html")).read())
 
     ped = Ped(pedf)
     prefix = prefix.rstrip(".-")
     print("")
 
     p = mp.Pool(4)
-    vals = {'pedigree': ped.to_json()}
+    vals = {'pedigree': ped.to_json(), 'title': op.splitext(op.basename(pedf))[0]}
     for check, json in p.imap(run, [(check, pedf, vcf, plot, prefix) for check
                                     in ("het_check", "ped_check", "sex_check")]):
         vals[check] = json
     sys.stdout.flush()
     p.close()
-    print(vals)
+    with open("%s.html" % prefix, "w") as fh:
+        fh.write(tmpl.substitute(**vals))
 
 
 if __name__ == "__main__":

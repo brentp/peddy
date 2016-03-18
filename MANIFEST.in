@@ -2,3 +2,4 @@ include README.md
 include LICENSE
 include pedagree/tests/*
 include tox.ini
+include pedagree/tmpl.html

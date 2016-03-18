@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <meta charset="utf-8" />
+		<title>$title</title>
+
+ <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+
+ <script src="http://cdn.plot.ly/plotly-latest.min.js"></script>
+ <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+
+ <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+ <script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+
+ <style>
+.container {
+    display: inline-flex;
+	border-style: solid;
+}
+
+#pedplot {
+	border-style: solid;
+	width: 90%;
+}
+#hetplot {
+	border-style: none none none solid;
+}
+
+ </style>
+    </head>
+
+<body>
+<table id="pedigree" class="stripe row-border" cellspacing="0"></table>
+<div class="container">
+<div id="sexplot"> </div>
+<div id="hetplot"> </div>
+</div>
+<div id="pedplot"> </div>
+
+</body>
+<script>
+
+var datas = {'sex': null, 'het': null, 'ped': null}
+
+var sex_data = $sex_check
+
+//marker:{sizemode: 'area', sizeref: 0, size:[]
+var sex_good = {name: "OK", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
+			    marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[]}}
+
+var sex_bad = {name: "ERROR", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
+              marker:{color: '#e41a1c', sizemode: 'area', sizeref: 0, size:[]}}
+
+var mean_size = 0;
+
+for(i=0; v=sex_data[i], i<sex_data.length; i++){
+    var a = v['error'] == "FALSE" ? sex_good : sex_bad;
+    mean_size += v['hom_ref_count'];
+    
+
+	a['x'].push(v['ped_sex'] == 'male' ? 1 : 0)
+    a['y'].push(v['het_ratio'])
+    a['text'].push("sample: <b>" + v['sample'] + "</b>")
+    a['marker']['size'].push(v['hom_ref_count'])
+	a['sample'].push(v['sample'])
+ 
+}
+mean_size /= sex_data.length
+mean_size /= 200;
+
+sex_good['marker']['sizeref'] = mean_size;
+sex_bad['marker']['sizeref'] = mean_size;
+
+var sex_layout = {
+  height: 500,
+  width: '50%',
+  xaxis: {
+    title: 'Gender From Ped',
+    titlefont: {size: 35},
+    fixedrange: true,
+    tickvals: [0, 1],
+    ticktext: ["female", "male"],
+    showline: false,
+    tickfont: {size: 20},
+    domain: 0.6,
+    zeroline: false,
+  },
+  yaxis: {
+    title: 'HET / HOM_ALT',
+    titlefont: {size: 35},
+    showline: false,
+    tickfont: {size: 20},
+  },
+  margin: {
+    t: 2
+  },
+  hovermode: 'closest'
+};
+
+
+datas['sex'] = [sex_good, sex_bad];
+Plotly.plot('sexplot', datas['sex'], sex_layout);
+
+</script>
+<script>
+
+var het_data = $het_check
+
+var mean_size = 0;
+
+var het_good = {name: "OK", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
+			    marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[]}}
+var het_range = {name: "range-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
+			    marker:{color:'#377eb8', sizemode: 'area', sizeref: 0, size:[]}}
+var het_ratio = {name: "ratio-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
+			    marker:{color:'#e41a1c', sizemode: 'area', sizeref: 0, size:[]}}
+
+for(i=0; v=het_data[i], i<het_data.length; i++){
+    var a = v['range_outlier'] ? het_range : v['ratio_outlier'] ? het_ratio : het_good;
+    mean_size += v['het_count'];
+
+	a['x'].push(v['range'])
+    a['y'].push(v['het_ratio'])
+    a['text'].push("sample: <b>" + v['sample_id'] + "</b>")
+    a['marker']['size'].push(v['het_count'])
+	a['sample'].push(v['sample_id'])
+}
+
+mean_size /= het_data.length
+mean_size /= 200;
+
+het_good['marker']['sizeref'] = mean_size;
+het_range['marker']['sizeref'] = mean_size;
+het_ratio['marker']['sizeref'] = mean_size;
+
+var het_layout = {
+  height: 500,
+  width: '50%',
+  xaxis: {
+    title: 'MAF Range',
+    titlefont: {size: 35},
+    fixedrange: true,
+    showline: false,
+    tickfont: {size: 20},
+    zeroline: false,
+  },
+  yaxis: {
+    title: 'Proportion of HET calls',
+    titlefont: {size: 35},
+    showline: false,
+    tickfont: {size: 20},
+  },
+  margin: {
+    t: 2
+  },
+  hovermode: 'closest'
+};
+
+datas['het'] = [het_good, het_range, het_ratio]
+Plotly.plot('hetplot', datas['het'], het_layout);
+
+hetplot = document.getElementById('hetplot')
+hetplot.on('plotly_hover', function(data) {
+	var p = data.points[0]
+	var i = p.pointNumber;
+	var sample = p.data.sample[i];
+	Plotly.Fx.hover('sexplot', get_points('sex', sample, ['sample']))
+	Plotly.Fx.hover('pedplot', get_points('ped', sample, ['sample_a', 'sample_b']))
+})
+hetplot.on('plotly_unhover', function(data) {
+		Plotly.Fx.unhover('sexplot');
+		Plotly.Fx.unhover('pedplot');
+	    table.rows({selected:true}).deselect()
+})
+
+function get_points(group, sample_id, keys) {
+	var points = []
+	for (curveNumber = 0; curveNumber < datas[group].length; curveNumber++){
+		var d = datas[group][curveNumber];
+        for(k=0; k<keys.length, key=keys[k]; k++){
+			for(var i=0; v=d[key][i], i < d[key].length; i++){
+				if(v == sample_id) {
+					points.push({curveNumber: curveNumber, pointNumber: i})
+				}
+			}
+		}
+	}
+	return points
+}
+
+sexplot = document.getElementById('sexplot')
+sexplot.on('plotly_hover', function(data) {
+	var p = data.points[0]
+	var i = p.pointNumber;
+	var sample = p.data.sample[i];
+	Plotly.Fx.hover('hetplot', get_points('het', sample, ['sample']))
+	Plotly.Fx.hover('pedplot', get_points('ped', sample, ['sample_a', 'sample_b']))
+})
+sexplot.on('plotly_unhover', function(data) {
+		Plotly.Fx.unhover('hetplot');
+		Plotly.Fx.unhover('pedplot');
+		table.rows({selected:true}).deselect()
+
+})
+
+
+</script>
+
+<script>
+var ped_data = $ped_check
+var ped_layout = {
+  height: 500,
+  width: 850,
+  xaxis: {
+    title: 'coefficient of relatedness',
+    titlefont: {size: 35},
+    fixedrange: true,
+    showline: false,
+    tickfont: {size: 20},
+  },
+  yaxis: {
+    title: 'IBS0',
+    titlefont: {size: 35},
+    showline: false,
+    tickfont: {size: 20},
+  },
+  margin: {
+    t: 20
+  },
+  hovermode: 'closest'
+};
+
+var peds = {}
+function get_rel_key(r){
+   return r['pedigree_relatedness'].toFixed(3)
+}
+datas['ped'] = []
+
+for(var i=0; i < ped_data.length, p=ped_data[i]; i++){
+
+	var k=get_rel_key(p);
+	if(peds[k] === undefined) {
+		peds[k] = {name: k, x:[], y:[], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
+		           marker: {size: 15}}
+		datas['ped'].push(peds[k]);
+
+	}
+	peds[k]['x'].push(p['rel'])
+    peds[k]['y'].push(p['ibs0'])
+	peds[k]['sample_a'].push(p['sample_a'])
+	peds[k]['sample_b'].push(p['sample_b'])
+	peds[k]['text'].push("<b>" + p['sample_a'] + "</b> vs. <b>" + p['sample_b'] + "</b>")
+
+
+}
+
+Plotly.plot('pedplot', datas['ped'], ped_layout);
+
+</script>
+<script>
+var pedigree = $pedigree
+
+// some gymnastics to print in order of usual ped.
+var keys = ['family_id', 'sample_id', 'paternal_id', 'maternal_id', 'sex', 'phenotype']
+var columns = [];
+var found = {}
+for(k=0; k<keys.length; k++){ 
+	found[keys[k]] = true 
+	columns.push({title: keys[k]})
+}
+for(k in pedigree[0]) {
+	if(found[k] === undefined) {
+		columns.push({title: k})
+		keys.push(k)
+	}
+}
+dataSet = [];
+for (var i=0;i<pedigree.length, row=pedigree[i]; i++){
+	var v = [];
+	for (k=0; k<keys.length;k++) { v.push(row[keys[k]]) }
+	dataSet.push(v)
+}
+
+var table;
+jQuery(document).ready(function(){
+		table = jQuery('#pedigree').DataTable({
+			data: dataSet,
+			columns: columns,
+			paging: false,
+			scrollY: "300px",
+			scrollCollapse: true,
+			select: {style: 'os'},
+
+		})
+		// https://datatables.net/reference/event/select
+		table.on('select', function(e, dt, type, indexes){
+			var sample_ids = table.rows({selected: true}).data().pluck(1)
+			for(i=0; i < sample_ids.length; i++){
+			    var sample = sample_ids[i];
+				Plotly.Fx.hover('hetplot', get_points('het', sample, ['sample']))
+				Plotly.Fx.hover('sexplot', get_points('sex', sample, ['sample']))
+				Plotly.Fx.hover('pedplot', get_points('ped', sample, ['sample_a', 'sample_b']))
+			}
+		})
+		table.on('deselect', function(e, dt, type, indexes){
+				Plotly.Fx.unhover('hetplot')
+				Plotly.Fx.unhover('sexplot')
+				Plotly.Fx.unhover('pedplot')
+		})
+})
+
+
+</script>
+
+</html>

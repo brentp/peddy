@@ -14,7 +14,7 @@
  <script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
 
  <style>
-.container {
+.x-container {
     display: inline-flex;
 	border-style: solid;
 }
@@ -67,30 +67,30 @@ for(i=0; v=sex_data[i], i<sex_data.length; i++){
  
 }
 mean_size /= sex_data.length
-mean_size /= 200;
+mean_size /= 300;
 
 sex_good['marker']['sizeref'] = mean_size;
 sex_bad['marker']['sizeref'] = mean_size;
 
 var sex_layout = {
-  height: 500,
+  height: 250,
   width: '50%',
   xaxis: {
     title: 'Gender From Ped',
-    titlefont: {size: 35},
+    titlefont: {size: 16},
     fixedrange: true,
     tickvals: [0, 1],
     ticktext: ["female", "male"],
     showline: false,
-    tickfont: {size: 20},
+    tickfont: {size: 8},
     domain: 0.6,
     zeroline: false,
   },
   yaxis: {
     title: 'HET / HOM_ALT',
-    titlefont: {size: 35},
+    titlefont: {size: 16},
     showline: false,
-    tickfont: {size: 20},
+    tickfont: {size: 8},
   },
   margin: {
     t: 2
@@ -128,28 +128,28 @@ for(i=0; v=het_data[i], i<het_data.length; i++){
 }
 
 mean_size /= het_data.length
-mean_size /= 200;
+mean_size /= 300;
 
 het_good['marker']['sizeref'] = mean_size;
 het_range['marker']['sizeref'] = mean_size;
 het_ratio['marker']['sizeref'] = mean_size;
 
 var het_layout = {
-  height: 500,
+  height: 250,
   width: '50%',
   xaxis: {
     title: 'MAF Range',
-    titlefont: {size: 35},
+    titlefont: {size: 16},
     fixedrange: true,
     showline: false,
-    tickfont: {size: 20},
+    tickfont: {size: 8},
     zeroline: false,
   },
   yaxis: {
     title: 'Proportion of HET calls',
-    titlefont: {size: 35},
+    titlefont: {size: 16},
     showline: false,
-    tickfont: {size: 20},
+    tickfont: {size: 8},
   },
   margin: {
     t: 2
@@ -174,14 +174,21 @@ hetplot.on('plotly_unhover', function(data) {
 	    table.rows({selected:true}).deselect()
 })
 
-function get_points(group, sample_id, keys) {
+function get_points(group, samples, keys) {
 	var points = []
-	for (curveNumber = 0; curveNumber < datas[group].length; curveNumber++){
-		var d = datas[group][curveNumber];
-        for(k=0; k<keys.length, key=keys[k]; k++){
-			for(var i=0; v=d[key][i], i < d[key].length; i++){
-				if(v == sample_id) {
-					points.push({curveNumber: curveNumber, pointNumber: i})
+	if(typeof samples === 'string'){
+		samples = [samples];
+	}
+	for(var i=0; i <samples.length;i++){
+		var sample_id=samples[i];
+		for (curveNumber = 0; curveNumber < datas[group].length; curveNumber++){
+			var d = datas[group][curveNumber];
+			var key, v;
+			for(var k=0; k<keys.length, key=keys[k]; k++){
+				for(var n=0; n < d[key].length, v=d[key][n]; n++){
+					if(v == sample_id) {
+						points.push({curveNumber: curveNumber, pointNumber: n}) // n or i here?
+					}
 				}
 			}
 		}
@@ -214,16 +221,16 @@ var ped_layout = {
   width: 850,
   xaxis: {
     title: 'coefficient of relatedness',
-    titlefont: {size: 35},
+    titlefont: {size: 16},
     fixedrange: true,
     showline: false,
-    tickfont: {size: 20},
+    tickfont: {size: 8},
   },
   yaxis: {
     title: 'IBS0',
-    titlefont: {size: 35},
+    titlefont: {size: 16},
     showline: false,
-    tickfont: {size: 20},
+    tickfont: {size: 8},
   },
   margin: {
     t: 20
@@ -242,7 +249,7 @@ for(var i=0; i < ped_data.length, p=ped_data[i]; i++){
 	var k=get_rel_key(p);
 	if(peds[k] === undefined) {
 		peds[k] = {name: k, x:[], y:[], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
-		           marker: {size: 15}}
+		           marker: {size: 12}}
 		datas['ped'].push(peds[k]);
 
 	}
@@ -288,7 +295,7 @@ jQuery(document).ready(function(){
 			data: dataSet,
 			columns: columns,
 			paging: false,
-			scrollY: "300px",
+			scrollY: "250px",
 			scrollCollapse: true,
 			select: {style: 'os'},
 
@@ -296,12 +303,9 @@ jQuery(document).ready(function(){
 		// https://datatables.net/reference/event/select
 		table.on('select', function(e, dt, type, indexes){
 			var sample_ids = table.rows({selected: true}).data().pluck(1)
-			for(i=0; i < sample_ids.length; i++){
-			    var sample = sample_ids[i];
-				Plotly.Fx.hover('hetplot', get_points('het', sample, ['sample']))
-				Plotly.Fx.hover('sexplot', get_points('sex', sample, ['sample']))
-				Plotly.Fx.hover('pedplot', get_points('ped', sample, ['sample_a', 'sample_b']))
-			}
+			Plotly.Fx.hover('hetplot', get_points('het', sample_ids, ['sample']))
+			Plotly.Fx.hover('sexplot', get_points('sex', sample_ids, ['sample']))
+			Plotly.Fx.hover('pedplot', get_points('ped', sample_ids, ['sample_a', 'sample_b']))
 		})
 		table.on('deselect', function(e, dt, type, indexes){
 				Plotly.Fx.unhover('hetplot')

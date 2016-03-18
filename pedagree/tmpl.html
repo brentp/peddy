@@ -249,7 +249,7 @@ for(var i=0; i < ped_data.length, p=ped_data[i]; i++){
 	var k=get_rel_key(p);
 	if(peds[k] === undefined) {
 		peds[k] = {name: k, x:[], y:[], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
-		           marker: {size: 12}}
+		           marker: {size: 12}, hoverinfo: "text"}
 		datas['ped'].push(peds[k]);
 
 	}

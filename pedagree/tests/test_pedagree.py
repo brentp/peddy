@@ -29,6 +29,27 @@ def test_sex_check():
     assert "ped_sex", df.columns
     assert "error" in df.columns
 
+def test_dict():
+    s = Sample('fam1', 'sample1', '-9', '-9', '2', '2')
+    d = s.dict()
+    assert d == {'maternal_id': '-9', 'paternal_id': '-9', 'sex': 'female',
+            'family_id': 'fam1', 'phenotype': 'affected', 'sample_id': 'sample1'}, d
+
+    s = Sample('fam1', 'sample1', 'dad', 'mom', '1', '1')
+    d = s.dict()
+    assert d == {'maternal_id': 'mom', 'paternal_id': 'dad', 'sex': 'male', 'family_id':
+            'fam1', 'phenotype': 'unaffected', 'sample_id': 'sample1'}
+
+
+def test_json():
+    p = Ped('pedagree/tests/test.mendel.ped')
+    json = p.to_json()
+    expected = '[{"maternal_id": "-9", "paternal_id": "-9", "sex": "male", "family_id": "CEPH1463", "phenotype": "affected", "sample_id": "NA12889"}, {"maternal_id": "-9", "paternal_id": "-9", "sex": "female", "family_id": "CEPH1463", "phenotype": "affected", "sample_id": "NA12890"}, {"maternal_id": "NA12890", "paternal_id": "NA12889", "sex": "male", "family_id": "CEPH1463", "phenotype": "affected", "sample_id": "NA12877"}]'
+    # this test may fail if order of dicts is changed
+    assert json == expected, json
+
+
+
 def t_ped_check():
     try:
         import pandas as pd

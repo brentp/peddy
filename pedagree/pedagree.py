@@ -134,12 +134,20 @@ class Sample(object):
         if self.maternal_id != UNKNOWN:
             self.mom = self.maternal_id
         self._sex = sex
-        self._phenotype = phenotype
+        self.phenotype = phenotype
         self.sex = SEX.lookup(sex)
         self.affected = PHENOTYPE.lookup(phenotype)
         self.kids = []
-        self.header = header
+        self.header = header or ['family_id', 'sample_id', 'paternal_id',
+                                 'maternal_id', 'sex', 'phenotype']
         self.attrs = extra_attrs or []
+
+    def dict(self):
+        d = dict((k, getattr(self, k)) for k in self.header)
+        for k in ('maternal_id', 'paternal_id'):
+            d[k] = str(d[k])
+        d['phenotype'] = 'affected' if self.affected else 'unaffected'
+        return d
 
     def __eq__(self, other):
         if self is None or other is None:
@@ -213,7 +221,10 @@ class Sample(object):
     def __getattr__(self, key):
         if not key in self.header:
             raise AttributeError(key)
-        return self.attrs[self.header.index(key) - 6]
+        try:
+            return self.attrs[self.header.index(key) - 6]
+        except:
+            raise KeyError(key)
 
 
     @property
@@ -244,7 +255,7 @@ class Sample(object):
         v = "%s %s %s %s %s %s" % (self.family_id, self.sample_id,
                                    self.paternal_id,
                                    self.maternal_id,
-                                   self._sex, self._phenotype)
+                                   self._sex, self.phenotype)
         if self.attrs:
             v += " " + " ".join(self.attrs)
         return v
@@ -452,6 +463,9 @@ class Ped(object):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.filename)
 
+    def to_json(self):
+        import json
+        return json.dumps([s.dict() for s in self.samples()])
 
     def relation(self, sample_a, sample_b):
         a = self.get(sample_a)

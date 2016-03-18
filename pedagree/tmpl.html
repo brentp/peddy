@@ -59,11 +59,11 @@ for(i=0; v=sex_data[i], i<sex_data.length; i++){
     mean_size += v['hom_ref_count'];
     
 
-	a['x'].push(v['ped_sex'] == 'male' ? 1 : 0)
-    a['y'].push(v['het_ratio'])
+    a['x'].push(v['ped_sex'] == 'male' ? 1 : 0)
+    a['y'].push(v['het_ratio'].toPrecision(3))
     a['text'].push("sample: <b>" + v['sample'] + "</b>")
     a['marker']['size'].push(v['hom_ref_count'])
-	a['sample'].push(v['sample'])
+    a['sample'].push(v['sample'])
  
 }
 mean_size /= sex_data.length
@@ -120,8 +120,8 @@ for(i=0; v=het_data[i], i<het_data.length; i++){
     var a = v['range_outlier'] ? het_range : v['ratio_outlier'] ? het_ratio : het_good;
     mean_size += v['het_count'];
 
-	a['x'].push(v['range'])
-    a['y'].push(v['het_ratio'])
+	a['x'].push(v['range'].toPrecision(3))
+    a['y'].push(v['het_ratio'].toPrecision(3))
     a['text'].push("sample: <b>" + v['sample_id'] + "</b>")
     a['marker']['size'].push(v['het_count'])
 	a['sample'].push(v['sample_id'])
@@ -240,7 +240,7 @@ var ped_layout = {
 
 var peds = {}
 function get_rel_key(r){
-   return r['pedigree_relatedness'].toFixed(3)
+   return r['pedigree_relatedness'].toPrecision(3)
 }
 datas['ped'] = []
 
@@ -253,8 +253,8 @@ for(var i=0; i < ped_data.length, p=ped_data[i]; i++){
 		datas['ped'].push(peds[k]);
 
 	}
-	peds[k]['x'].push(p['rel'])
-    peds[k]['y'].push(p['ibs0'])
+	peds[k]['x'].push(p['rel'].toPrecision(3))
+    peds[k]['y'].push(p['ibs0'].toPrecision(3))
 	peds[k]['sample_a'].push(p['sample_a'])
 	peds[k]['sample_b'].push(p['sample_b'])
 	peds[k]['text'].push("<b>" + p['sample_a'] + "</b> vs. <b>" + p['sample_b'] + "</b>")

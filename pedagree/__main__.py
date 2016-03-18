@@ -20,6 +20,9 @@ def run(args):
         df = df[((df.pedigree_relatedness != -1) &
                  (~df.parent_error) &
                  (~df.sample_duplication_error))]
+    if check == "ped_check":
+        # makes the plot nicer
+        df.sort(inplace=True, columns=["pedigree_relatedness"])
 
     return (check, df.to_json(orient='records'))
 

@@ -1,17 +1,19 @@
 import multiprocessing as mp
+import sys
 from .pedagree import Ped
 
 def run(args):
     check, pedf, vcf, plot, prefix = args
     # only print warnings for het_check
-    p = Ped(pedf, warn=check=="het_check")
+    p = Ped(pedf, warn=False)
     print(check)
+    sys.stdout.flush()
     if plot:
         plot = prefix + "." + check + "-check.png"
 
     df = getattr(p, check)(vcf, plot=plot)
     df.to_csv(prefix + (".%s-check.csv" % check), sep=",", index=False)
-    #print(df.to_json(orient='records'))
+    return (check, df.to_json(orient='records'))
 
 def main(vcf, pedf, prefix, plot=False):
 
@@ -20,7 +22,14 @@ def main(vcf, pedf, prefix, plot=False):
     print("")
 
     p = mp.Pool(4)
-    list(p.imap(run, [(check, pedf, vcf, plot, prefix) for check in ("het_check", "ped_check", "sex_check")]))
+    vals = {'pedigree': ped.to_json()}
+    for check, json in p.imap(run, [(check, pedf, vcf, plot, prefix) for check
+                                    in ("het_check", "ped_check", "sex_check")]):
+        vals[check] = json
+    sys.stdout.flush()
+    p.close()
+    print(vals)
+
 
 if __name__ == "__main__":
     from argparse import ArgumentParser

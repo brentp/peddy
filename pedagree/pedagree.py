@@ -8,6 +8,9 @@ import networkx as nx
 import numpy as np
 from heapq import *
 
+REQUIRED = ['family_id', 'sample_id', 'paternal_id',
+            'maternal_id', 'sex', 'phenotype']
+
 try:
     import matplotlib
     matplotlib.use("Agg")
@@ -138,13 +141,13 @@ class Sample(object):
         self.sex = SEX.lookup(sex)
         self.affected = PHENOTYPE.lookup(phenotype)
         self.kids = []
-        self.header = header or ['family_id', 'sample_id', 'paternal_id',
-                                 'maternal_id', 'sex', 'phenotype']
+        self.header = header or REQUIRED
+        self.header[:6] = REQUIRED
         self.attrs = extra_attrs or []
 
     def dict(self):
         d = dict((k, getattr(self, k)) for k in self.header)
-        for k in ('maternal_id', 'paternal_id'):
+        for k in ('maternal_id', 'paternal_id', 'sex'):
             d[k] = str(d[k])
         d['phenotype'] = 'affected' if self.affected else 'unaffected'
         return d

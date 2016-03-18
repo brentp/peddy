@@ -40,6 +40,11 @@ def test_dict():
     assert d == {'maternal_id': 'mom', 'paternal_id': 'dad', 'sex': 'male', 'family_id':
             'fam1', 'phenotype': 'unaffected', 'sample_id': 'sample1'}
 
+    s = Sample('fam1', 'sample1', 'dad', 'mom', '-1', '-1')
+    d = s.dict()
+    assert d == {'maternal_id': 'mom', 'paternal_id': 'dad', 'sex': '-9',
+            'family_id': 'fam1', 'phenotype': 'affected', 'sample_id':
+            'sample1'}, d
 
 def test_json():
     p = Ped('pedagree/tests/test.mendel.ped')

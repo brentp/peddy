@@ -718,6 +718,9 @@ class Ped(object):
             print("warning: sample overlap issues",
                   (set(vcf.samples) - set(samps),
                    set(samps) - set(vcf.samples)))
+        if set(vcf.samples) - set(samps) == set(vcf.samples):
+            raise Exception("error: no samples from VCF found in ped")
+
 
         sample_ranges = vcf.het_check(min_depth=min_depth)
 

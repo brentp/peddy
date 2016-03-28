@@ -14,7 +14,7 @@ def run(args):
         plot = prefix + "." + check + "-check.png"
 
     df = getattr(p, check)(vcf, plot=plot)
-    df.to_csv(prefix + (".%s-check.csv" % check), sep=",", index=False)
+    df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False)
     if df.shape[0] > 50000 and check == "ped_check":
         # remove unknown relationships that aren't in error.
         df = df[((df.pedigree_relatedness != -1) &

@@ -631,7 +631,7 @@ class Ped(object):
                     print(s)
                     continue
                 ped_sex = "NA"
-            val = -0.04 if np.isnan(het_ratio[i]) else het_ratio[i]
+            val = -0.06 if np.isnan(het_ratio[i]) else het_ratio[i]
             predicted_sex = "UNKNOWN" if val < 0 else SEX.MALE if val < cutoff else SEX.FEMALE
             error = predicted_sex != ped_sex
             if ped_sex == "NA":
@@ -715,8 +715,8 @@ class Ped(object):
         vcf = cyvcf2.VCF(vcf, gts012=True, samples=samps)
         if sorted(vcf.samples) != sorted(samps):
             print("warning: sample overlap issues",
-                  (set(vcf.samples) - set(samps),
-                   set(samps) - set(vcf.samples)))
+                    ("in vcf, not in ped:", set(vcf.samples) - set(samps),
+                    "in ped, not in vcf:", set(samps) - set(vcf.samples)))
         if set(vcf.samples) - set(samps) == set(vcf.samples):
             raise Exception("error: no samples from VCF found in ped")
 
@@ -771,7 +771,7 @@ class Ped(object):
         plt.savefig(plot)
         return df
 
-    def ped_check(self, vcf, plot=False):
+    def ped_check(self, vcf, plot=False, min_depth=5, each=1):
         """
         Given the current pedigree and a VCF of genotypes, find sample-pairs where
         the relationship reported in the pedigree file do not match those inferred
@@ -780,7 +780,7 @@ class Ped(object):
         coefficient expected)
 
         :param vcf str:  path to vcf
-        :param clf: scikit-learn classifier
+        :param min_depth int: minimum required depth.
         :return: pandas.DataFrame
         """
         import cyvcf2
@@ -793,7 +793,7 @@ class Ped(object):
             vcf = cyvcf2.VCF(vcf, gts012=True, samples=[x.sample_id for x in
                 samps])
 
-        df = pd.DataFrame(list(vcf.site_relatedness()))
+        df = pd.DataFrame(list(vcf.site_relatedness(min_depth=min_depth, each=each)))
         df["pedigree_relatedness"] = np.array([self.relatedness_coefficient(a, b) for a, b in
                                             zip(df.sample_a, df.sample_b)])
         df["pedigree_parents"] = np.array([self.relation(a, b) == 'parent-child'  for a, b in

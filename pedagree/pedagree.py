@@ -306,11 +306,10 @@ class Family(object):
         for s in self.samples:
             affection[s.affected] += 1
             sex[s.sex] += 1
-            if s.mom and s.dad:
+            if s.mom and s.dad and s.affected:
                 trios += 1
-            if list(s.full_siblings):
+            if s.affected and list(s.full_siblings):
                 quads += 1
-
         return affection, sex, trios, quads
 
     @property
@@ -844,7 +843,7 @@ class Ped(object):
             aquads += quads
             d = locals()
             d['affected'] = aff[PHENOTYPE.AFFECTED]
-            d['unaffected'] = aff[PHENOTYPE.AFFECTED]
+            d['unaffected'] = aff[PHENOTYPE.UNAFFECTED]
             d['unknown'] = aff[PHENOTYPE.UNKNOWN]
             d['sex_unknown'] = sex[SEX.UNKNOWN]
             d['male'] = sex[SEX.MALE]

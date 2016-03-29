@@ -76,7 +76,7 @@ var sex_layout = {
   height: 250,
   width: '50%',
   xaxis: {
-    title: 'Gender From Ped',
+    title: 'Sex From Ped',
     titlefont: {size: 16},
     fixedrange: true,
     tickvals: [0, 1],
@@ -238,25 +238,35 @@ var ped_layout = {
 };
 
 var peds = {}
-function get_rel_key(r){
-   return r['pedigree_relatedness'].toPrecision(3)
+function get_rel_key(r, idx){
+   return r[idx].toPrecision(3)
 }
 datas['ped'] = []
+var column_lookup = ped_data['columns'];
+var prIndex = column_lookup.indexOf('pedigree_relatedness')
+if(prIndex == -1){
+	alert("pedigree_relatedness not found in ped data");
+}
+var relIndex = column_lookup.indexOf('rel');
+var ibs0Index = column_lookup.indexOf('ibs0');
+var sampleAIndex = column_lookup.indexOf('sample_a');
+var sampleBIndex = column_lookup.indexOf('sample_b');
 
-for(var i=0; i < ped_data.length, p=ped_data[i]; i++){
+for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 
-	var k=get_rel_key(p);
+	var k=get_rel_key(p, prIndex);
+
 	if(peds[k] === undefined) {
 		peds[k] = {name: k, x:[], y:[], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
 		           marker: {size: 12}, hoverinfo: "text"}
 		datas['ped'].push(peds[k]);
 
 	}
-	peds[k]['x'].push(p['rel'].toPrecision(3))
-    peds[k]['y'].push(p['ibs0'].toPrecision(3))
-	peds[k]['sample_a'].push(p['sample_a'])
-	peds[k]['sample_b'].push(p['sample_b'])
-	peds[k]['text'].push("<b>" + p['sample_a'] + "</b> vs. <b>" + p['sample_b'] + "</b>")
+	peds[k]['x'].push(p[relIndex].toPrecision(3))
+    peds[k]['y'].push(p[ibs0Index].toPrecision(3))
+	peds[k]['sample_a'].push(p[sampleAIndex])
+	peds[k]['sample_b'].push(p[sampleBIndex])
+	peds[k]['text'].push("<b>" + p[sampleAIndex] + "</b>::<b>" + p[sampleBIndex] + "</b>")
 
 
 }

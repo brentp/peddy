@@ -14,7 +14,7 @@
  <script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
 
  <style>
-.x-container {
+.container {
     display: inline-flex;
 	border-style: solid;
 }
@@ -55,19 +55,19 @@ var sex_bad = {name: "ERROR", x:[], y:[], text: [], sample: [], mode:'markers', 
 var mean_size = 0;
 
 for(i=0; v=sex_data[i], i<sex_data.length; i++){
-    var a = v['error'] == "FALSE" ? sex_good : sex_bad;
+    var a = v['error'] ? sex_bad : sex_good;
     mean_size += v['hom_ref_count'];
     
 
     a['x'].push(v['ped_sex'] == 'male' ? 1 : 0)
     a['y'].push(v['het_ratio'].toPrecision(3))
     a['text'].push("sample: <b>" + v['sample'] + "</b>")
-    a['marker']['size'].push(v['hom_ref_count'])
+    a['marker']['size'].push(200 + v['hom_ref_count'])
     a['sample'].push(v['sample'])
  
 }
 mean_size /= sex_data.length
-mean_size /= 300;
+mean_size /= 140;
 
 sex_good['marker']['sizeref'] = mean_size;
 sex_bad['marker']['sizeref'] = mean_size;
@@ -118,21 +118,20 @@ var het_ratio = {name: "ratio-outlier", x:[], y:[], text: [], sample: [], mode:'
 
 for(i=0; v=het_data[i], i<het_data.length; i++){
     var a = v['range_outlier'] ? het_range : v['ratio_outlier'] ? het_ratio : het_good;
-    mean_size += v['het_count'];
+    mean_size += v['mean_depth'];
 
 	a['x'].push(v['range'].toPrecision(3))
     a['y'].push(v['het_ratio'].toPrecision(3))
-    a['text'].push("sample: <b>" + v['sample_id'] + "</b>")
-    a['marker']['size'].push(v['het_count'])
+    a['text'].push("sample: <b>" + v['sample_id'] + "</b> mean depth:" + v['mean_depth'].toFixed(1))
+    a['marker']['size'].push(v['mean_depth'])
 	a['sample'].push(v['sample_id'])
 }
 
-mean_size /= het_data.length
-mean_size /= 300;
+mean_size /= het_data.length;
 
-het_good['marker']['sizeref'] = mean_size;
-het_range['marker']['sizeref'] = mean_size;
-het_ratio['marker']['sizeref'] = mean_size;
+het_good['marker']['sizeref'] = mean_size / 140;
+het_range['marker']['sizeref'] = mean_size / 140;
+het_ratio['marker']['sizeref'] = mean_size / 140;
 
 var het_layout = {
   height: 250,

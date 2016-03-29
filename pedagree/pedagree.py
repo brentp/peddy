@@ -619,7 +619,7 @@ class Ped(object):
 
         # this should be high for females and low for males
         het_ratio = het.astype(float) / (hom_alt)
-        print("%s skipped / % d kept" % (skipped, kept), file=sys.stderr)
+        print("sex-check: %s skipped / % d kept" % (skipped, kept), file=sys.stderr)
 
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
                 'female_errors': [], 'male_samples': [], 'female_samples':[]}
@@ -634,7 +634,7 @@ class Ped(object):
                 ped_sex = "NA"
             val = -0.04 if np.isnan(het_ratio[i]) else het_ratio[i]
             predicted_sex = "UNKNOWN" if val < 0 else SEX.MALE if val < cutoff else SEX.FEMALE
-            error = str(predicted_sex != ped_sex).upper()
+            error = predicted_sex != ped_sex
             if ped_sex == "NA":
                 error = "NA"
             else:
@@ -644,7 +644,7 @@ class Ped(object):
                     # sex unknown
                     continue
 
-            plot_vals[ped_sex + '_errors'].append(error == "TRUE")
+            plot_vals[ped_sex + '_errors'].append(error)
             plot_vals[ped_sex + '_samples'].append(s)
             res.append(dict(sample=s, ped_sex=ped_sex, hom_ref_count=hom_ref[i],
                        het_count=het[i], hom_alt_count=hom_alt[i],

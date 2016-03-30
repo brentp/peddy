@@ -96,6 +96,42 @@ def test_relation():
     p.families['fam1'] = Family([kid, mom, dad])
     assert p.relation("mom", "dad") == "mom-dad"
 
+def test_relatedness_coefficient_missing_parent():
+
+    gma = Sample('X28935', 'gma', '-9', '-9', '2', '1')
+    mom = Sample('X28935', 'mom', '-9', 'gma', '2', '1')
+    dad = Sample('X28935', 'dad', '-9', '-9', '1', '1')
+
+    kid1 = Sample('X28935', 'kid1', '-9', 'mom', '1', '1')
+    kid2 = Sample('X28935', 'kid2', '-9', 'mom', '2', '1')
+
+    kid1 = Sample('X28935', 'kid1', 'dad', 'mom', '1', '1')
+    kid2 = Sample('X28935', 'kid2', 'dad', 'mom', '2', '1')
+
+    kid1.mom = mom
+    kid2.mom = mom
+    mom.mom = gma
+    kid1.dad = dad
+    kid2.dad = dad
+
+    from io import StringIO
+    p = Ped(StringIO())
+    p.families['X28935'] = Family([kid1, kid2, mom, gma])#, dad])
+
+    assert "siblings" in p.relation('kid1', 'kid2'), p.relation('kid1', 'kid2')
+
+    v = p.relatedness_coefficient('kid1', 'kid2')
+    assert v == 0.5, v
+
+    v = p.relatedness_coefficient('gma', 'kid2')
+    assert v == 0.25, v
+
+    v = p.relatedness_coefficient('gma', 'kid1')
+    assert v == 0.25, v
+
+    v = p.relatedness_coefficient('gma', 'mom')
+    assert v == 0.5, v
+
 def test_relatedness_coefficient():
     kid = Sample('fam1', 'kid', 'dad', 'mom', '2', '2')
     dad = Sample('fam1', 'dad', '-9', '-9', '1', '2')

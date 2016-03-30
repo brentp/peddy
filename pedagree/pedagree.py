@@ -3,6 +3,7 @@
 from __future__ import print_function
 import sys
 import collections
+import re
 from collections import OrderedDict
 import networkx as nx
 import numpy as np
@@ -250,7 +251,10 @@ class Sample(object):
     def from_row(cls, row, header=None, warn=True):
         if isinstance(row, basestring):
             sep = "\t" if row.count("\t") > row.count(" ") else " "
-            row = [x.strip() for x in row.strip("\n").split(sep)]
+            if sep == " ":
+                row = [x.strip() for x in re.split("\s+", row.strip("\n"))]
+            else:
+                row = [x.strip() for x in row.strip("\n").split(sep)]
         return cls(row[0], row[1], row[2] or "-9", row[3] or "-9", row[4], row[5],
                    row[6:] if len(row) > 6 else None, header=header, warn=warn)
 
@@ -422,7 +426,10 @@ class Ped(object):
 
         for i, l in enumerate(l.rstrip('\r\n') for l in fh if l.strip()):
             sep = "\t" if l.count("\t") > l.count(" ") else " "
-            toks = l.split(sep)
+            if sep == " ":
+                toks = [x.strip() for x in re.split("\s+", l.strip("\n"))]
+            else:
+                toks = l.split(sep)
             if i == 0 and (toks[0][0] == "#" or toks[0] == "family_id"):
                 if toks[0][0] == "#":
                     toks[0] = toks[0][1:]
@@ -465,9 +472,12 @@ class Ped(object):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.filename)
 
-    def to_json(self):
+    def to_json(self, samples=None):
         import json
-        return json.dumps([s.dict() for s in self.samples()])
+        if samples is None:
+            return json.dumps([s.dict() for s in self.samples()])
+        else:
+            return json.dumps([s.dict() for s in self.samples() if s.sample_id in set(samples)])
 
     def relation(self, sample_a, sample_b):
         a = self.get(sample_a)
@@ -536,6 +546,11 @@ class Ped(object):
 
     def relatedness_coefficient(self, sample_a, sample_b, _empty=set([None])):
         """Coefficient of relatedness between 2 samples."""
+        if isinstance(sample_a, Sample):
+            sample_a = sample_a.sample_id
+        if isinstance(sample_b, Sample):
+            sample_b = sample_b.sample_id
+
         if sample_a == sample_b: return 1.0
         if self._graph is None:
             self._setup_graph()
@@ -566,7 +581,7 @@ class Ped(object):
         val = 0.0
         if len(a_paths):
             val += 0.5 ** sum(len(p) for p in a_paths)
-        if len(b_paths):
+        if len(b_paths) and b_paths != a_paths:
             val += 0.5 ** sum(len(p) for p in b_paths)
         return val
 
@@ -714,9 +729,9 @@ class Ped(object):
         samps = [x.sample_id for x in self.samples()]
         vcf = cyvcf2.VCF(vcf, gts012=True, samples=samps)
         if sorted(vcf.samples) != sorted(samps):
-            print("warning: sample overlap issues",
-                    ("in vcf, not in ped:", set(vcf.samples) - set(samps),
-                    "in ped, not in vcf:", set(samps) - set(vcf.samples)))
+            print("warning: sample overlap issues\n\tin vcf, not in ped: %s\n\tin ped, not in vcf: %s" % (
+                  ",".join(set(vcf.samples) - set(samps)),
+                  ",".join(set(samps) - set(vcf.samples))), file=sys.stderr)
         if set(vcf.samples) - set(samps) == set(vcf.samples):
             raise Exception("error: no samples from VCF found in ped")
 
@@ -801,6 +816,8 @@ class Ped(object):
         df["predicted_parents"] = df['ibs0'] < 0.012
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
         df["sample_duplication_error"] = (df['ibs0'] < 0.012) & (df['rel'] > 0.75)
+
+        df["rel_difference"] = df['pedigree_relatedness'] - df['rel']
         # make the column order a bit more sane.
         cols = ['sample_a', 'sample_b']
         cols += [c for c in df.columns if not c in ('sample_a', 'sample_b') and not c.endswith('error')]

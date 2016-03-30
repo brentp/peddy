@@ -3,6 +3,7 @@ import os.path as op
 import multiprocessing as mp
 import string
 from .pedagree import Ped
+from cyvcf2 import VCF
 
 def run(args):
     check, pedf, vcf, plot, prefix, each = args
@@ -38,7 +39,7 @@ def main(vcf, pedf, prefix, plot=False, each=1):
     print("")
 
     p = mp.Pool(4)
-    vals = {'pedigree': ped.to_json(), 'title':
+    vals = {'pedigree': ped.to_json(VCF(vcf).samples), 'title':
             op.splitext(op.basename(pedf))[0], 'each': each}
     for check, json in p.imap(run, [(check, pedf, vcf, plot, prefix, each) for check
                                     in ("het_check", "ped_check", "sex_check")]):

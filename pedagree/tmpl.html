@@ -27,6 +27,7 @@
     </head>
 
 <body>
+<div id="link"></div>
 <div class="container">
 <div id="sexplot"> </div>
 <div id="hetplot"> </div>
@@ -38,6 +39,16 @@
 
 </body>
 <script>
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    url = url.toLowerCase(); // This is just to avoid case sensitiveness  
+    name = name.replace(/[\[\]]/g, "\\$$&").toLowerCase();// This is just to avoid case sensitiveness for query parameter name
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
 
 var datas = {'sex': null, 'het': null, 'ped': null}
 
@@ -253,19 +264,43 @@ function get_rel_key(r, idx){
    return r[idx].toPrecision(3)
 }
 datas['ped'] = []
+
+
+
 var column_lookup = ped_data['columns'];
 var prIndex = column_lookup.indexOf('pedigree_relatedness')
 if(prIndex == -1){
 	alert("pedigree_relatedness not found in ped data");
 }
 var relIndex = column_lookup.indexOf('rel');
+var pedRelIndex = column_lookup.indexOf('pedigree_relatedness');
 var nIndex = column_lookup.indexOf('n');
 var ibs0Index = column_lookup.indexOf('ibs0');
 var sampleAIndex = column_lookup.indexOf('sample_a');
 var sampleBIndex = column_lookup.indexOf('sample_b');
 
+var CUTOFF = 5000
+var skip0 = ped_data['data'].length > CUTOFF && getParameterByName('all') != "true"
+if (ped_data['data'].length > CUTOFF){
+	jQuery('#link').wrap(function(){
+		var link = jQuery('<a/>')
+		var base = window.location.protocol + "//" + window.location.hostname + window.location.pathname
+		if (skip0){
+			base += "?all=true"
+			link.text("This dataset has a lot of points. Pairs that are unrelated by their relationship in the ped file and their genotypes are not shown. Click this to show all.")
+		} else {
+			link.text("This dataset has a lot of points. Click this to show only points that are likely to be interesting.")
+        }	
+		link.attr('href', base);
+		return link;
+	})
+}
+
 for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 
+	if (skip0 && p[pedRelIndex] == 0 && (p[relIndex] < -0.15 || Math.abs(p[relIndex]  - p[pedRelIndex]) < 0.15)){
+		continue;
+	}
 	var k=get_rel_key(p, prIndex);
 
 	if(peds[k] === undefined) {

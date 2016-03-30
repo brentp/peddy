@@ -38,7 +38,7 @@
 </div>
 
 <div>
-Redraw points with table selection: <input type="checkbox" id="redraw"/><br/>
+Redraw points with table selection: <input type="checkbox" id="redraw" checked /><br/>
 </div>
 
 <div class="container">
@@ -142,11 +142,11 @@ var het_data = $het_check
 var mean_size = 0;
 
 var het_good = {name: "OK", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-			    marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[]}}
+			    marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[], opacity:[]}}
 var het_range = {name: "range-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-			    marker:{color:'#377eb8', sizemode: 'area', sizeref: 0, size:[]}}
+			    marker:{color:'#377eb8', sizemode: 'area', sizeref: 0, size:[], opacity:[]}}
 var het_ratio = {name: "ratio-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-			    marker:{color:'#e41a1c', sizemode: 'area', sizeref: 0, size:[]}}
+			    marker:{color:'#e41a1c', sizemode: 'area', sizeref: 0, size:[], opacity:[]}}
 
 for(i=0; v=het_data[i], i<het_data.length; i++){
     var a = v['range_outlier'] ? het_range : v['ratio_outlier'] ? het_ratio : het_good;
@@ -156,6 +156,7 @@ for(i=0; v=het_data[i], i<het_data.length; i++){
     a['y'].push(v['het_ratio'].toPrecision(3))
     a['text'].push("sample: <b>" + v['sample_id'] + "</b> mean depth:" + v['mean_depth'].toFixed(1))
     a['marker']['size'].push(10 + v['mean_depth'])
+    a['marker']['opacity'].push(1)
 	a['sample'].push(v['sample_id'])
 }
 
@@ -316,7 +317,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 
 	if(peds[k] === undefined) {
 		peds[k] = {name: k, x:[], y:[], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
-		           marker: {size: [], sizemode: "area", sizeref: 5784/($each * 100)}, hoverinfo: "text"}
+		           marker: {size: [], sizemode: "area", sizeref: 5784/($each * 100), opacity:[]}, hoverinfo: "text"}
 		datas['ped'].push(peds[k]);
 
 	}
@@ -324,6 +325,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
     peds[k]['y'].push(p[ibs0Index].toPrecision(3))
 	peds[k]['sample_a'].push(p[sampleAIndex])
 	peds[k]['marker']['size'].push(250+p[nIndex])
+	peds[k]['marker']['opacity'].push(1)
 	peds[k]['sample_b'].push(p[sampleBIndex])
 	peds[k]['text'].push("<b>" + p[sampleAIndex] + "</b>::<b>" + p[sampleBIndex] + "</b>")
 
@@ -408,9 +410,14 @@ jQuery(document).ready(function(){
 })
 
 
-function redraw() {
+function redraw(all) {
 	// these are the samples that are visible in the table.
-	var samples = table.rows({filter:"applied"}).data().pluck(1)
+	var samples
+	if(all == undefined){
+       samples = table.rows({filter:"applied"}).data().pluck(1)
+	} else {
+       samples = table.rows().data().pluck(1)
+	}
 	var so = {}
 	for(var i=0;i<samples.length;i++){so[samples[i]] = true;}
 
@@ -420,11 +427,40 @@ function redraw() {
 			if(so[s]){
 				sexplot.data[k]['marker']['opacity'][i] = 1;
 			} else {
-				sexplot.data[k]['marker']['opacity'][i] = 0.08;
+				sexplot.data[k]['marker']['opacity'][i] = 0.06;
 			}
 		}
 	}
 	Plotly.redraw(sexplot)
+
+	for(var k=0; k<hetplot.data.length;k++){
+		for(i=0;i<hetplot.data[k]['sample'].length; i++){
+			var s=hetplot.data[k]['sample'][i];
+			if(so[s]){
+				hetplot.data[k]['marker']['opacity'][i] = 1;
+			} else {
+				hetplot.data[k]['marker']['opacity'][i] = 0.06;
+			}
+		}
+	}
+	Plotly.redraw(hetplot)
+
+    for(var k=0; k<pedplot.data.length;k++){
+        var n = Math.max(pedplot.data[k]['sample_a'].length,
+                         pedplot.data[k]['sample_b'].length)
+
+        for(i=0; i<n; i++){
+            var sa = pedplot.data[k]['sample_a'][i];
+            var sb = pedplot.data[k]['sample_b'][i];
+            if(so[sa] || so[sb]){
+                pedplot.data[k]['marker']['opacity'][i] = 1;
+            } else {
+                pedplot.data[k]['marker']['opacity'][i] = 0.06;
+            }
+        }
+    }
+    Plotly.redraw(pedplot)
+
 }
 
 </script>

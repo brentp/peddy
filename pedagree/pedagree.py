@@ -578,12 +578,15 @@ class Ped(object):
             if a:
                 a_paths.extend(a)
 
-        val = 0.0
-        if len(a_paths):
-            val += 0.5 ** sum(len(p) for p in a_paths)
-        if len(b_paths) and b_paths != a_paths:
-            val += 0.5 ** sum(len(p) for p in b_paths)
-        return val
+        n = 0
+        if a_paths:
+            a_paths = sorted(a_paths, key=len, reverse=True)[0]
+            n += 1
+        if b_paths:
+            b_paths = sorted(b_paths, key=len, reverse=True)[0]
+            n += 1
+        path = a_paths + b_paths
+        return n * 2.0**-len(path)
 
     def sex_check(self, vcf_path, min_depth=6,
                   skip_missing=True,
@@ -633,7 +636,7 @@ class Ped(object):
 
         # this should be high for females and low for males
         het_ratio = het.astype(float) / (hom_alt)
-        print("sex-check: %s skipped / % d kept" % (skipped, kept), file=sys.stderr)
+        print("sex-check: %s skipped / %d kept" % (skipped, kept), file=sys.stderr)
 
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
                 'female_errors': [], 'male_samples': [], 'female_samples':[]}

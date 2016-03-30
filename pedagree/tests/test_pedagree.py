@@ -1,6 +1,9 @@
 from __future__ import print_function
+import os
 import sys
 from pedagree import Ped, Family, Sample, PHENOTYPE, SEX
+
+HERE = os.path.abspath(os.path.dirname(__file__))
 
 def test_sample():
     s = Sample('fam1', 'sample1', '-9', '-9', '2', '2')
@@ -95,6 +98,29 @@ def test_relation():
     p = Ped(StringIO())
     p.families['fam1'] = Family([kid, mom, dad])
     assert p.relation("mom", "dad") == "mom-dad"
+
+def test_relatedness_coefficient_missing_gparent():
+    p = Ped(open(os.path.join(HERE, "test.fam.ped")))
+    # uncle
+    v = p.relatedness_coefficient('101806-101806', '101811-101811')
+    assert v == 0.25, v
+    v = p.relatedness_coefficient('101806-101806', '101809-101809')
+    assert v == 0.25, v
+    # parent-child
+    v = p.relatedness_coefficient('101806-101806', '101653-101653')
+    assert v == 0.5, v
+
+    p = Ped(open(os.path.join(HERE, "test.fam2.ped")))
+    v = p.relatedness_coefficient('101806-101806', '101811-101811')
+    assert v == 0.25, v
+    v = p.relatedness_coefficient('101806-101806', '101809-101809')
+    assert v == 0.25, v
+
+    # parent-child
+    v = p.relatedness_coefficient('101806-101806', '101653-101653')
+    assert v == 0.5, v
+
+
 
 def test_relatedness_coefficient_missing_parent():
 

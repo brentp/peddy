@@ -23,6 +23,10 @@
 #hetplot {
 }
 
+.dataTables_filter {
+	    display: none;
+}
+
  </style>
     </head>
 
@@ -32,8 +36,13 @@
 <div id="sexplot"> </div>
 <div id="hetplot"> </div>
 </div>
+
+<div>
+Redraw points with table selection: <input type="checkbox" id="redraw"/><br/>
+</div>
+
 <div class="container">
-<table id="pedigree" class="stripe row-border" cellspacing="0"></table>
+<table id="pedigree" width="50%" class="stripe row-border" cellspacing="0"></table>
 <div id="pedplot"> </div>
 </div>
 
@@ -56,10 +65,10 @@ var sex_data = $sex_check
 
 //marker:{sizemode: 'area', sizeref: 0, size:[]
 var sex_good = {name: "OK", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-			    marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[]}}
+			    marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[], opacity: []}}
 
 var sex_bad = {name: "ERROR", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-              marker:{color: '#e41a1c', sizemode: 'area', sizeref: 0, size:[]}}
+              marker:{color: '#e41a1c', sizemode: 'area', sizeref: 0, size:[], opacity: []}}
 
 var mean_size = 0;
 var max_seen = 0;
@@ -75,6 +84,7 @@ for(i=0; v=sex_data[i], i<sex_data.length; i++){
     a['y'].push(v['het_ratio'].toPrecision(3))
     a['text'].push("sample: <b>" + v['sample'] + "</b>")
     a['marker']['size'].push(v['hom_ref_count'])
+	a['marker']['opacity'].push(1)
     a['sample'].push(v['sample'])
 }
 
@@ -122,6 +132,7 @@ var sex_layout = {
 
 datas['sex'] = [sex_good, sex_bad];
 Plotly.plot('sexplot', datas['sex'], sex_layout);
+
 
 </script>
 <script>
@@ -238,7 +249,7 @@ sexplot.on('plotly_unhover', function(data) {
 <script>
 var ped_data = $ped_check
 var ped_layout = {
-  height: 510,
+  height: 550,
   width: '50%',
   xaxis: {
     title: 'coefficient of relatedness',
@@ -321,6 +332,10 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 
 Plotly.plot('pedplot', datas['ped'], ped_layout);
 
+
+function redraw() {
+}
+
 </script>
 <script>
 var pedigree = $pedigree
@@ -346,16 +361,25 @@ for (var i=0;i<pedigree.length, row=pedigree[i]; i++){
 	dataSet.push(v)
 }
 
+
 var table;
 jQuery(document).ready(function(){
+
+        var cols = ""
+        for(i=0;i<columns.length;i++){
+			cols += "<th><input size='" + (columns[i].title.length - 1) + " type='text' placeholder='" + columns[i].title + "' /></th>"
+
+        }
+        jQuery("#pedigree").append('<tfoot><tr>' + cols  + '</tr></tfoot>');
+
 		table = jQuery('#pedigree').DataTable({
 			data: dataSet,
 			columns: columns,
 			paging: false,
 			scrollY: "400px",
+			scrollX: "700px",
 			scrollCollapse: true,
 			select: {style: 'os'},
-
 		})
 		// https://datatables.net/reference/event/select
 		table.on('select', function(e, dt, type, indexes){
@@ -369,8 +393,39 @@ jQuery(document).ready(function(){
 				Plotly.Fx.unhover('sexplot')
 				Plotly.Fx.unhover('pedplot')
 		})
+        table.columns().every(function() {
+            var that = this;
+            jQuery('input', this.footer()).on('keyup change', function() {
+                if (that.search() !== this.value ){
+                    that.search(this.value, true, true).draw();
+                }
+
+				if(jQuery('#redraw').prop('checked')){
+					redraw()
+			 	}
+            })
+        })
 })
 
+
+function redraw() {
+	// these are the samples that are visible in the table.
+	var samples = table.rows({filter:"applied"}).data().pluck(1)
+	var so = {}
+	for(var i=0;i<samples.length;i++){so[samples[i]] = true;}
+
+	for(var k=0; k<sexplot.data.length;k++){
+		for(i=0;i<sexplot.data[k]['sample'].length; i++){
+			var s=sexplot.data[k]['sample'][i];
+			if(so[s]){
+				sexplot.data[k]['marker']['opacity'][i] = 1;
+			} else {
+				sexplot.data[k]['marker']['opacity'][i] = 0.08;
+			}
+		}
+	}
+	Plotly.redraw(sexplot)
+}
 
 </script>
 

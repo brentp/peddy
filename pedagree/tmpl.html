@@ -6,11 +6,13 @@
 		<title>$title</title>
 
  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+ <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.css">
 
  <script src="http://cdn.plot.ly/plotly-latest.min.js"></script>
  <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
 
  <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.js"></script>
  <script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
 
  <style>
@@ -23,9 +25,52 @@
 #hetplot {
 }
 
+
+.rangeslider,
+input[type='range'] {
+  max-width: 300px;
+  max-height: 300px;
+}
+
+.rangeslider--vertical {
+  min-height: 220px;
+}
+
+.vertical-text {
+	transform: rotate(90deg);
+	transform-origin: left top 0;
+}
+
+.rangeslider__handle {
+  border-radius: 12px;
+  min-width: 42px;
+  line-height: 38px;
+  text-align: center;
+
+  &:after {
+    background: 0;
+  }
+}
+
+.rangeslider__fill {
+  background: #3182bd;
+  position: absolute;
+  height: 250px;
+}
+
 .dataTables_filter {
 	    display: none;
 }
+body {
+  color: #404040;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  padding: 20px;
+}
+
+
 
  </style>
     </head>
@@ -42,9 +87,22 @@ Redraw points with table selection: <input type="checkbox" id="redraw" checked /
 </div>
 
 <div class="container">
-<table id="pedigree" width="50%" class="stripe row-border" cellspacing="0"></table>
+<table id="pedigree" width="44%" class="stripe row-border" cellspacing="0"></table>
+
+
 <div id="pedplot"> </div>
 </div>
+
+<span style="padding:10px">
+filter by <b>deviation from</b> expected <b>relatedness</b>
+</span>
+<input id="relslider" type="range" min="0.00" max="1" step="0.01" value="0">
+<br/>
+
+<span style="padding:10px">
+filter by <b>deviation from</b> expected <b>IBS0</b>
+<input id="ibscheck" type="checkbox">
+</span>
 
 </body>
 <script>
@@ -286,6 +344,7 @@ if(prIndex == -1){
 }
 var relIndex = column_lookup.indexOf('rel');
 var pedRelIndex = column_lookup.indexOf('pedigree_relatedness');
+var parentIndex = column_lookup.indexOf('pedigree_parents')
 var nIndex = column_lookup.indexOf('n');
 var ibs0Index = column_lookup.indexOf('ibs0');
 var sampleAIndex = column_lookup.indexOf('sample_a');
@@ -316,7 +375,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	var k=get_rel_key(p, prIndex);
 
 	if(peds[k] === undefined) {
-		peds[k] = {name: k, x:[], y:[], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
+		peds[k] = {name: k, x:[], y:[], parent: [], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
 		           marker: {size: [], sizemode: "area", sizeref: 5784/($each * 100), opacity:[]}, hoverinfo: "text"}
 		datas['ped'].push(peds[k]);
 
@@ -324,19 +383,16 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	peds[k]['x'].push(p[relIndex].toPrecision(3))
     peds[k]['y'].push(p[ibs0Index].toPrecision(3))
 	peds[k]['sample_a'].push(p[sampleAIndex])
+	peds[k]['parent'].push(p[parentIndex])
 	peds[k]['marker']['size'].push(250+p[nIndex])
 	peds[k]['marker']['opacity'].push(1)
 	peds[k]['sample_b'].push(p[sampleBIndex])
 	peds[k]['text'].push("<b>" + p[sampleAIndex] + "</b>::<b>" + p[sampleBIndex] + "</b>")
 
-
 }
 
 Plotly.plot('pedplot', datas['ped'], ped_layout);
 
-
-function redraw() {
-}
 
 </script>
 <script>
@@ -362,10 +418,28 @@ for (var i=0;i<pedigree.length, row=pedigree[i]; i++){
 	for (k=0; k<keys.length;k++) { v.push(row[keys[k]]) }
 	dataSet.push(v)
 }
-
-
 var table;
 jQuery(document).ready(function(){
+
+        elrel = jQuery('#relslider')
+        elibs = jQuery('#ibscheck')
+        relslider = elrel.rangeslider({
+            polyfill:false,
+            onInit: function() {
+                jQuery('.rangeslider__handle')[0].innerHTML = this.value;
+            },
+        })
+        relslider.on('input', function(){
+            jQuery('.rangeslider__handle')[0].innerHTML = this.value;
+			ibsrelfilter(parseFloat(elrel.val()), elibs.prop('checked'))
+        }) 
+
+
+		elibs.on('change', function(){
+			ibsrelfilter(parseFloat(elrel.val()), elibs.prop('checked'))
+        }) 
+
+
 
         var cols = ""
         for(i=0;i<columns.length;i++){
@@ -409,6 +483,33 @@ jQuery(document).ready(function(){
         })
 })
 
+function ibsrelfilter(rel, check_ibs0) {
+    var expected_rels = [];
+    var d = pedplot.data
+    for(var i=0;i<d.length;i++){
+        expected_rel = parseFloat(d[i].name)
+        for(var j=0;j<d[i]['x'].length;j++){
+            var obs_rel = d[i]['x'][j];
+            if(Math.abs(obs_rel - expected_rel) <= rel) {
+                d[i]['marker']['opacity'][j] = 0.06;
+                continue
+            }
+            // now check ibs0;
+			var obs_ibs = d[i]['y'][j];
+			var is_parent = d[i]['parent'][j]
+			if(check_ibs0 && (obs_ibs > 0.01) != is_parent){
+                d[i]['marker']['opacity'][j] = 0.06;
+                continue
+			}
+
+
+            d[i]['marker']['opacity'][j] = 1;
+
+        }
+
+    }   
+    Plotly.redraw(pedplot)
+}
 
 function redraw(all) {
 	// these are the samples that are visible in the table.

@@ -486,30 +486,40 @@ jQuery(document).ready(function(){
 function ibsrelfilter(rel, check_ibs0) {
     var expected_rels = [];
     var d = pedplot.data
+    var samples = {};
     for(var i=0;i<d.length;i++){
         expected_rel = parseFloat(d[i].name)
         for(var j=0;j<d[i]['x'].length;j++){
             var obs_rel = d[i]['x'][j];
             if(Math.abs(obs_rel - expected_rel) <= rel) {
-                d[i]['marker']['opacity'][j] = 0.06;
+                d[i]['marker']['opacity'][j] = 0.02;
                 continue
             }
             // now check ibs0;
-			var obs_ibs = d[i]['y'][j];
-			var is_parent = d[i]['parent'][j]
-			if(check_ibs0 && (obs_ibs > 0.01) != is_parent){
-                d[i]['marker']['opacity'][j] = 0.06;
+            var obs_ibs = d[i]['y'][j];
+            var is_parent = d[i]['parent'][j]
+            if(check_ibs0 && ((obs_ibs > 0.01) != is_parent)){
+                d[i]['marker']['opacity'][j] = 0.02;
                 continue
-			}
-
-
+            }
+            samples[d[i]['sample_a'][j]] = true;
+            samples[d[i]['sample_b'][j]] = true;
             d[i]['marker']['opacity'][j] = 1;
 
         }
 
-    }   
-    Plotly.redraw(pedplot)
+    } 
+
+	// hack to apply the search.
+    jQuery.fn.dataTable.ext.search.push(function(settings, data, dataIndex){
+            return samples[data[1]] != undefined;
+    });
+    table.draw();
+	// the search is applied to the table, now just use redraw machinery to update the other plots.
+    jQuery.fn.dataTable.ext.search.pop();
+    redraw();
 }
+
 
 function redraw(all) {
 	// these are the samples that are visible in the table.
@@ -528,7 +538,7 @@ function redraw(all) {
 			if(so[s]){
 				sexplot.data[k]['marker']['opacity'][i] = 1;
 			} else {
-				sexplot.data[k]['marker']['opacity'][i] = 0.06;
+				sexplot.data[k]['marker']['opacity'][i] = 0.04;
 			}
 		}
 	}
@@ -540,7 +550,7 @@ function redraw(all) {
 			if(so[s]){
 				hetplot.data[k]['marker']['opacity'][i] = 1;
 			} else {
-				hetplot.data[k]['marker']['opacity'][i] = 0.06;
+				hetplot.data[k]['marker']['opacity'][i] = 0.04;
 			}
 		}
 	}
@@ -556,7 +566,7 @@ function redraw(all) {
             if(so[sa] || so[sb]){
                 pedplot.data[k]['marker']['opacity'][i] = 1;
             } else {
-                pedplot.data[k]['marker']['opacity'][i] = 0.06;
+                pedplot.data[k]['marker']['opacity'][i] = 0.04;
             }
         }
     }

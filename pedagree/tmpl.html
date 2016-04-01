@@ -330,11 +330,15 @@ var ped_layout = {
 };
 
 var peds = {}
-function get_rel_key(r, idx){
-   return r[idx].toPrecision(3)
+function get_rel_key(r, idx, parentIndex){
+   val = r[idx].toPrecision(3)
+   // differentiate sib-sib from parent-kid
+   if(val == (0.5).toPrecision(3)){
+       return val + (r[parentIndex] ? " (parent-child)" : " (sib-sib)")
+   }
+   return val
 }
 datas['ped'] = []
-
 
 
 var column_lookup = ped_data['columns'];
@@ -372,11 +376,20 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	if (skip0 && p[pedRelIndex] == 0 && (p[relIndex] < -0.15 || Math.abs(p[relIndex]  - p[pedRelIndex]) < 0.15)){
 		continue;
 	}
-	var k=get_rel_key(p, prIndex);
+	var k = get_rel_key(p, prIndex, parentIndex);
 
 	if(peds[k] === undefined) {
 		peds[k] = {name: k, x:[], y:[], parent: [], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
 		           marker: {size: [], sizemode: "area", sizeref: 5784/($each * 100), opacity:[]}, hoverinfo: "text"}
+		// differentiate between parent-kid and sib-sib and use open for <= 0 relatedness
+        if(k.indexOf("sib") > -1){
+            peds[k]["marker"]["symbol"] = "triangle-left"
+        } else if (k.indexOf("parent") > -1){
+            peds[k]["marker"]["symbol"] = "square"
+        } else if (parseFloat(k) <= 0) {
+            peds[k]["marker"]["symbol"] = "circle-open"
+        }
+
 		datas['ped'].push(peds[k]);
 
 	}

@@ -789,7 +789,7 @@ class Ped(object):
         plt.savefig(plot)
         return df
 
-    def ped_check(self, vcf, plot=False, min_depth=5, each=1):
+    def ped_check(self, vcf, ncpus=1, plot=False, min_depth=5, each=1):
         """
         Given the current pedigree and a VCF of genotypes, find sample-pairs where
         the relationship reported in the pedigree file do not match those inferred
@@ -804,6 +804,7 @@ class Ped(object):
         import cyvcf2
         import numpy as np
         import pandas as pd
+        vcf_str = vcf
 
         samps = list(self.samples())
         if isinstance(vcf, basestring):
@@ -811,7 +812,11 @@ class Ped(object):
             vcf = cyvcf2.VCF(vcf, gts012=True, samples=[x.sample_id for x in
                 samps])
 
-        df = pd.DataFrame(list(vcf.site_relatedness(min_depth=min_depth, each=each)))
+        #df = pd.DataFrame(list(vcf.site_relatedness(min_depth=min_depth, each=each)))
+        df = pd.DataFrame(list(cyvcf2.par_relatedness(vcf_str,
+                                                      [x.sample_id for x in samps],
+                                                      ncpus,
+                                                      min_depth=min_depth, each=each)))
         df["pedigree_relatedness"] = np.array([self.relatedness_coefficient(a, b) for a, b in
                                             zip(df.sample_a, df.sample_b)])
         df["pedigree_parents"] = np.array([self.relation(a, b) == 'parent-child'  for a, b in

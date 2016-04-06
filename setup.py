@@ -6,7 +6,7 @@ def get_version():
     """Get the version info from the mpld3 package without importing it"""
     import ast
 
-    with open(os.path.join("pedagree", "__init__.py"), "r") as init_file:
+    with open(os.path.join("peddy", "__init__.py"), "r") as init_file:
         module = ast.parse(init_file.read())
 
     version = (ast.literal_eval(node.value) for node in ast.walk(module)
@@ -18,9 +18,9 @@ def get_version():
         raise ValueError("version could not be located")
 
 setup(version=get_version(),
-      name='pedagree',
+      name='peddy',
       description="pleasingly pythonic pedigree manipulation",
-      packages=['pedagree', 'pedagree.tests'],
+      packages=['peddy', 'peddy.tests'],
       long_description=open('README.md').read(),
       author="Brent Pedersen",
       author_email="bpederse@gmail.com",

@@ -3,7 +3,7 @@ manipulation, validation and exploration of pedigrees
 
 Pedagree is a python module for manipulating pedigree files.
 While the python module has several useful features,
-most users will be intereseted in `pedagree` for its 
+most users will be intereseted in `peddy` for its 
 utility in finding discrepancies between the relationships specified
 in `.ped` files and the relationships inferred from a 
 corresponding `.vcf` file such as can occur from sample-swaps 
@@ -19,7 +19,7 @@ The command-line usage looks like:
 
 .. code-block:: bash
 
-    python -m pedagree --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
+    python -m peddy --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 
 This will create the images:
 

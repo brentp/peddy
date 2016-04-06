@@ -1,5 +1,5 @@
 include README.md
 include LICENSE
-include pedagree/tests/*
+include peddy/tests/*
 include tox.ini
-include pedagree/tmpl.html
+include peddy/tmpl.html

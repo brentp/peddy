@@ -1,7 +1,7 @@
 from __future__ import print_function
 import os
 import sys
-from pedagree import Ped, Family, Sample, PHENOTYPE, SEX
+from peddy import Ped, Family, Sample, PHENOTYPE, SEX
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -25,8 +25,8 @@ def test_sex_check():
     if sys.version_info[0] == 3:
         return
 
-    p = Ped('pedagree/tests/test.mendel.ped')
-    df = p.sex_check('pedagree/tests/test.mendel.vcf.gz')
+    p = Ped('peddy/tests/test.mendel.ped')
+    df = p.sex_check('peddy/tests/test.mendel.vcf.gz')
 
     assert "predicted_sex" in df.columns
     assert "ped_sex", df.columns
@@ -50,7 +50,7 @@ def test_dict():
             'sample1'}, d
 
 def test_json():
-    p = Ped('pedagree/tests/test.mendel.ped')
+    p = Ped('peddy/tests/test.mendel.ped')
     json = p.to_json()
     #expected = '[{"maternal_id": "-9", "paternal_id": "-9", "sex": "male", "family_id": "CEPH1463", "phenotype": "affected", "sample_id": "NA12889"}, {"maternal_id": "-9", "paternal_id": "-9", "sex": "female", "family_id": "CEPH1463", "phenotype": "affected", "sample_id": "NA12890"}, {"maternal_id": "NA12890", "paternal_id": "NA12889", "sex": "male", "family_id": "CEPH1463", "phenotype": "affected", "sample_id": "NA12877"}]'
     # this test may fail if order of dicts is changed
@@ -65,8 +65,8 @@ def t_ped_check():
         cyvcf2
     except ImportError:
         return
-    p = Ped('pedagree/tests/test.mendel.ped')
-    v = p.ped_check(b'pedagree/tests/test.mendel.vcf.gz')
+    p = Ped('peddy/tests/test.mendel.ped')
+    v = p.ped_check(b'peddy/tests/test.mendel.vcf.gz')
     assert isinstance(v, pd.DataFrame), v
 
     # remove samples
@@ -75,14 +75,14 @@ def t_ped_check():
     s = f.samples[-1]
     f.samples = f.samples[:-1]
     assert l -1 == len(f.samples)
-    v = p.ped_check(b'pedagree/tests/test.mendel.vcf.gz')
+    v = p.ped_check(b'peddy/tests/test.mendel.vcf.gz')
     assert isinstance(v, pd.DataFrame), v
     assert "ibs0" in v.columns
 
     # changed the sample id of a sample
     s.sample_id = "XDFSDFX"
     f.samples.append(s)
-    v = p.ped_check(b'pedagree/tests/test.mendel.vcf.gz')
+    v = p.ped_check(b'peddy/tests/test.mendel.vcf.gz')
     assert isinstance(v, pd.DataFrame), v
 
 
@@ -266,7 +266,7 @@ def test_family():
 
 
 def test_trios():
-    p = Ped('pedagree/tests/a.ped')
+    p = Ped('peddy/tests/a.ped')
     f = p.families['family_4']
     trios = list(f.trios())
     assert len(trios) == 3
@@ -277,21 +277,21 @@ def test_trios():
 
 def test_ped():
 
-    p = Ped('pedagree/tests/a.ped')
+    p = Ped('peddy/tests/a.ped')
     assert len(p.families) == 4
 
     assert len(list(p.samples())) == 14
 
 
 def test_getattr():
-    p = Ped('pedagree/tests/a.ped')
+    p = Ped('peddy/tests/a.ped')
     li = list(p.samples(ethnicity='caucasianNEuropean'))
     assert len(li) == 5
     for item in li:
         assert item.ethnicity == 'caucasianNEuropean'
 
 def test_6():
-    p = Ped('pedagree/tests/a6.ped')
+    p = Ped('peddy/tests/a6.ped')
     assert len(list(p.samples())) == 14
     for sam in p.samples():
         assert sam.family_id[:3] == "fam"

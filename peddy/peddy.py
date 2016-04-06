@@ -388,9 +388,9 @@ class Family(object):
 class Ped(object):
     """Manipulate pedigree data
 
-    >>> p = Ped('pedagree/tests/a.ped')
+    >>> p = Ped('peddy/tests/a.ped')
     >>> p
-    Ped('pedagree/tests/a.ped')
+    Ped('peddy/tests/a.ped')
 
     >>> s = next(p.samples())
     >>> s

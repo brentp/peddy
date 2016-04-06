@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pedagree documentation build configuration file, created by
+# peddy documentation build configuration file, created by
 # sphinx-quickstart on Fri Nov 13 11:20:10 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -47,7 +47,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pedagree'
+project = u'peddy'
 copyright = u'2015, Brent S Pedersen'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -182,7 +182,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pedagreedoc'
+htmlhelp_basename = 'peddydoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -202,7 +202,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'pedagree.tex', u'pedagree Documentation',
+  ('index', 'peddy.tex', u'peddy Documentation',
    u'Brent S Pedersen', 'manual'),
 ]
 
@@ -232,7 +232,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pedagree', u'pedagree Documentation',
+    ('index', 'peddy', u'peddy Documentation',
      [u'Brent S Pedersen'], 1)
 ]
 
@@ -246,8 +246,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'pedagree', u'pedagree Documentation',
-   u'Brent S Pedersen', 'pedagree', 'One line description of project.',
+  ('index', 'peddy', u'peddy Documentation',
+   u'Brent S Pedersen', 'peddy', 'pleasingly pythonic pedigree manipulation and QC',
    'Miscellaneous'),
 ]
 

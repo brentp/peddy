@@ -15,7 +15,7 @@ have fast methods to do this on the entire genome.
 The limitations of these methods is that they assume the average pair of samples
 is unrelated. 
 
-In `pedagree`, we use about 5,000 variants described in http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html
+In `peddy`, we use about 5,000 variants described in http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html
 that are known to be targeted by most exome platforms, in hardy weinberg equilibrium in 1000 genomes,
 and mostly unlinked.
 
@@ -27,7 +27,7 @@ we get from a whole-genome scan because of the properties of those sites.
 Though we use the additional 2504 1KG samples internally, only the information
 from the ped/vcf file is returned.
 
-`pedagree` stores the relationships from the pedigree in a graph and can calculate
+`peddy` stores the relationships from the pedigree in a graph and can calculate
 the expected coefficient of relation from what is specified in the ped file.
 We can use this information to compare to what is calculated from the genotypes.
 

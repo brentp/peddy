@@ -1,8 +1,7 @@
 import sys
 import os.path as op
-import multiprocessing as mp
 import string
-from .pedagree import Ped
+from .peddy import Ped
 from cyvcf2 import VCF
 
 def run(args):
@@ -16,7 +15,7 @@ def run(args):
 
     if check == "ped_check":
         df = getattr(p, check)(vcf, plot=plot, each=each, ncpus=ncpus,
-                prefix=prefix)
+                               prefix=prefix)
     else:
         df = getattr(p, check)(vcf, plot=plot)
     df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.5g")

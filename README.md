@@ -21,6 +21,9 @@ indicate:
 + discrepancies between reported and inferred sex
 + higher levels of HET calls or more variance in allele frequencies for het calls.
 
+It will also create **ceph-1463.html** which you can open in any browser to
+interactively explore your data.
+
 Overview
 --------
 

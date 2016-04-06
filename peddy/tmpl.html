@@ -380,7 +380,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 
 	if(peds[k] === undefined) {
 		peds[k] = {name: k, x:[], y:[], parent: [], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
-		           marker: {size: [], sizemode: "area", sizeref: 5784/($each * 100), opacity:[]}, hoverinfo: "text"}
+		           marker: {size: [], sizemode: "area", sizeref: 23556/($each * 100), opacity:[]}, hoverinfo: "text"}
 		// differentiate between parent-kid and sib-sib and use open for <= 0 relatedness
         if(k.indexOf("sib") > -1){
             peds[k]["marker"]["symbol"] = "triangle-left"

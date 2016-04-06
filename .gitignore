@@ -5,3 +5,7 @@ dist
 .coverage
 cover/
 .tox
+*.png
+*.csv
+*.html
+*.ped

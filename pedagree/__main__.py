@@ -12,18 +12,20 @@ def run(args):
     print(check)
     sys.stdout.flush()
     if plot:
-        plot = prefix + "." + check + "-check.png"
+        plot = prefix + "." + check + ".png"
 
     if check == "ped_check":
-        df = getattr(p, check)(vcf, plot=plot, each=each, ncpus=ncpus)
+        df = getattr(p, check)(vcf, plot=plot, each=each, ncpus=ncpus,
+                prefix=prefix)
     else:
         df = getattr(p, check)(vcf, plot=plot)
-    df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%5g")
+    df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.5g")
     if df.shape[0] > 50000 and check == "ped_check":
         # remove unknown relationships that aren't in error.
         df = df[((df.pedigree_relatedness != -1) &
                  (~df.parent_error) &
                  (~df.sample_duplication_error))]
+
     if check == "ped_check":
         # makes the plot nicer
         df.sort(inplace=True, columns=["pedigree_relatedness"])

@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import sys
+import os
 import collections
 import re
 from collections import OrderedDict
@@ -480,12 +481,18 @@ class Ped(object):
             return json.dumps([s.dict() for s in self.samples() if s.sample_id in set(samples)])
 
     def relation(self, sample_a, sample_b):
-        a = self.get(sample_a)
-        b = self.get(sample_b)
-        if isinstance(a, list):
-            a = a[0]
-        if isinstance(b, list):
-            b = b[0]
+        if isinstance(sample_a, basestring):
+            a = self.get(sample_a)
+            if isinstance(a, list):
+                a = a[0]
+        else:
+            a = sample_a
+        if isinstance(sample_b, basestring):
+            b = self.get(sample_b)
+            if isinstance(b, list):
+                b = b[0]
+        else:
+            b = sample_b
 
         if a is None or b is None:
             return 'unknown'
@@ -513,11 +520,13 @@ class Ped(object):
         else:
             return 'related level 2'
 
-    def get(self, sample_id, family_id=None):
+    def get(self, sample_id, family_id=None, cache={}):
         """
         get takes a sample id and optional family_id and returns the object(s)
         associated with it.
         """
+        if (sample_id, family_id) in cache:
+            return cache[(sample_id, family_id)]
         a = [x for x in self.samples() if x.sample_id == sample_id]
         if len(a) > 1 and family_id is None:
             print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
@@ -531,6 +540,7 @@ class Ped(object):
             return None
         elif len(a) == 1:
             a = a[0]
+        cache[(sample_id, family_id)] = a
         return a
 
     def _setup_graph(self):
@@ -738,7 +748,6 @@ class Ped(object):
         if set(vcf.samples) - set(samps) == set(vcf.samples):
             raise Exception("error: no samples from VCF found in ped")
 
-
         sample_ranges = vcf.het_check(min_depth=min_depth)
 
         # not find outliers.
@@ -750,12 +759,11 @@ class Ped(object):
         ranges_mean, ranges_std = np.mean(ranges), np.std(ranges)
         ratios_mean, ratios_std = np.mean(ratios), np.std(ratios)
 
-        rmin, rmax = ranges_mean - 1.96 * ranges_std, ranges_mean + 1.96 * ranges_std
+        rmin, rmax = ranges_mean - 2.0 * ranges_std, ranges_mean + 2.0 * ranges_std
         ranges_outlier = [not rmin <= d <= rmax for d in ranges]
 
-        rmin, rmax = ratios_mean - 1.96 * ratios_std, ratios_mean + 1.96 * ratios_std
+        rmin, rmax = ratios_mean - 2.0 * ratios_std, ratios_mean + 2.0 * ratios_std
         ratios_outlier = [not rmin <= d <= rmax for d in ratios]
-
 
         for d, range_o, ratio_o in zip(sample_ranges.values(), ranges_outlier,
                                        ratios_outlier):
@@ -776,7 +784,7 @@ class Ped(object):
         cs = [colors[int(v['range_outlier'])] for v in sample_ranges.values()]
         ecs = ['none' if not v['ratio_outlier'] else 'k' for v in sample_ranges.values()]
 
-        s = get_s(np.array([v['het_count']  for v in sample_ranges.values()]))
+        s = get_s(np.array([v['median_depth'] for v in sample_ranges.values()]))
 
         plt.scatter(ranges, ratios, c=cs, edgecolors=ecs, s=s)
 
@@ -789,7 +797,7 @@ class Ped(object):
         plt.savefig(plot)
         return df
 
-    def ped_check(self, vcf, ncpus=1, plot=False, min_depth=5, each=1):
+    def ped_check(self, vcf, ncpus=1, plot=False, min_depth=5, each=1, prefix=''):
         """
         Given the current pedigree and a VCF of genotypes, find sample-pairs where
         the relationship reported in the pedigree file do not match those inferred
@@ -812,25 +820,28 @@ class Ped(object):
             vcf = cyvcf2.VCF(vcf, gts012=True, samples=[x.sample_id for x in
                 samps])
 
-        #df = pd.DataFrame(list(vcf.site_relatedness(min_depth=min_depth, each=each)))
-        df = pd.DataFrame(list(cyvcf2.par_relatedness(vcf_str,
-                                                      [x.sample_id for x in samps],
-                                                      ncpus,
-                                                      min_depth=min_depth, each=each)))
+        li = cyvcf2.par_relatedness(vcf_str,
+                                    [x.sample_id for x in samps],
+                                    ncpus,
+                                    min_depth=min_depth, each=each)
+        cols = ['sample_a', 'sample_b']
+        cols += [c for c in li[0] if not c in ('sample_a', 'sample_b') and not c.endswith('error')]
+        cols += [c for c in li[0] if c.endswith('error')]
+        df = pd.DataFrame(li, columns=cols)
+        a_samples = [self.get(a) for a in df.sample_a]
+        assert all(not isinstance(a, list) for a in a_samples)
+        b_samples = [self.get(b) for b in df.sample_b]
+        assert all(not isinstance(b, list) for b in a_samples)
+        df["pedigree_parents"] = np.array([self.relation(a, b) == 'parent-child' for a, b in
+                                           zip(a_samples, b_samples)])
         df["pedigree_relatedness"] = np.array([self.relatedness_coefficient(a, b) for a, b in
-                                            zip(df.sample_a, df.sample_b)])
-        df["pedigree_parents"] = np.array([self.relation(a, b) == 'parent-child'  for a, b in
-                                            zip(df.sample_a, df.sample_b)])
+                                               zip(df.sample_a, df.sample_b)])
         df["predicted_parents"] = df['ibs0'] < 0.012
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
         df["sample_duplication_error"] = (df['ibs0'] < 0.012) & (df['rel'] > 0.75)
 
         df["rel_difference"] = df['pedigree_relatedness'] - df['rel']
         # make the column order a bit more sane.
-        cols = ['sample_a', 'sample_b']
-        cols += [c for c in df.columns if not c in ('sample_a', 'sample_b') and not c.endswith('error')]
-        cols += [c for c in df.columns if c.endswith('error')]
-        df = df[cols]
         if not plot:
             return df
         from matplotlib import pyplot as plt
@@ -838,7 +849,8 @@ class Ped(object):
         import seaborn as sns
         sns.set_style('whitegrid')
 
-        colors = [(0.85, 0.85, 0.85)] + [(0.65, 0.65, 0.65)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
+        colors = [(0.85, 0.85, 0.85)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
+        n = df['n'] / df['n'].mean()
 
         for i, rc in enumerate(sorted(set(df['pedigree_relatedness']))):
             sel = df['pedigree_relatedness'] == rc
@@ -847,11 +859,18 @@ class Ped(object):
             ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
             plt.scatter(df['rel'][sel], df['ibs0'][sel],
                     c=colors[i], linewidth=1, edgecolors=ec,
-                    s=14,
+                    s=14 * n[sel],
+                    #s=14,
                     alpha=0.80,
                     label="ped coef: %s" % src)
         plt.xlabel('coefficient of relatedness')
         plt.ylabel('ibs0')
+        if prefix:
+            plt.title(prefix)
+        if os.environ.get('FIXED'):
+            print("fixed axes")
+            plt.xlim(-0.2, 1.1)
+            plt.ylim(-0.02, 0.14)
         plt.legend()
         if plot is True:
             plt.show()

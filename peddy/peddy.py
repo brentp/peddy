@@ -5,6 +5,7 @@ import sys
 import os
 import collections
 import re
+import itertools as it
 from collections import OrderedDict
 import networkx as nx
 import numpy as np
@@ -697,14 +698,14 @@ class Ped(object):
             return colors
 
         fcolors = [colors[1] if e else colors[0] for e in plot_vals['female_errors']]
-        plt.scatter([0] * len(plot_vals['female']), plot_vals['female'],
+        plt.scatter((np.random.uniform(size=len(plot_vals['female'])) - 0.5) / 4.0, plot_vals['female'],
                     c=fcolors,
                     s=s,
                     edgecolors=update_colors(fcolors, plot_vals['female']),
                     marker='o')
 
         mcolors = [colors[0] if e else colors[1] for e in plot_vals['male_errors']]
-        plt.scatter([1] * len(plot_vals['male']), plot_vals['male'],
+        plt.scatter((np.random.uniform(size=len(plot_vals['male'])) - 0.5) / 4.0 + 1.0, plot_vals['male'],
                     c=mcolors,
                     s=s,
                     edgecolors=update_colors(mcolors, plot_vals['male']),
@@ -725,7 +726,7 @@ class Ped(object):
         c1 = mpatches.Patch(color=colors[1], label="male")
 
         plt.xticks([0, 1], ['female', 'male'])
-        plt.xlim(-0.1, 1.1)
+        plt.xlim(-0.15, 1.15)
         plt.ylim(ymin=-0.08)
         plt.xlabel('Gender From Ped')
         plt.ylabel('HET / HOM_ALT [higher is more likely female]')
@@ -751,19 +752,23 @@ class Ped(object):
         sample_ranges = vcf.het_check(min_depth=min_depth)
 
         # not find outliers.
-        ranges = [d['range'] for d in sample_ranges.values()]
-        ratios = [d['het_ratio'] for d in sample_ranges.values()]
+        ranges = np.array([d['range'] for d in sample_ranges.values()])
+        ratios = np.array([d['het_ratio'] for d in sample_ranges.values()])
+        ranges_outlier = np.zeros_like(ranges).astype(bool)
+        ratios_outlier = np.zeros_like(ranges).astype(bool)
         for k, v in sample_ranges.items():
             v['sample_id'] = k
 
-        ranges_mean, ranges_std = np.mean(ranges), np.std(ranges)
-        ratios_mean, ratios_std = np.mean(ratios), np.std(ratios)
 
-        rmin, rmax = ranges_mean - 2.0 * ranges_std, ranges_mean + 2.0 * ranges_std
-        ranges_outlier = [not rmin <= d <= rmax for d in ranges]
+        for i in range(2):
+            ranges_mean, ranges_std = np.mean(ranges[~ranges_outlier]), np.std(ranges[~ranges_outlier])
+            ratios_mean, ratios_std = np.mean(ratios[~ratios_outlier]), np.std(ratios[~ratios_outlier])
 
-        rmin, rmax = ratios_mean - 2.0 * ratios_std, ratios_mean + 2.0 * ratios_std
-        ratios_outlier = [not rmin <= d <= rmax for d in ratios]
+            rmin, rmax = ranges_mean - 2.5 * ranges_std, ranges_mean + 2.5 * ranges_std
+            ranges_outlier = np.array([not rmin <= d <= rmax for d in ranges])
+
+            rmin, rmax = ratios_mean - 2.5 * ratios_std, ratios_mean + 2.5 * ratios_std
+            ratios_outlier = np.array([not rmin <= d <= rmax for d in ratios])
 
         for d, range_o, ratio_o in zip(sample_ranges.values(), ranges_outlier,
                                        ratios_outlier):
@@ -816,17 +821,19 @@ class Ped(object):
 
         samps = list(self.samples())
         if isinstance(vcf, basestring):
-            #samps = kwargs.pop("samples", None)
-            vcf = cyvcf2.VCF(vcf, gts012=True, samples=[x.sample_id for x in
-                samps])
+            vcf = cyvcf2.VCF(vcf, gts012=True, samples=[x.sample_id for x in samps])
 
         d = cyvcf2.par_relatedness(vcf_str,
-                                    [x.sample_id for x in samps],
-                                    ncpus,
-                                    min_depth=min_depth, each=each)
+                                   [x.sample_id for x in samps],
+                                   ncpus,
+                                   min_depth=min_depth, each=each)
         cols = ['sample_a', 'sample_b']
         cols += [c for c in d if not c in ('sample_a', 'sample_b') and not c.endswith('error')]
         cols += [c for c in d if c.endswith('error')]
+        if len(samps) > 200:
+            print("large dataset: only reporting pedigree checks where in same"
+                  + " family or relationship does not match expected",
+                  file=sys.stderr)
         df = pd.DataFrame(d, columns=cols)
         a_samples = [self.get(a) for a in df.sample_a]
         assert all(not isinstance(a, list) for a in a_samples)
@@ -840,8 +847,27 @@ class Ped(object):
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
         df["sample_duplication_error"] = (df['ibs0'] < 0.012) & (df['rel'] > 0.75)
 
-        df["rel_difference"] = df['pedigree_relatedness'] - df['rel']
+        pr = df['pedigree_relatedness'][:]
+        pr[pr < 0] = 0
+        df["rel_difference"] = pr - df['rel']
         # make the column order a bit more sane.
+        if len(samps) > 200:
+            rd = np.abs(df['rel_difference']) > 0.17
+
+            sampling_rate = 1 / (len(samps)**0.6)
+            print(sampling_rate)
+            ru = (np.random.uniform(size=df.shape[0]) < sampling_rate)
+            keep = df.eval('parent_error | sample_duplication_error | predicted_parents| @rd | @ru' +
+                    '| (rel > 0.17) | (ibs0 < 0.02) | (pedigree_relatedness > 0)')
+
+            same_fam = []
+            for a, b in it.izip(a_samples, b_samples):
+                same_fam.append(a.family_id == b.family_id)
+            keep |= np.array(same_fam, dtype=bool)
+
+        else:
+            keep = np.ones(df.shape[0]).astype(bool)
+
         if not plot:
             return df
         from matplotlib import pyplot as plt
@@ -872,12 +898,24 @@ class Ped(object):
             plt.xlim(-0.2, 1.1)
             plt.ylim(-0.02, 0.14)
         plt.legend()
+        xmin, xmax = plt.xlim()
+        if xmin < -0.3:
+            plt.xlim(xmin=-0.3)
+        if xmax > 1.25:
+            plt.xlim(xmax=1.25)
+
+        ymin, ymax = plt.ylim()
+        if ymin < -0.2:
+            plt.ylim(ymin=-0.2)
+        if ymax > 0.20:
+            plt.ylim(ymax=0.20)
+
         if plot is True:
             plt.show()
         else:
             plt.savefig(plot)
         plt.close()
-        return df
+        return df.ix[keep, :]
 
     def summary(self):
         atrios, aquads = 0, 0

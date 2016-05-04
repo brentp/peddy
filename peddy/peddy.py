@@ -905,8 +905,8 @@ class Ped(object):
             plt.xlim(xmax=1.25)
 
         ymin, ymax = plt.ylim()
-        if ymin < -0.2:
-            plt.ylim(ymin=-0.2)
+        if ymin < -0.02:
+            plt.ylim(ymin=-0.02)
         if ymax > 0.20:
             plt.ylim(ymax=0.20)
 

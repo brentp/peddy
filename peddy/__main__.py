@@ -42,7 +42,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
     vals = {'pedigree': ped.to_json(VCF(vcf).samples), 'title':
             op.splitext(op.basename(pedf))[0], 'each': each}
     for check, json in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus) for check
-                                 in ("het_check", "ped_check", "sex_check")]):
+                                 in ("ped_check", "het_check", "sex_check")]):
         vals[check] = json
     sys.stdout.flush()
     with open("%s.html" % prefix, "w") as fh:

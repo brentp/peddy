@@ -820,14 +820,14 @@ class Ped(object):
             vcf = cyvcf2.VCF(vcf, gts012=True, samples=[x.sample_id for x in
                 samps])
 
-        li = cyvcf2.par_relatedness(vcf_str,
+        d = cyvcf2.par_relatedness(vcf_str,
                                     [x.sample_id for x in samps],
                                     ncpus,
                                     min_depth=min_depth, each=each)
         cols = ['sample_a', 'sample_b']
-        cols += [c for c in li[0] if not c in ('sample_a', 'sample_b') and not c.endswith('error')]
-        cols += [c for c in li[0] if c.endswith('error')]
-        df = pd.DataFrame(li, columns=cols)
+        cols += [c for c in d if not c in ('sample_a', 'sample_b') and not c.endswith('error')]
+        cols += [c for c in d if c.endswith('error')]
+        df = pd.DataFrame(d, columns=cols)
         a_samples = [self.get(a) for a in df.sample_a]
         assert all(not isinstance(a, list) for a in a_samples)
         b_samples = [self.get(b) for b in df.sample_b]

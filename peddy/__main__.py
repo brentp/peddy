@@ -18,7 +18,7 @@ def run(args):
                                prefix=prefix)
     else:
         df = getattr(p, check)(vcf, plot=plot)
-    df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.5g")
+    df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.4g")
     if df.shape[0] > 50000 and check == "ped_check":
         # remove unknown relationships that aren't in error.
         df = df[((df.pedigree_relatedness != -1) &
@@ -29,7 +29,7 @@ def run(args):
         # makes the plot nicer
         df.sort(inplace=True, columns=["pedigree_relatedness"])
 
-    return (check, df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=5))
+    return (check, df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=2))
 
 def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
 

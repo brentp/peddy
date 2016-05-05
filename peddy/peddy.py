@@ -763,11 +763,12 @@ class Ped(object):
         for i in range(2):
             ranges_mean, ranges_std = np.mean(ranges[~ranges_outlier]), np.std(ranges[~ranges_outlier])
             ratios_mean, ratios_std = np.mean(ratios[~ratios_outlier]), np.std(ratios[~ratios_outlier])
+            M = i + 2.5
 
-            rmin, rmax = ranges_mean - 2.5 * ranges_std, ranges_mean + 2.5 * ranges_std
+            rmin, rmax = ranges_mean - M * ranges_std, ranges_mean + M * ranges_std
             ranges_outlier = np.array([not rmin <= d <= rmax for d in ranges])
 
-            rmin, rmax = ratios_mean - 2.5 * ratios_std, ratios_mean + 2.5 * ratios_std
+            rmin, rmax = ratios_mean - M * ratios_std, ratios_mean + M * ratios_std
             ratios_outlier = np.array([not rmin <= d <= rmax for d in ratios])
 
         for d, range_o, ratio_o in zip(sample_ranges.values(), ranges_outlier,

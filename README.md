@@ -15,14 +15,15 @@ Most users will only need to run as a command-line tool with a ped and VCF, e.g:
 python -m peddy --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 ```
 
-That will create 3 QC files and 3 QC plots where `_error` columns will 
-indicate:
-+ discrepancies between reported and inferred relations
-+ discrepancies between reported and inferred sex
-+ higher levels of HET calls or more variance in allele frequencies for het calls.
-
-It will also create **ceph-1463.html** which you can open in any browser to
+This create **ceph-1463.html** which you can open in any browser to
 interactively explore your data.
+
+It will also create create 3 csv files and 3 QC plots.
+These will indicate:
+
++ discrepancies between ped-reported and genotype-inferred relations
++ discrepancies between ped-reported and genotype-inferred sex
++ higher levels of HET calls or more variance in ref / (ref + alt read) for het calls.
 
 Overview
 --------

@@ -75,12 +75,9 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
     ped_df.columns = cols
     ped_df.to_csv(new_pedf, sep="\t", index=False, float_format="%.4g")
 
-    old_stderr = sys.stderr
-    sys.stderr = io.StringIO()
     # output the new version with the extra columns.
     # avoid extra stuff to stderr
     tmp = Ped(new_pedf)
-    sys.stderr = old_stderr
     vals['pedigree'] = tmp.to_json(samples)
 
     sys.stdout.flush()

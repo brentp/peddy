@@ -2,3 +2,4 @@ numpy
 cython
 cyvcf2
 networkx
+pandas

@@ -25,6 +25,11 @@ These will indicate:
 + discrepancies between ped-reported and genotype-inferred sex
 + higher levels of HET calls or more variance in ref / (ref + alt read) for het calls.
 
+Finally, it will create a new file ped files `ceph1463.peddy.ped` that also lists
+the most useful columns from the `het-check` and `sex-check`. Users can **first
+look at this extended ped file for an overview of likely problems** and then refer
+to the plots and .csv files for more detailed information.
+
 Overview
 --------
 

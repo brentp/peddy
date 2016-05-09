@@ -2,7 +2,9 @@ import sys
 import os.path as op
 import string
 from .peddy import Ped
+import pandas as pd
 from cyvcf2 import VCF
+import io
 
 def run(args):
     check, pedf, vcf, plot, prefix, each, ncpus = args
@@ -29,7 +31,7 @@ def run(args):
         # makes the plot nicer
         df.sort(inplace=True, columns=["pedigree_relatedness"])
 
-    return (check, df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=2))
+    return (check, df) #
 
 def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
 
@@ -39,11 +41,48 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
     prefix = prefix.rstrip(".-")
     print("")
 
-    vals = {'pedigree': ped.to_json(VCF(vcf).samples), 'title':
-            op.splitext(op.basename(pedf))[0], 'each': each}
-    for check, json in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus) for check
+    samples = VCF(vcf).samples
+
+    ped_df = pd.read_table(pedf,
+                           header=None,
+                           names=ped.header or ['family_id', 'sample_id',
+                                          'paternal_id', 'maternal_id',
+                                          'sex', 'phenotype'],
+                           # if there's a header, we skip it as it's inidcated
+                           # above.
+                           skiprows=1 if ped.header else None)
+    ped_df.index = ped_df.sample_id
+    ped_df = ped_df.ix[samples, :]
+
+    keep_cols = {"ped_check": [],
+                 "het_check": ["het_ratio", "mean_depth", "range"],
+                 "sex_check": ["het_ratio", "error"]}
+
+    vals = {'title': op.splitext(op.basename(pedf))[0], 'each': each}
+    for check, df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus) for check
                                  in ("ped_check", "het_check", "sex_check")]):
-        vals[check] = json
+        vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=2)
+
+        if check != "ped_check":
+            df.index = df.sample_id
+            for col in keep_cols[check]:
+                col_name = "sex_" + col if check == "sex_check" else col
+                ped_df[col_name] = df.ix[samples, :][col]
+
+    new_pedf = prefix + ".peddy.ped"
+    cols = list(ped_df.columns)
+    cols[0] = '#' + cols[0]
+    ped_df.columns = cols
+    ped_df.to_csv(new_pedf, sep="\t", index=False, float_format="%.4g")
+
+    old_stderr = sys.stderr
+    sys.stderr = io.StringIO()
+    # output the new version with the extra columns.
+    # avoid extra stuff to stderr
+    tmp = Ped(new_pedf)
+    sys.stderr = old_stderr
+    vals['pedigree'] = tmp.to_json(samples)
+
     sys.stdout.flush()
     with open("%s.html" % prefix, "w") as fh:
         fh.write(tmpl.substitute(**vals))

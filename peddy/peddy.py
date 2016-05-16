@@ -10,6 +10,7 @@ from collections import OrderedDict
 import networkx as nx
 import numpy as np
 from heapq import *
+import random
 
 REQUIRED = ['family_id', 'sample_id', 'paternal_id',
             'maternal_id', 'sex', 'phenotype']
@@ -599,10 +600,10 @@ class Ped(object):
         path = a_paths + b_paths
         return n * 2.0**-len(path)
 
-    def sex_check(self, vcf_path, min_depth=6,
+    def sex_check(self, vcf_path, min_depth=7,
                   skip_missing=True,
                   plot=False,
-                  cutoff=0.5,
+                  cutoff=0.6,
                   pars=('X:10000-2781479', 'X:155701382-156030895')):
         """
         Check that the sex reported in the ped file matches that inferred
@@ -635,6 +636,8 @@ class Ped(object):
         hom_alt = np.zeros(len(vcf.samples), dtype=int)
         kept, skipped = 0, 0
         for variant in vcf(chrom):
+            if variant.call_rate < 0.5: continue
+            if variant.aaf < 0.01: continue
             depth_filter = variant.gt_depths >= min_depth
             gt_types = variant.gt_types
             if any(s <= variant.end and e >= variant.end for chrom, (s, e) in pars):
@@ -650,7 +653,7 @@ class Ped(object):
         print("sex-check: %s skipped / %d kept" % (skipped, kept), file=sys.stderr)
 
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
-                'female_errors': [], 'male_samples': [], 'female_samples':[]}
+                    'female_errors': [], 'male_samples': [], 'female_samples':[]}
         res = []
         for i, s in enumerate(vcf.samples):
             try:
@@ -679,7 +682,6 @@ class Ped(object):
                        het_ratio=val, predicted_sex=predicted_sex,
                        error=error))
 
-
         if not plot:
             return pd.DataFrame(res)
 
@@ -698,14 +700,16 @@ class Ped(object):
             return colors
 
         fcolors = [colors[1] if e else colors[0] for e in plot_vals['female_errors']]
-        plt.scatter((np.random.uniform(size=len(plot_vals['female'])) - 0.5) / 4.0, plot_vals['female'],
+        female_xs = (np.random.uniform(size=len(plot_vals['female'])) - 0.5) / 2.1
+        plt.scatter(female_xs, plot_vals['female'],
                     c=fcolors,
                     s=s,
                     edgecolors=update_colors(fcolors, plot_vals['female']),
                     marker='o')
 
         mcolors = [colors[0] if e else colors[1] for e in plot_vals['male_errors']]
-        plt.scatter((np.random.uniform(size=len(plot_vals['male'])) - 0.5) / 4.0 + 1.0, plot_vals['male'],
+        male_xs = (np.random.uniform(size=len(plot_vals['male'])) - 0.5) / 2.1 + 1.0
+        plt.scatter(male_xs, plot_vals['male'],
                     c=mcolors,
                     s=s,
                     edgecolors=update_colors(mcolors, plot_vals['male']),
@@ -713,12 +717,12 @@ class Ped(object):
 
         for i, e in enumerate(plot_vals['female_errors']):
             if not e: continue
-            plt.text(0, plot_vals['female'][i], plot_vals['female_samples'][i],
+            plt.text(female_xs[i], plot_vals['female'][i], plot_vals['female_samples'][i],
                      color=colors[1], fontsize=7)
 
         for i, e in enumerate(plot_vals['male_errors']):
             if not e: continue
-            plt.text(1, plot_vals['male'][i], plot_vals['male_samples'][i],
+            plt.text(male_xs[i], plot_vals['male'][i], plot_vals['male_samples'][i],
                      color=colors[0], fontsize=7)
 
         import matplotlib.patches as mpatches
@@ -726,8 +730,9 @@ class Ped(object):
         c1 = mpatches.Patch(color=colors[1], label="male")
 
         plt.xticks([0, 1], ['female', 'male'])
-        plt.xlim(-0.15, 1.15)
+        plt.xlim(-0.27, 1.27)
         plt.ylim(ymin=-0.08)
+        plt.axhline(y=cutoff, color='0.75')
         plt.xlabel('Gender From Ped')
         plt.ylabel('HET / HOM_ALT [higher is more likely female]')
         plt.legend(handles=[c0, c1], title="Gender predicted\nfrom genotypes",
@@ -754,8 +759,8 @@ class Ped(object):
         # not find outliers.
         ranges = np.array([d['range'] for d in sample_ranges.values()])
         ratios = np.array([d['het_ratio'] for d in sample_ranges.values()])
-        ranges_outlier = np.zeros_like(ranges).astype(bool)
-        ratios_outlier = np.zeros_like(ranges).astype(bool)
+        ranges_outlier = (np.abs(ranges - 0.24) > 0.15).astype(bool)
+        ratios_outlier = (np.abs(ratios - 0.3) > 0.1).astype(bool)
         for k, v in sample_ranges.items():
             v['sample_id'] = k
 

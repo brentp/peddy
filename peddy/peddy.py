@@ -677,7 +677,7 @@ class Ped(object):
 
             plot_vals[ped_sex + '_errors'].append(error)
             plot_vals[ped_sex + '_samples'].append(s)
-            res.append(dict(sample=s, ped_sex=ped_sex, hom_ref_count=hom_ref[i],
+            res.append(dict(sample_id=s, ped_sex=ped_sex, hom_ref_count=hom_ref[i],
                        het_count=het[i], hom_alt_count=hom_alt[i],
                        het_ratio=val, predicted_sex=predicted_sex,
                        error=error))

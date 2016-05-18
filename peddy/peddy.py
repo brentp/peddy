@@ -759,22 +759,12 @@ class Ped(object):
         # not find outliers.
         ranges = np.array([d['range'] for d in sample_ranges.values()])
         ratios = np.array([d['het_ratio'] for d in sample_ranges.values()])
-        ranges_outlier = (np.abs(ranges - 0.24) > 0.15).astype(bool)
-        ratios_outlier = (np.abs(ratios - 0.3) > 0.1).astype(bool)
+        ratios_outlier = ((ratios < 0.305) | (ratios > 0.36))
+        ranges_outlier = ((ranges < 0.08) | (ranges > 0.31))
+
         for k, v in sample_ranges.items():
             v['sample_id'] = k
 
-
-        for i in range(2):
-            ranges_mean, ranges_std = np.mean(ranges[~ranges_outlier]), np.std(ranges[~ranges_outlier])
-            ratios_mean, ratios_std = np.mean(ratios[~ratios_outlier]), np.std(ratios[~ratios_outlier])
-            M = i + 2.5
-
-            rmin, rmax = ranges_mean - M * ranges_std, ranges_mean + M * ranges_std
-            ranges_outlier = np.array([not rmin <= d <= rmax for d in ranges])
-
-            rmin, rmax = ratios_mean - M * ratios_std, ratios_mean + M * ratios_std
-            ratios_outlier = np.array([not rmin <= d <= rmax for d in ratios])
 
         for d, range_o, ratio_o in zip(sample_ranges.values(), ranges_outlier,
                                        ratios_outlier):

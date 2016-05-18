@@ -51,6 +51,8 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
                            # if there's a header, we skip it as it's inidcated
                            # above.
                            skiprows=1 if ped.header else None)
+    ped_df.family_id = ped_df.family_id.astype(basestring)
+    ped_df.sample_id = ped_df.sample_id.astype(basestring)
     ped_df.index = ped_df.sample_id
     ped_df = ped_df.ix[samples, :]
 
@@ -61,7 +63,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
     vals = {'title': op.splitext(op.basename(pedf))[0], 'each': each}
     for check, df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus) for check
                                  in ("ped_check", "het_check", "sex_check")]):
-        vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=2)
+        vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
 
         if check != "ped_check":
             df.index = df.sample_id

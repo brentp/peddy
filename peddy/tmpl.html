@@ -137,8 +137,8 @@ for(i=0; v=sex_data[i], i<sex_data.length; i++){
 
 	max_seen = Math.max(max_seen, v['hom_ref_count'])
     
-
-    a['x'].push(v['ped_sex'] == 'male' ? 1 : 0)
+    var xpos = (Math.random() - 0.5) / 2;
+    a['x'].push(v['ped_sex'] == 'male' ? 1 + xpos : xpos)
     a['y'].push(v['het_ratio'].toPrecision(3))
     a['text'].push("sample: <b>" + v['sample_id'] + "</b>")
     a['marker']['size'].push(v['hom_ref_count'])

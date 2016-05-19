@@ -4,4 +4,3 @@ cyvcf2
 networkx
 pandas
 scikit-learn
-scipy

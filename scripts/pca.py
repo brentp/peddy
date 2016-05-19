@@ -32,11 +32,15 @@ ipops = "AFR AMR EAS EUR SAS".split()
 pops = np.array([x['super_pop'] for x in ts.reader('integrated_call_samples_v3.20130502.ALL.panel')])
 target = np.array([ipops.index(x) for x in pops])
 
-
-clf.fit(genos, target)
-
-
+#print "|".join(map(str, target))
+#1/0
 import time
+
+t0 = time.time()
+clf.fit(genos, target)
+print "time to fit:", time.time() - t0
+
+
 import cPickle
 
 t0 = time.time()

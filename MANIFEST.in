@@ -3,3 +3,5 @@ include LICENSE
 include peddy/tests/*
 include tox.ini
 include peddy/tmpl.html
+include peddy/1kg.sites.bin.gz
+include peddy/1kg.sites

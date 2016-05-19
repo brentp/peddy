@@ -754,7 +754,17 @@ class Ped(object):
         if set(vcf.samples) - set(samps) == set(vcf.samples):
             raise Exception("error: no samples from VCF found in ped")
 
-        sample_ranges = vcf.het_check(min_depth=min_depth)
+        sample_ranges, sites, gt_types = vcf.het_check(min_depth=min_depth)
+
+        from .pca import pca
+        if plot:
+            pca_plot = plot.replace('het_', 'pca_').replace('het-', 'pca-')
+            if pca_plot == plot:
+                pca_plot, ext = pca_plot.rsplit(".", 1)
+                pca_plot = "%s.%s%s" % (pca_plot, "pca.", ext)
+        else:
+            pca_plot = False
+        pca(pca_plot, gt_types, sites)
 
         # not find outliers.
         ranges = np.array([d['range'] for d in sample_ranges.values()])

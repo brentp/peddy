@@ -21,6 +21,6 @@ install:
     - conda update -q conda
     - conda install scipy scikit-learn cython pandas numpy networkx
     - conda install -c bioconda cyvcf2
-    - pip install networkx
+    - pip install -U networkx
     - pip install -r requirements.txt
     - python setup.py install

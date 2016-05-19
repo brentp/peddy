@@ -3,4 +3,5 @@ cython
 cyvcf2
 networkx
 pandas
+scipy
 scikit-learn

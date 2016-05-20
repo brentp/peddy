@@ -42,46 +42,71 @@ def pca(fig_path, genotype_matrix=None, sites=None):
 
     background_tf = clf.named_steps['randomizedpca'].transform(genos1kg)
 
-    if fig_path:
-        from matplotlib import pyplot as plt
-        plt.close()
-        fig, ax = plt.subplots(1)
-        import matplotlib.patches as mpatches
-        patches = []
-        import seaborn as sns
-        pal = sns.color_palette('Set1')
-        sns.set_style('whitegrid')
+    df = None
 
-        for i, p in enumerate(ipops):
-            subset = i == background_target
-            ax.scatter(background_tf[subset, 0], background_tf[subset, 1], c=pal[i],
-                       edgecolor='none',
-                       s=8,
-                       label=p, alpha=0.15)
-            patches.append(mpatches.Patch(color=pal[i], label=p))
+    if genotype_matrix is not None:
+        import pandas as pd
+        tf = clf.named_steps['randomizedpca'].transform(genotype_matrix)
+        s = (genotype_matrix != 3).sum(axis=1)
+        s = s / np.mean(s)
+        s = s * 15
+        pred = clf.predict(genotype_matrix)
 
-        if genotype_matrix is not None:
-            tf = clf.named_steps['randomizedpca'].transform(genotype_matrix)
-            s = (genotype_matrix != 3).sum(axis=1)
-            s = s / np.mean(s)
-            s = s * 15
+        df = pd.DataFrame({'predicted-ancestry': [ipops[v] for v in pred],
+                           'PC1': tf[:, 0],
+                           'PC2': tf[:, 1],
+                           'PC3': tf[:, 2],
+                           'PC4': tf[:, 3]})
+    if not fig_path:
+        return df
 
-            pred = clf.predict(genotype_matrix)
-            c = (0.55, 0.55, 0.55)
+
+    import seaborn as sns
+    from matplotlib import pyplot as plt
+    plt.close()
+    fig, axes = plt.subplots(2)
+    fig.set_size_inches((6, 12))
+    import matplotlib.patches as mpatches
+    patches = []
+    pal = sns.color_palette('Set1')
+    sns.set_style('whitegrid')
+
+    for i, p in enumerate(ipops):
+        subset = i == background_target
+        axes[0].scatter(background_tf[subset, 0], background_tf[subset, 1], c=pal[i],
+                        edgecolor='none',
+                        s=8,
+                        label=p, alpha=0.15)
+
+        axes[1].scatter(background_tf[subset, 0], background_tf[subset, 2], c=pal[i],
+                        edgecolor='none',
+                        s=8,
+                        label=p, alpha=0.15)
+
+        patches.append(mpatches.Patch(color=pal[i], label=p))
+
+
+        c = 'none' #(0.55, 0.55, 0.55)
+        for axi in range(2):
             for i, p in enumerate(ipops):
                 subset = i == pred
-                ax.scatter(tf[subset, 0], tf[subset, 1], c=c,
-                           s=s,
-                           alpha=0.7,
-                           linewidth=1.4,
-                           edgecolor=pal[i])
-            patches.append(mpatches.Patch(color=c, label='study'))
+                # plot the first vs 2nd, then 3rd pc
+                axes[axi].scatter(tf[subset, 0], tf[subset, axi + 1], c=c,
+                                  s=s,
+                                  alpha=0.7,
+                                  linewidth=1.4,
+                                  edgecolor=pal[i])
 
-        ax.set_xlabel("PC1")
-        ax.set_ylabel("PC2")
-        plt.legend(handles=patches, title="population from 1kg")
-        plt.savefig(fig_path)
-        plt.close()
+    axes[0].set_xlabel("PC1")
+    axes[0].set_ylabel("PC2")
+    axes[1].set_xlabel("PC1")
+    axes[1].set_ylabel("PC3")
+    plt.legend(loc='best', handles=patches, title="population from 1kg")
+    plt.title("study samples colored by inferred ancestry")
+    plt.savefig(fig_path)
+    plt.close()
+
+    return df
 
 if __name__ == "__main__":
     pca("1kg", None)

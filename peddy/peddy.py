@@ -754,6 +754,7 @@ class Ped(object):
         if set(vcf.samples) - set(samps) == set(vcf.samples):
             raise Exception("error: no samples from VCF found in ped")
 
+        samps = vcf.samples
         sample_ranges, sites, gt_types = vcf.het_check(min_depth=min_depth)
 
         from .pca import pca
@@ -764,7 +765,7 @@ class Ped(object):
                 pca_plot = "%s.%s%s" % (pca_plot, "pca.", ext)
         else:
             pca_plot = False
-        pca(pca_plot, gt_types, sites)
+        pca_df = pca(pca_plot, gt_types, sites)
 
         # not find outliers.
         ranges = np.array([d['range'] for d in sample_ranges.values()])
@@ -785,6 +786,14 @@ class Ped(object):
         df = pd.DataFrame(sample_ranges.values())
         cols = ['sample_id'] + sorted([x for x in df.columns if x != 'sample_id'])
         df = df[cols]
+
+        df.index = df['sample_id']
+
+        if pca_df is not None:
+            # merge the 2 dataframes.
+            pca_df.index = samps
+            df = pd.concat((df, pca_df), axis=1)
+
         if not plot:
             return df
 

@@ -38,7 +38,7 @@ def pca(fig_path, genotype_matrix=None, sites=None):
     background_target = np.array(map(int, _str.split("|")))
     clf.fit(genos1kg, background_target)
 
-    ipops = "AFR AMR EAS EUR SAS".split()
+    ipops = "AFR AMR EAS EUR SAS UNKNOWN".split()
 
     background_tf = clf.named_steps['randomizedpca'].transform(genos1kg)
 
@@ -51,8 +51,11 @@ def pca(fig_path, genotype_matrix=None, sites=None):
         s = s / np.mean(s)
         s = s * 15
         pred = clf.predict(genotype_matrix)
+        proba = clf.predict_proba(genotype_matrix).max(axis=1)
+        pred[proba < 0.65] = len(ipops) - 1
 
-        df = pd.DataFrame({'predicted-ancestry': [ipops[v] for v in pred],
+        df = pd.DataFrame({'ancestry-prediction': [ipops[v] for v in pred],
+                           'ancestry-prob': proba,
                            'PC1': tf[:, 0],
                            'PC2': tf[:, 1],
                            'PC3': tf[:, 2],

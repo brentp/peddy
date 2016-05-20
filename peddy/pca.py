@@ -74,6 +74,8 @@ def pca(fig_path, genotype_matrix=None, sites=None):
     pal = sns.color_palette('Set1')
     sns.set_style('whitegrid')
 
+    pal[len(ipops) - 1] = (0.5, 0.5, 0.5)
+
     for i, p in enumerate(ipops):
         subset = i == background_target
         axes[0].scatter(background_tf[subset, 0], background_tf[subset, 1], c=pal[i],

@@ -12,6 +12,7 @@ def run(args):
     p = Ped(pedf, warn=False)
     print(check)
     sys.stdout.flush()
+    background_df = None
     if plot:
         plot = prefix + "." + check + ".png"
 
@@ -20,6 +21,9 @@ def run(args):
                                prefix=prefix)
     else:
         df = getattr(p, check)(vcf, plot=plot)
+        if check == "het_check":
+            df, background_df = df
+
     df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.4g")
     if df.shape[0] > 50000 and check == "ped_check":
         # remove unknown relationships that aren't in error.
@@ -31,7 +35,7 @@ def run(args):
         # makes the plot nicer
         df.sort_values(inplace=True, by=["pedigree_relatedness"])
 
-    return (check, df) #
+    return (check, df, background_df) #
 
 def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
 
@@ -57,19 +61,24 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
     ped_df = ped_df.ix[samples, :]
 
     keep_cols = {"ped_check": [],
-                 "het_check": ["het_ratio", "mean_depth", "range"],
+                 "het_check": ["het_ratio", "mean_depth", "iqr_baf", "ancestry-prediction", "PC1", "PC2", "PC3"],
                  "sex_check": ["het_ratio", "error"]}
 
     vals = {'title': op.splitext(op.basename(pedf))[0], 'each': each}
-    for check, df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus) for check
+    # background_df only present for het-check. It's the PC's from 1000G for
+    # plotting.
+    for check, df, background_df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus) for check
                                  in ("ped_check", "het_check", "sex_check")]):
         vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
 
         if check != "ped_check":
             df.index = df.sample_id
             for col in keep_cols[check]:
-                col_name = "sex_" + col if check == "sex_check" else col
+                c = check.split("_")[0] + "_"
+                col_name = col if col.startswith(("PC", c)) else c + col
                 ped_df[col_name] = df.ix[samples, :][col]
+            if background_df is not None:
+                vals["background_pca"] = background_df.to_json(orient='records', double_precision=3)
 
     new_pedf = prefix + ".peddy.ped"
     cols = list(ped_df.columns)
@@ -79,8 +88,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
 
     # output the new version with the extra columns.
     # avoid extra stuff to stderr
-    tmp = Ped(new_pedf)
-    vals['pedigree'] = tmp.to_json(samples)
+    vals['pedigree'] = Ped(new_pedf).to_json(samples)
 
     sys.stdout.flush()
     with open("%s.html" % prefix, "w") as fh:

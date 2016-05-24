@@ -42,7 +42,7 @@ def pca(fig_path, genotype_matrix=None, sites=None):
 
     background_tf = clf.named_steps['randomizedpca'].transform(genos1kg)
 
-    df = None
+    background_df, df = None, None
 
     if genotype_matrix is not None:
         import pandas as pd
@@ -60,8 +60,13 @@ def pca(fig_path, genotype_matrix=None, sites=None):
                            'PC2': tf[:, 1],
                            'PC3': tf[:, 2],
                            'PC4': tf[:, 3]})
+        background_df = pd.DataFrame({'ancestry': [ipops[t] for t in background_target],
+                                      'PC1': background_tf[:, 0],
+                                      'PC2': background_tf[:, 1],
+                                      'PC3': background_tf[:, 2],
+                                      'PC4': background_tf[:, 3]})
     if not fig_path:
-        return df
+        return df, background_df
 
 
     import seaborn as sns
@@ -111,7 +116,7 @@ def pca(fig_path, genotype_matrix=None, sites=None):
     plt.savefig(fig_path)
     plt.close()
 
-    return df
+    return df, background_df
 
 if __name__ == "__main__":
     pca("1kg", None)

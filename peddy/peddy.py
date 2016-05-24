@@ -475,12 +475,15 @@ class Ped(object):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.filename)
 
-    def to_json(self, samples=None):
+    def to_json(self, samples=None, cols=None):
         import json
+        cols = cols or self.header
         if samples is None:
-            return json.dumps([s.dict() for s in self.samples()])
+            dicts = [s.dict() for s in self.samples()]
         else:
-            return json.dumps([s.dict() for s in self.samples() if s.sample_id in set(samples)])
+            dicts = [s.dict() for s in self.samples() if s.sample_id in set(samples)]
+        # do some extra work to keep order
+        return json.dumps([OrderedDict([(c, d[c]) for c in cols]) for d in dicts])
 
     def relation(self, sample_a, sample_b):
         if isinstance(sample_a, basestring):
@@ -765,7 +768,7 @@ class Ped(object):
                 pca_plot = "%s.%s%s" % (pca_plot, "pca.", ext)
         else:
             pca_plot = False
-        pca_df = pca(pca_plot, gt_types, sites)
+        pca_df, background_pca_df = pca(pca_plot, gt_types, sites)
 
         # not find outliers.
         ranges = np.array([d['range'] for d in sample_ranges.values()])
@@ -779,8 +782,9 @@ class Ped(object):
 
         for d, range_o, ratio_o in zip(sample_ranges.values(), ranges_outlier,
                                        ratios_outlier):
-            d['range_outlier'] = range_o
+            d['iqr_outlier'] = range_o
             d['ratio_outlier'] = ratio_o
+            d['iqr_baf'] = d.pop('range')
 
         import pandas as pd
         df = pd.DataFrame(sample_ranges.values())
@@ -795,13 +799,13 @@ class Ped(object):
             df = pd.concat((df, pca_df), axis=1)
 
         if not plot:
-            return df
+            return df, background_pca_df
 
         from matplotlib import pyplot as plt
         import seaborn as sns
         colors = sns.color_palette('Set1', 4)
 
-        cs = [colors[int(v['range_outlier'])] for v in sample_ranges.values()]
+        cs = [colors[int(v['iqr_outlier'])] for v in sample_ranges.values()]
         ecs = ['none' if not v['ratio_outlier'] else 'k' for v in sample_ranges.values()]
 
         s = get_s(np.array([v['median_depth'] for v in sample_ranges.values()]))
@@ -809,13 +813,13 @@ class Ped(object):
         plt.scatter(ranges, ratios, c=cs, edgecolors=ecs, s=s)
 
         for k, v in ((k, v) for k, v in sample_ranges.items()
-                   if v['ratio_outlier'] or v['range_outlier']):
-          plt.text(v['range'], v['het_ratio'], k, color=colors[1], fontsize=7)
+                   if v['ratio_outlier'] or v['iqr_outlier']):
+          plt.text(v['iqr_baf'], v['het_ratio'], k, color=colors[1], fontsize=7)
 
         plt.xlabel('IQR of B-allele frequency')
         plt.ylabel('proportion het calls')
         plt.savefig(plot)
-        return df
+        return df, background_pca_df
 
     def ped_check(self, vcf, ncpus=1, plot=False, min_depth=5, each=1, prefix=''):
         """

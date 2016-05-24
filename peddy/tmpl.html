@@ -602,9 +602,9 @@ var background_pca = $background_pca
 var pal = ['#e41a1c', '#377eb7', '#4dae4a', '#994ea1', '#ff8100', '#adadad'];
 
 var pca_layout = {
-  height: HEIGHT,
+  height: HEIGHT * 2,
   title: "PCA projection onto 1000 genomes",
-  //width: '50%',
+  width: HEIGHT * 2,
   xaxis: {
     title: 'PC1',
     titlefont: {size: 16},
@@ -632,7 +632,7 @@ for(var i=0; i < pops.length; i++){
 
     pcas[pops[i]] = {name: pops[i], x:[], y:[], mode: 'markers', type: 'scatter',
 		showlegend: false,
-        marker: {opacity: 0.55, color: pal[i], size:4}, hoverinfo: 'none'} 
+        marker: {opacity: 0.25, color: pal[i], size:4}, hoverinfo: 'none'} 
 }
 
 
@@ -656,22 +656,21 @@ for(var i=0; i < het_data.length; i++){
         pcas[r['ancestry-prediction']] = {text: [], x:[], y:[], mode: 'markers', type: 'scatter',
             showlegend: true,
             name: r['ancestry-prediction'],
-            marker: {opacity: 0.9, color: pal[pl[r['ancestry-prediction']]], size:11, symbol: "square"}, hoverinfo: 'text'} 
+            marker: {opacity: 0.9, color: pal[pl[r['ancestry-prediction']]], size:11, symbol: "square"}} 
     }
     var group = pcas[r['ancestry-prediction']];
     group['x'].push(r['PC1'])
     group['y'].push(r['PC2'])
-	group['text'].push('sample:' + r['sample_id'] + '<br/>predicted-ancestry:' + r['ancestry-prediction'])
+	group['text'].push('sample: <b>' + r['sample_id'] + '</b><br>predicted-ancestry: <b>' + r['ancestry-prediction'] + '</b>')
 }
+
 for(var i=0; i < pops.length; i++){
     if(pcas[pops[i]]===undefined) {
-		apcas.push(
-			pcas[r['ancestry-prediction']] = {text: [], x:[1], y:[1], mode: 'markers', type: 'scatter',
+		apcas.push({text: [], x:[2], y:[-1.5], mode: 'markers', type: 'scatter',
 						visible: "lengendonly",
 						showlegend: true,
-						name: r['ancestry-prediction'],
-						marker: {opacity: 0.9, color: pal[i], size:11, symbol: "square"}, hoverinfo: 'text'} 
-		)
+						name: pops[i],
+						marker: {opacity: 0.9, color: pal[i], size:11, symbol: "square"}})
     } else {
         apcas.push(pcas[pops[i]]);
     }

@@ -29,7 +29,7 @@ def run(args):
 
     if check == "ped_check":
         # makes the plot nicer
-        df.sort(inplace=True, columns=["pedigree_relatedness"])
+        df.sort_values(inplace=True, by=["pedigree_relatedness"])
 
     return (check, df) #
 

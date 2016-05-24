@@ -94,6 +94,8 @@ Redraw points with table selection: <input type="checkbox" id="redraw" checked /
 
 <div id="pcaplot"> </div>
 
+<!-- hide for now -->
+<div style="display:none">
 <span style="padding:10px">
 filter by <b>deviation from</b> expected <b>relatedness</b>
 </span>
@@ -104,6 +106,7 @@ filter by <b>deviation from</b> expected <b>relatedness</b>
 filter by <b>deviation from</b> expected <b>IBS0</b>
 <input id="ibscheck" type="checkbox">
 </span>
+</div>
 
 </body>
 <script>
@@ -187,7 +190,7 @@ var sex_layout = {
     tickfont: {size: 8},
   },
   margin: { t: 30 },
-  legend: {x: 0.5, y: 0.9},
+  legend: {x: 0.5, y: 0.9, bgcolor: '#EEE'},
   hovermode: 'closest'
 };
 
@@ -246,7 +249,7 @@ var het_layout = {
     showline: false,
     tickfont: {size: 8},
   },
-  legend: {x: 0.5, y: 0.5},
+  legend: {x: 0.6, y: 0.1, bgcolor: '#EEE'},
   margin: { t: 30 },
   hovermode: 'closest'
 };
@@ -329,7 +332,7 @@ var ped_layout = {
     tickfont: {size: 8},
   },
   margin: { t: 30 },
-  legend: {x: 0.5, y: 0.5},
+  legend: {x: 0.5, y: 0.9, bgcolor: '#EEE'},
   hovermode: 'closest'
 };
 
@@ -595,6 +598,88 @@ function redraw(all) {
 
 <script>
 var background_pca = $background_pca
+// converted from seaborn palette Set1.
+var pal = ['#e41a1c', '#377eb7', '#4dae4a', '#994ea1', '#ff8100', '#adadad'];
+
+var pca_layout = {
+  height: HEIGHT,
+  title: "PCA projection onto 1000 genomes",
+  //width: '50%',
+  xaxis: {
+    title: 'PC1',
+    titlefont: {size: 16},
+    showline: false,
+    tickfont: {size: 8},
+    zeroline: false,
+  },
+  yaxis: {
+    title: 'PC2',
+    titlefont: {size: 16},
+    showline: false,
+    tickfont: {size: 8},
+  },
+  margin: { t: 30 },
+  legend: {x: 0.9, y: 0.01, bgcolor: '#EEE'},
+  hovermode: 'closest'
+};
+
+var pops = ["AFR", "AMR", "EAS", "EUR", "SAS", "UNKNOWN"]
+var pl = {}
+
+var pcas = {}
+for(var i=0; i < pops.length; i++){
+    pl[pops[i]] = i;
+
+    pcas[pops[i]] = {name: pops[i], x:[], y:[], mode: 'markers', type: 'scatter',
+		showlegend: false,
+        marker: {opacity: 0.55, color: pal[i], size:4}, hoverinfo: 'none'} 
+}
+
+
+for(var i=0; i < background_pca.length; i++){
+    var r = background_pca[i];
+    var group = pcas[r['ancestry']]
+    group['x'].push(r['PC1'])
+    group['y'].push(r['PC2'])
+}
+
+var apcas = [];
+for(var i=0; i < pops.length-1; i++){
+    apcas.push(pcas[pops[i]]);
+}
+
+pcas = {}
+// actual samples
+for(var i=0; i < het_data.length; i++){
+    var r = het_data[i];
+    if(pcas[r['ancestry-prediction']] === undefined){
+        pcas[r['ancestry-prediction']] = {text: [], x:[], y:[], mode: 'markers', type: 'scatter',
+            showlegend: true,
+            name: r['ancestry-prediction'],
+            marker: {opacity: 0.9, color: pal[pl[r['ancestry-prediction']]], size:11, symbol: "square"}, hoverinfo: 'text'} 
+    }
+    var group = pcas[r['ancestry-prediction']];
+    group['x'].push(r['PC1'])
+    group['y'].push(r['PC2'])
+	group['text'].push('sample:' + r['sample_id'] + '<br/>predicted-ancestry:' + r['ancestry-prediction'])
+}
+for(var i=0; i < pops.length; i++){
+    if(pcas[pops[i]]===undefined) {
+		apcas.push(
+			pcas[r['ancestry-prediction']] = {text: [], x:[1], y:[1], mode: 'markers', type: 'scatter',
+						visible: "lengendonly",
+						showlegend: true,
+						name: r['ancestry-prediction'],
+						marker: {opacity: 0.9, color: pal[i], size:11, symbol: "square"}, hoverinfo: 'text'} 
+		)
+    } else {
+        apcas.push(pcas[pops[i]]);
+    }
+}
+
+
+Plotly.plot('pcaplot', apcas, pca_layout);
+
 </script>
 
 </html>

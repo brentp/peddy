@@ -150,7 +150,7 @@ class Sample(object):
         self.attrs = extra_attrs or []
 
     def dict(self):
-        d = dict((k, getattr(self, k)) for k in self.header)
+        d = OrderedDict((k, getattr(self, k)) for k in self.header)
         for k in ('maternal_id', 'paternal_id', 'sex'):
             d[k] = str(d[k])
         d['phenotype'] = 'affected' if self.affected else 'unaffected'
@@ -475,15 +475,14 @@ class Ped(object):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.filename)
 
-    def to_json(self, samples=None, cols=None):
+    def to_json(self, samples=None):
         import json
-        cols = cols or self.header
         if samples is None:
             dicts = [s.dict() for s in self.samples()]
         else:
             dicts = [s.dict() for s in self.samples() if s.sample_id in set(samples)]
         # do some extra work to keep order
-        return json.dumps([OrderedDict([(c, d[c]) for c in cols]) for d in dicts])
+        return json.dumps(dicts)
 
     def relation(self, sample_a, sample_b):
         if isinstance(sample_a, basestring):

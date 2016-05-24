@@ -5,12 +5,14 @@ from .peddy import Ped
 import pandas as pd
 from cyvcf2 import VCF
 import io
+import time
 
 def run(args):
     check, pedf, vcf, plot, prefix, each, ncpus = args
     # only print warnings for het_check
     p = Ped(pedf, warn=False)
     print(check)
+    t0 = time.time()
     sys.stdout.flush()
     background_df = None
     if plot:
@@ -25,6 +27,11 @@ def run(args):
             df, background_df = df
 
     df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.4g")
+    d, unit = time.time() - t0, "seconds"
+    if d > 100:
+        d /= 60
+        unit = "minutes"
+    print "ran in %.1f %s" % (d, unit)
     if df.shape[0] > 50000 and check == "ped_check":
         # remove unknown relationships that aren't in error.
         df = df[((df.pedigree_relatedness != -1) &

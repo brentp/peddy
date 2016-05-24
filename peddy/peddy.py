@@ -812,7 +812,7 @@ class Ped(object):
                    if v['ratio_outlier'] or v['range_outlier']):
           plt.text(v['range'], v['het_ratio'], k, color=colors[1], fontsize=7)
 
-        plt.xlabel('IQR of alt/(ref + alt)')
+        plt.xlabel('IQR of B-allele frequency')
         plt.ylabel('proportion het calls')
         plt.savefig(plot)
         return df

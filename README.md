@@ -1,5 +1,13 @@
-tools for pedigree files
-------------------------
+Fast Pedigree::VCF QC
+---------------------
+
+pedigree compares familial-relationships and sexes as reported in a [PED file](http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped)
+with those inferred from a VCF.
+
+It samples the VCF at about 25000 sites (plus chrX) to accurately estimate **relatedness**, **IBS0**, **heterozygosity**, **sex** and **ancestry**. It uses 2504 thousand genome samples as backgrounds to calibrate the relatedness calculation and to make ancestry predictions.
+
+It does this very quickly by sampling, by using C for computationally intensive parts, and by parallelization.
+
 
 [![PyPI version](https://badge.fury.io/py/peddy.svg)](http://badge.fury.io/py/peddy)
 [![Build Status](https://travis-ci.org/brentp/peddy.svg?branch=master)](https://travis-ci.org/brentp/peddy)
@@ -33,13 +41,20 @@ the most useful columns from the `het-check` and `sex-check`. Users can **first
 look at this extended ped file for an overview of likely problems** and then refer
 to the plots and .csv files for more detailed information.
 
-Overview
---------
+Speed
+-----
 
+Because of the sampling approach and parallelization, `peddy` is very fast.
+On an in-house dataset with 2076-sample, whole-genome VCF, peddy can run
+the het-check and PCA in < 8 minutes. It finishes the full set of checks in
+under 25 minutes. On smaller datasets, it is much faster.
 
-**NOTE** this module used to be named to "pedagree".
+<!-- TODO: show comparison to KING -->
 
-`peddy` is a python library for querying, QC'ing, and manipulating pedigree files.
+It can run on the 14-sample CEPH pedigree in about 1.5 minutes using 20 CPUs. This
+includes running a PCA on the 2504 samples from 1000 genomes, then fitting an SVM
+and predicting ancestry in addition to calculating relatedness among all pairwise
+combinations of the 2504+17 samples.
 
 Warnings and Checks
 -------------------

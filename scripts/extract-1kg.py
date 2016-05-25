@@ -44,7 +44,6 @@ if __name__ == "__main__":
             if not (0.04 < v.aaf < 0.99): continue
 
             key = (v.CHROM, v.POS, v.REF, v.ALT[0])
-
             x = get_hwe_likelihood(v.num_hom_ref, v.num_het, v.num_hom_alt, v.aaf)
             if x[1] < 0.04: continue
 

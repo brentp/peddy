@@ -38,8 +38,9 @@ These will indicate:
 
 Finally, it will create a new file ped files `ceph1463.peddy.ped` that also lists
 the most useful columns from the `het-check` and `sex-check`. Users can **first
-look at this extended ped file for an overview of likely problems** and then refer
-to the plots and .csv files for more detailed information.
+look at this extended ped file for an overview of likely problems**.
+
+See [the docs](TODO) for a walk-through and thorough explanation of each plot.
 
 Speed
 -----

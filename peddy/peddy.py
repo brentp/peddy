@@ -641,9 +641,9 @@ class Ped(object):
         kept, skipped = 0, 0
         for variant in vcf(chrom):
             # skip multi-nucleotide
-            if len(v.REF) > 1: continue
+            if len(variant.REF) > 1: continue
             # skip multiple alternates
-            if len(v.ALT) > 1: continue
+            if len(variant.ALT) > 1: continue
             if variant.call_rate < 0.5: continue
             if variant.aaf < 0.01: continue
             if any(s <= variant.start and e >= variant.start for chrom, (s, e) in pars):

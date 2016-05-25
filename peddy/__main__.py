@@ -11,7 +11,7 @@ def run(args):
     check, pedf, vcf, plot, prefix, each, ncpus = args
     # only print warnings for het_check
     p = Ped(pedf, warn=False)
-    print(check)
+    print("\033[1;31m%s\033[0m" % check)
     t0 = time.time()
     sys.stdout.flush()
     background_df = None

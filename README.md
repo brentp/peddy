@@ -9,6 +9,8 @@ tools for pedigree files
 Quickstart
 ----------
 
+See installation below.
+
 Most users will only need to run as a command-line tool with a ped and VCF, e.g:
 
 ```
@@ -18,12 +20,13 @@ python -m peddy --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 This create **ceph-1463.html** which you can open in any browser to
 interactively explore your data.
 
-It will also create create 3 csv files and 3 QC plots.
+It will also create create 4 csv files and 4 QC plots.
 These will indicate:
 
 + discrepancies between ped-reported and genotype-inferred relations
 + discrepancies between ped-reported and genotype-inferred sex
 + higher levels of HET calls or more variance in ref / (ref + alt read) for het calls.
++ an ancestry prediction based on to projection onto the thousand genomes principal components
 
 Finally, it will create a new file ped files `ceph1463.peddy.ped` that also lists
 the most useful columns from the `het-check` and `sex-check`. Users can **first
@@ -59,77 +62,8 @@ Also, given a pedigree file and a VCF file peddy provides tools to:
  + find mendelian errors
 
 
-Usage
------
-
-```Python
->>> from peddy import Ped, SEX, PHENOTYPE
-
->>> p = Ped('my.ped')
-# not yet.
-#>>> p.dot() # draw the pedigree with graphviz
-
-# not yet
-# find any obvious issues (3 parents, mom as male, etc).
->>> p.validate()
-
-# number of affecteds, un, males, females, etc. (contingency table?)
->>> p.summary()
-
-# iterable
->>> p.samples()
-
->>> p.samples(phenotype=PHENOTYPE.AFFECTED, sex=SEX.MALE)
-
-# sample object
->>> s = next(p.samples())
-
->>> s.phenotype
-
->>> s.sex
-
->>> s.mom
-
->>> s.dad
-
->>> s.siblings
-
->>> s.kids
-```
-
-Quality Control
----------------
-
-If cyvcf2 is installed, then, given a ped-file and a VCF, we can look for cases where the relationships
-defined in the ped file do not match the relationships derived from the genotypes in the VCF.
-
-```Python
->>> from peddy import Ped
->>> p = Ped('cohort.ped')
->>> df = p.ped_check('cohort.vcf.gz')
->>> df[df.error] # show pairs of samples where the inferred differs from the reported.
-
-```
-
-[![relplot](http://peddy.readthedocs.org/en/latest/_images/ped-check.png)](http://github.com/brentp/cyvcf2/)
-
-We don't see any obvious errors in this pedigree. An obvious error would be when a red colored dot clusters with blue dots. 
-The *outlined dots* have a very low IBS0 rate, indicating that they are likely parent-child pairs.
-
-By looking for the frequency of heterozygotes in the non-PAR regions of
-the X chromosome, we can determine sex from a VCF:
-
-```Python
->>> from peddy import Ped
->>> p = Ped('cohort.ped')
->>> p.sex_check('cohort.vcf.gz', plot=True)
-... List of all samples with number of HETs, HOMREF, HOMALT on X
-```
-This will also create an image like this one where we can
-see a clear sample mixup.
-
-[![sex_plot](https://raw.githubusercontent.com/brentp/peddy/master/images/sex_check.png)](http://github.com/brentp/cyvcf2/)
-
+Warnings and Checks
+-------------------
 
 On creating a pedigree object (via Ped('some.ped'). `peddy` will print warnings to STDERR as appropriate like:
 
@@ -145,4 +79,39 @@ pedigree warning: '101393-101393' is mom but has male sex
 unknown sample: 102498-102498 in family: K34175
 unknown sample: 11509-11509 in family: K567331
 unknown sample: 5180-5180 in family: K8565
+```
+
+Installation
+------------
+
+Nearly all users should install using conda in the anaconda python distribution. This means
+have your own version of python easily installed via:
+
+```
+INSTALL_PATH=~/anaconda
+wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+# or wget http://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh
+bash Miniconda2-latest\* -bp $INSTALL_PATH
+PATH=$INSTALL_PATH/bin:$PATH
+
+conda update -y conda
+conda config --add channels bioconda
+
+conda install -y peddy
+```
+
+This should install all dependencies so you can then run peddy with 8 processes as:
+
+```
+python -m peddy --plot -p 8 --prefix mystudy $VCF $PED
+```
+
+To get the development versions of peddy (and cyvcf2), you can follow the above steps and then do:
+
+```
+git clone https://github.com/brentp/cyvcf2
+cd cyvcf2 && python setup.py install
+cd ..
+git clone https://github.com/brentp/peddy
+cd peddy && python setup.py install
 ```

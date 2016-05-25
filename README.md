@@ -33,8 +33,8 @@ These will indicate:
 
 + discrepancies between ped-reported and genotype-inferred relations
 + discrepancies between ped-reported and genotype-inferred sex
-+ higher levels of HET calls or more variance in ref / (ref + alt read) for het calls.
-+ an ancestry prediction based on to projection onto the thousand genomes principal components
++ samples with higher levels of HET calls, lower depth, or more variance in b-allele-frequency (ref / (ref + alt )) for het calls.
++ an ancestry prediction based on projection onto the thousand genomes principal components
 
 Finally, it will create a new file ped files `ceph1463.peddy.ped` that also lists
 the most useful columns from the `het-check` and `sex-check`. Users can **first

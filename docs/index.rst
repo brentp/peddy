@@ -1,7 +1,7 @@
 manipulation, validation and exploration of pedigrees
 =====================================================
 
-Pedagree is a python module for manipulating pedigree files.
+Peddy is a python module for manipulating pedigree files.
 While the python module has several useful features,
 most users will be intereseted in `peddy` for its 
 utility in finding discrepancies between the relationships specified
@@ -9,17 +9,19 @@ in `.ped` files and the relationships inferred from a
 corresponding `.vcf` file such as can occur from sample-swaps 
 or pedigree misspecifications.
 
-The python code to do this is quite simple. But we can automate multiple
+The python code to do this is quite simple. But we can reun multiple
 checks using the command-line interface. Below, we check for pedigree
-violations by looking at 5,000 sites (see :doc:`relatedness <relatedness>`
-for more details on selection) and for sex discrepancies by looking at the
-non-PA regions of the X chromosome where males should have very few HET calls.
+violations by looking at ~25,000 sites (see :doc:`relatedness <relatedness>`
+for more details on selection), for sex discrepancies by looking at the
+non-psuedo autosomal regions of the X chromosome (where males should have
+very few HET calls), and by examining the rate of het calls in the 25K
+autosomal sites (where a high rate of may indicate sample contamination).
 
 The command-line usage looks like:
 
 .. code-block:: bash
 
-    python -m peddy --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
+    python -m peddy -p 12 --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 
 This will create the images:
 

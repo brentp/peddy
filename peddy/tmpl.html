@@ -169,7 +169,7 @@ sex_bad['marker']['sizeref'] = mean_size;
 
 var sex_layout = {
   height: HEIGHT,
-  title: "Sex-QC: Rate of HET calls on chrX",
+  title: "Rate of HET calls on chrX",
   //width: '50%',
   xaxis: {
     title: 'Sex From Ped',
@@ -207,16 +207,16 @@ var mean_size = 0;
 
 var het_good = {name: "OK", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
 			    marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[], opacity:[]}}
-var het_iqr = {name: "iqr-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
+var het_depth = {name: "depth-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
 			    marker:{color:'#377eb8', sizemode: 'area', sizeref: 0, size:[], opacity:[]}}
 var het_ratio = {name: "ratio-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
 			    marker:{color:'#e41a1c', sizemode: 'area', sizeref: 0, size:[], opacity:[]}}
 
 for(i=0; v=het_data[i], i<het_data.length; i++){
-    var a = v['iqr_outlier'] ? het_iqr : v['ratio_outlier'] ? het_ratio : het_good;
+    var a = v['depth_outlier'] ? het_depth : v['ratio_outlier'] ? het_ratio : het_good;
     mean_size += v['mean_depth'];
 
-	a['x'].push(v['iqr_baf'].toPrecision(3))
+	a['x'].push(v['median_depth'].toPrecision(3))
     a['y'].push(v['het_ratio'].toPrecision(3))
     a['text'].push("sample: <b>" + v['sample_id'] + "</b> mean depth:" + v['mean_depth'].toFixed(1))
     a['marker']['size'].push(10 + v['mean_depth'])
@@ -227,15 +227,15 @@ for(i=0; v=het_data[i], i<het_data.length; i++){
 mean_size /= het_data.length;
 
 het_good['marker']['sizeref'] = mean_size / 140;
-het_iqr['marker']['sizeref'] = mean_size / 140;
+het_depth['marker']['sizeref'] = mean_size / 140;
 het_ratio['marker']['sizeref'] = mean_size / 140;
 
 var het_layout = {
   height: HEIGHT,
-  title: "Rate of HET calls",
+  title: "Depth and Heterozygosity",
   //width: '50%',
   xaxis: {
-    title: 'IQR of B-allele frequency',
+    title: 'median depth',
     titlefont: {size: 16},
     fixedrange: true,
     showline: false,
@@ -253,7 +253,7 @@ var het_layout = {
   hovermode: 'closest'
 };
 
-datas['het'] = [het_good, het_iqr, het_ratio]
+datas['het'] = [het_good, het_depth, het_ratio]
 Plotly.plot('hetplot', datas['het'], het_layout);
 
 hetplot = document.getElementById('hetplot')

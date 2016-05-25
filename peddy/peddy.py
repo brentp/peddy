@@ -783,19 +783,28 @@ class Ped(object):
         pca_df, background_pca_df = pca(pca_plot, gt_types, sites)
 
         # not find outliers.
-        ranges = np.array([d['range'] for d in sample_ranges.values()])
+        depth = np.array([v['median_depth'] for v in sample_ranges.values()])
+        #ranges = np.array([d['range'] for d in sample_ranges.values()])
         ratios = np.array([d['het_ratio'] for d in sample_ranges.values()])
         ratios_outlier = ((ratios < 0.305) | (ratios > 0.41))
-        ranges_outlier = ((ranges < 0.08) | (ranges > 0.31))
+        #ranges_outlier = ((ranges < 0.08) | (ranges > 0.31))
+
+        bot = depth.mean() - 2 * depth.std()
+        # remove outliers and re-calc.
+        bot = depth[depth > bot].mean() - 2 * depth[depth > bot].std()
+        # care less if we have really high samples so make it 5.
+        top = depth.mean() + 5 * depth.std()
+
+        depth_outlier = ((depth < bot) | (depth > top))
 
         for k, v in sample_ranges.items():
             v['sample_id'] = k
 
 
-        for d, range_o, ratio_o in zip(sample_ranges.values(), ranges_outlier,
+        for d, depth_o, ratio_o in zip(sample_ranges.values(), depth_outlier,
                                        ratios_outlier):
-            d['iqr_outlier'] = range_o
             d['ratio_outlier'] = ratio_o
+            d['depth_outlier'] = depth_o
             d['iqr_baf'] = d.pop('range')
 
         import pandas as pd
@@ -817,18 +826,18 @@ class Ped(object):
         import seaborn as sns
         colors = sns.color_palette('Set1', 4)
 
-        cs = [colors[int(v['iqr_outlier'])] for v in sample_ranges.values()]
+        cs = [colors[1 - int(v['depth_outlier'])] for v in sample_ranges.values()]
         ecs = ['none' if not v['ratio_outlier'] else 'k' for v in sample_ranges.values()]
 
         s = get_s(np.array([v['median_depth'] for v in sample_ranges.values()]))
 
-        plt.scatter(ranges, ratios, c=cs, edgecolors=ecs, s=s)
+        plt.scatter(depth, ratios, c=cs, edgecolors=ecs, s=s)
 
         for k, v in ((k, v) for k, v in sample_ranges.items()
-                   if v['ratio_outlier'] or v['iqr_outlier']):
-          plt.text(v['iqr_baf'], v['het_ratio'], k, color=colors[1], fontsize=7)
+                      if v['ratio_outlier'] or v['depth_outlier']):
+          plt.text(v['median_depth'], v['het_ratio'], k, color=colors[1], fontsize=7)
 
-        plt.xlabel('IQR of B-allele frequency')
+        plt.xlabel('median depth')
         plt.ylabel('proportion het calls')
         plt.savefig(plot)
         return df, background_pca_df

@@ -14,11 +14,11 @@ See installation below.
 Most users will only need to run as a command-line tool with a ped and VCF, e.g:
 
 ```
-python -m peddy --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
+python -m peddy -p 12 --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 ```
 
-This create **ceph-1463.html** which you can open in any browser to
-interactively explore your data.
+This will use 12 cpus to run various checks and create **ceph-1463.html** which
+you can open in any browser to interactively explore your data.
 
 It will also create create 4 csv files and 4 QC plots.
 These will indicate:
@@ -40,27 +40,6 @@ Overview
 **NOTE** this module used to be named to "pedagree".
 
 `peddy` is a python library for querying, QC'ing, and manipulating pedigree files.
-
-It currently makes it simple to extract things like:
-
- + parent-child pairs
- + trios
- + sibs
- + stats on number of males/females/trios/affecteds/unaffecteds
- + families.
- + families with at least N members
- + families with at least N children
- + [not yet] families with at least N generations
- + coefficient of relatedness given relation defined in the pedigree.
-
-Also, given a pedigree file and a VCF file peddy provides tools to:
-
- + find likely sample mixups (or PED errors)
-   - sex mixups on X-Chrom
-   - family mixups by inferring relatedness with VCF
-
- + find mendelian errors
-
 
 Warnings and Checks
 -------------------

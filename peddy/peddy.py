@@ -757,8 +757,8 @@ class Ped(object):
         """
         import cyvcf2
         import numpy as np
-        if ncpus > 10:
-            ncpus = 10
+        if ncpus > 16:
+            ncpus = 16
 
         samps = [x.sample_id for x in self.samples()]
         vcf = cyvcf2.VCF(vcf_path, gts012=True, samples=samps)

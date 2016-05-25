@@ -606,7 +606,7 @@ class Ped(object):
                   skip_missing=True,
                   plot=False,
                   cutoff=0.6,
-                  n_sites=40000,
+                  n_sites=100000,
                   pars=('X:10000-2781479', 'X:155701382-156030895')):
         """
         Check that the sex reported in the ped file matches that inferred
@@ -640,13 +640,18 @@ class Ped(object):
         hom_alt = np.zeros(len(vcf.samples), dtype=int)
         kept, skipped = 0, 0
         for variant in vcf(chrom):
+            # skip multi-nucleotide
+            if len(v.REF) > 1: continue
+            # skip multiple alternates
+            if len(v.ALT) > 1: continue
             if variant.call_rate < 0.5: continue
             if variant.aaf < 0.01: continue
-            depth_filter = variant.gt_depths >= min_depth
-            gt_types = variant.gt_types
-            if any(s <= variant.end and e >= variant.end for chrom, (s, e) in pars):
+            if any(s <= variant.start and e >= variant.start for chrom, (s, e) in pars):
                 skipped += 1
                 continue
+            depth_filter = variant.gt_depths >= min_depth
+            gt_types = variant.gt_types
+
             hom_ref += (gt_types == 0) & depth_filter
             hom_alt += (gt_types == 2) & depth_filter
             het += (gt_types == 1) & depth_filter
@@ -752,6 +757,8 @@ class Ped(object):
         """
         import cyvcf2
         import numpy as np
+        if ncpus > 10:
+            ncpus = 10
 
         samps = [x.sample_id for x in self.samples()]
         vcf = cyvcf2.VCF(vcf_path, gts012=True, samples=samps)
@@ -842,6 +849,7 @@ class Ped(object):
         import numpy as np
         import pandas as pd
         vcf_str = vcf
+        np.random.seed(42)
 
         samps = list(self.samples())
         if isinstance(vcf, basestring):

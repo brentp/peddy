@@ -20,15 +20,20 @@ def pca(fig_path, genotype_matrix=None, sites=None):
 
 
     if genotype_matrix is not None:
-        kgsites = np.array([x.strip() for x in open(op.join(HERE, "1kg.sites"))])
-        ssites = set(sites)
+        kgsites = [x.strip() for x in open(op.join(HERE, "1kg.sites"))]
 
-        keep = np.array([s in ssites for s in kgsites])
-        kgsites = kgsites[keep]
-        assert np.all((kgsites) == np.array(sites))
+        # exclude missing from 1kg. these may come out of order because of
+        # parallelization so we put 1kg is same order
+        kgsites_index = dict((k, i) for i, k in enumerate(kgsites))
 
-        genos1kg = genos1kg[:, keep]
+        # pull all things in sites:
+        idxs = np.array([kgsites_index[s] for s in sites])
+        kgsites = np.array(kgsites)[idxs]
 
+        # now we have the kgsites but need them in order of incoming sites
+        assert np.all((kgsites) == np.array(sites)), (set(kgsites) - set(sites), set(sites) - set(kgsites))
+
+        genos1kg = np.array(genos1kg[:, idxs])
 
         assert genotype_matrix.shape[1] == genos1kg.shape[1]
 

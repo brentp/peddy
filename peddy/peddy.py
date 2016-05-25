@@ -746,12 +746,15 @@ class Ped(object):
         plt.close()
         return pd.DataFrame(res)
 
-    def het_check(self, vcf, plot=False, min_depth=8):
+    def het_check(self, vcf_path, plot=False, ncpus=1, min_depth=8, **kwargs):
+        """
+        each is not used, but added here to have same sig as ped_check
+        """
         import cyvcf2
         import numpy as np
 
         samps = [x.sample_id for x in self.samples()]
-        vcf = cyvcf2.VCF(vcf, gts012=True, samples=samps)
+        vcf = cyvcf2.VCF(vcf_path, gts012=True, samples=samps)
         if sorted(vcf.samples) != sorted(samps):
             print("warning: sample overlap issues\n\tin vcf, not in ped: %s\n\tin ped, not in vcf: %s" % (
                   ",".join(set(vcf.samples) - set(samps)),
@@ -760,7 +763,7 @@ class Ped(object):
             raise Exception("error: no samples from VCF found in ped")
 
         samps = vcf.samples
-        sample_ranges, sites, gt_types = vcf.het_check(min_depth=min_depth)
+        sample_ranges, sites, gt_types = cyvcf2.par_het(vcf_path, samps, ncpus, min_depth=min_depth)
 
         from .pca import pca
         if plot:

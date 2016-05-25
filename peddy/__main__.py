@@ -18,13 +18,13 @@ def run(args):
     if plot:
         plot = prefix + "." + check + ".png"
 
-    if check == "ped_check":
+    if check in ("ped_check", "het_check"):
         df = getattr(p, check)(vcf, plot=plot, each=each, ncpus=ncpus,
                                prefix=prefix)
-    else:
-        df = getattr(p, check)(vcf, plot=plot)
         if check == "het_check":
             df, background_df = df
+    else:
+        df = getattr(p, check)(vcf, plot=plot)
 
     df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.4g")
     d, unit = time.time() - t0, "seconds"
@@ -75,7 +75,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
     # background_df only present for het-check. It's the PC's from 1000G for
     # plotting.
     for check, df, background_df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus) for check
-                                 in ("ped_check", "het_check", "sex_check")]):
+                                 in ("het_check", "ped_check", "sex_check")]):
         vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
 
         if check != "ped_check":

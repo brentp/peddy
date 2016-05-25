@@ -606,6 +606,7 @@ class Ped(object):
                   skip_missing=True,
                   plot=False,
                   cutoff=0.6,
+                  n_sites=40000,
                   pars=('X:10000-2781479', 'X:155701382-156030895')):
         """
         Check that the sex reported in the ped file matches that inferred
@@ -614,6 +615,7 @@ class Ped(object):
 
         :param vcf str:  path to vcf
         :param min_depth int: minimum depth of variants to consider (in at least 50% of samples).
+        :param n_sites int: stop after sampling this many sites in the X chromosome.
         :param skip_missing bool: don't consider samples that are not in the ped file
         :param plot bool: render a plot of the distributions by gender.
         :param pars tuple(str): pseudo autosmal regions
@@ -649,6 +651,7 @@ class Ped(object):
             hom_alt += (gt_types == 2) & depth_filter
             het += (gt_types == 1) & depth_filter
             kept += 1
+            if kept >= n_sites: break
 
         # this should be high for females and low for males
         het_ratio = het.astype(float) / (hom_alt)

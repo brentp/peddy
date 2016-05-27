@@ -10,8 +10,10 @@ It does this very quickly by sampling, by using C for computationally intensive 
 
 
 [![PyPI version](https://badge.fury.io/py/peddy.svg)](http://badge.fury.io/py/peddy)
+<!--
 [![Build Status](https://travis-ci.org/brentp/peddy.svg?branch=master)](https://travis-ci.org/brentp/peddy)
 [![Documentation Status](https://readthedocs.org/projects/peddy/badge/?version=latest)](http://peddy.readthedocs.org/en/latest/?badge=latest)
+-->
 
 
 Quickstart
@@ -65,7 +67,7 @@ relatedness estimate is closer to the actual than KING which over-estimates rela
 
 ![Peddy Vs KING](https://raw.githubusercontent.com/brentp/peddy/master/docs/_static/peddy-v-king.png "Comparison with KING")
 
-Note that the peddy analysis is well-calibrated runs with the thousand genomes samples
+Note that the peddy analysis is well-calibrated as it runs with the thousand genomes samples
 as background. It also includes running a PCA on the 2504 samples from 1000 genomes,
 then fitting an SVM and predicting ancestry in addition to calculating relatedness
 among all pairwise combinations of the 2504+17 samples.

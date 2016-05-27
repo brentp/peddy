@@ -136,14 +136,7 @@ We can see that the first line above has a high `ibs0` value (and low `rel` valu
 not expected to be a parent-child relation while the rest have low `ibs0` (and high `rel` values).
 
 
-..
-    .. toctree::
-       :maxdepth: 2
-..
-    Indices and tables
-    ==================
-..
-    * :ref:`genindex`
-    * :ref:`modindex`
-    * :ref:`search`
+.. toctree::
+   :maxdepth: 1
 
+   html

@@ -23,17 +23,20 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="peddy 0.1.0 documentation" href="#" /> 
+    <link rel="top" title="peddy 0.1.0 documentation" href="#" />
+    <link rel="next" title="Example HTML output on 17 member CEPH pedigree" href="html.html" /> 
   </head>
-  <body>
-      <div class="header"><h1 class="heading"><a href="#">
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="#">
           <span>peddy 0.1.0 documentation</span></a></h1>
         <h2 class="heading"><span>manipulation, validation and exploration of pedigrees</span></h2>
       </div>
-      <div class="topnav">
+      <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
         <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="html.html">Example HTML output on 17 member CEPH pedigree</a>&#160;&#160;»
         </p>
 
       </div>
@@ -42,87 +45,134 @@
         
   <div class="section" id="manipulation-validation-and-exploration-of-pedigrees">
 <h1>manipulation, validation and exploration of pedigrees<a class="headerlink" href="#manipulation-validation-and-exploration-of-pedigrees" title="Permalink to this headline">¶</a></h1>
-<p>Pedagree is a python module for manipulating pedigree files.
-While the python module has several useful features,
-most users will be intereseted in <cite>peddy</cite> for its
-utility in finding discrepancies between the relationships specified
-in <cite>.ped</cite> files and the relationships inferred from a
-corresponding <cite>.vcf</cite> file such as can occur from sample-swaps
-or pedigree misspecifications.</p>
-<p>The python code to do this is quite simple. But we can automate multiple
-checks using the command-line interface. Below, we check for pedigree
-violations by looking at 5,000 sites (see <tt class="xref doc docutils literal"><span class="pre">relatedness</span></tt>
-for more details on selection) and for sex discrepancies by looking at the
-non-PA regions of the X chromosome where males should have very few HET calls.</p>
+<p>peddy compares familial-relationships and sexes as reported in a [PED file](<a class="reference external" href="http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped">http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped</a>)
+with those inferred from a VCF.</p>
+<p>It samples the VCF at about 25000 sites (plus chrX) to accurately estimate <strong>relatedness</strong>, <strong>IBS0</strong>, <strong>heterozygosity</strong>, <strong>sex</strong> and <strong>ancestry</strong>. It uses 2504 thousand genome samples as backgrounds to calibrate the relatedness calculation and to make ancestry predictions.</p>
+<p>It does this very quickly by sampling, by using C for computationally intensive parts, and by parallelization.</p>
 <p>The command-line usage looks like:</p>
-<div class="highlight-bash"><div class="highlight"><pre>python -m peddy --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
+<div class="highlight-bash"><div class="highlight"><pre><span></span>python -m peddy -p <span class="m">12</span> --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 </pre></div>
 </div>
-<p>This will create the images:</p>
-<img alt="_images/ped-check.png" src="_images/ped-check.png" />
-<p>where samples are placed in the plot according to their relationship inferred from
-the genotypes in the VCF and colored by their expected relationship from the PED file.
-Parent-child relations (which should have IBS0 of 0) have an outline to differentiate
-them from sib-sib relations.</p>
-<p>and</p>
-<img alt="_images/sex-check.png" src="_images/sex-check.png" />
-<p>From both of these cases, we can see that it doesn&#8217;t look like there are any
-sample mixups. See the docs here for an example of how a sample mixup appears.</p>
+<p>This will use 12 cpus to run various checks and create <strong>ceph-1463.html</strong> which
+you can open in any browser to interactively explore your data.</p>
+<p>It will also create create 4 csv files and 4 QC plots.
+These will indicate:</p>
+<ul class="simple">
+<li>discrepancies between ped-reported and genotype-inferred relations</li>
+<li>discrepancies between ped-reported and genotype-inferred sex</li>
+<li>samples with higher levels of HET calls, lower depth, or more variance in b-allele-frequency (ref / (ref + alt )) for het calls.</li>
+<li>an ancestry prediction based on projection onto the thousand genomes principal components</li>
+</ul>
+<p>Finally, it will create a new file ped files <cite>ceph1463.peddy.ped</cite> that also lists
+the most useful columns from the <cite>het-check</cite> and <cite>sex-check</cite>. Users can <strong>first
+look at this extended ped file for an overview of likely problems</strong>.</p>
+<div class="section" id="static-images">
+<h2>Static Images<a class="headerlink" href="#static-images" title="Permalink to this headline">¶</a></h2>
+<p>This will create a number of images:</p>
+<div class="section" id="sex-check">
+<h3>Sex Check<a class="headerlink" href="#sex-check" title="Permalink to this headline">¶</a></h3>
+<p>A sex-check assumes that males should have very few heterozygote calls on the X-
+chromosome and females should have relatively many. Here, we see, as expected
+that there are no sex issues in the CEPH cohort:</p>
+<img alt="_images/ceph.sex_check.png" src="_images/ceph.sex_check.png" />
+</div>
+<div class="section" id="het-check">
+<h3>Het Check<a class="headerlink" href="#het-check" title="Permalink to this headline">¶</a></h3>
+<p>The het check looks for samples with higher rates of het calls, usually, this
+can indicate sample contamination. This plot also shows depth along the X-axis
+as a way to quickly check for samples with lower coverage.</p>
+<img alt="_images/ceph.het_check.png" src="_images/ceph.het_check.png" />
+</div>
+<div class="section" id="ancestry-check">
+<h3>Ancestry Check<a class="headerlink" href="#ancestry-check" title="Permalink to this headline">¶</a></h3>
+<p>Since we know the ancestry of the thousand genomes samples
+we can project the current peddy input (in this case CEPH)
+onto the principal components of the thousand genomes samples
+and then predict the ancestry of incoming samples:</p>
+<img alt="_images/ceph.pca_check.png" src="_images/ceph.pca_check.png" />
+<p>Note that, as expected all of the members of the CEPH pedigree
+are of &#8216;EUR&#8217;opean descent.</p>
+</div>
+<div class="section" id="relatedness-check">
+<h3>Relatedness Check<a class="headerlink" href="#relatedness-check" title="Permalink to this headline">¶</a></h3>
+<p>In this check, we compare the relatedness specified in the pedigree
+file to what is observed by the genotypes. For example, a sib-sib
+pair should have a relatedness coefficient of 0.5. In the plot,
+<strong>sample-pairs are *colored* according to their expected relatedness
+specified in the ped file and *located* in the plot according to their
+relatedness (and IBS0) calculated from the genotypes</strong></p>
+<p>IBS0 is the proportion of sites for which the 2 samples shared 0 alleles.
+For parent-child pairs and IBS0 event is a (putative) <em>de novo</em> and so should
+happen very infrequently. Unrelated samples should have a relatedness of 0
+and a higher IBS0.</p>
+<img alt="_images/ceph.ped_check.png" src="_images/ceph.ped_check.png" />
+</div>
+<div class="section" id="csvs">
+<h3>CSVs<a class="headerlink" href="#csvs" title="Permalink to this headline">¶</a></h3>
 <p>For each of those images, there is a corresponding <cite>.csv</cite> file.</p>
 <p>The <cite>sex-check</cite> file will look like:</p>
-<div class="highlight-python"><div class="highlight"><pre>error   het_count   het_ratio   hom_alt_count   hom_ref_count   ped_sex predicted_sex   sample
-FALSE   27056   0.1263089096893163  86640   127565  male    male    NA12877
-FALSE   103578  0.7371260212360158  48197   92319   female  female  NA12878
-FALSE   99578   0.7035623949015785  50029   91505   female  female  NA12879
-FALSE   98933   0.6946225083727102  51852   90575   female  female  NA12880
-FALSE   97733   0.6820833856762001  51843   91443   female  female  NA12881
-FALSE   25568   0.11903775333001225 85114   129675  male    male    NA12882
-FALSE   25740   0.12030398489423158 82830   131128  male    male    NA12883
-FALSE   26380   0.12349609100697533 84861   128749  male    male    NA12884
-FALSE   98882   0.68974609375   51608   91752   female  female  NA12885
-FALSE   27341   0.12795900219965367 85473   128197  male    male    NA12886
-FALSE   101838  0.7297442548709092  49321   90232   female  female  NA12887
-FALSE   24317   0.11512477334381199 84141   127082  male    male    NA12888
-FALSE   28980   0.13943418013856812 79538   128302  male    male    NA12889
-FALSE   100617  0.7108129874533741  48475   93077   female  female  NA12890
-FALSE   24443   0.11661792279543319 83839   125760  male    male    NA12891
-FALSE   100453  0.7119832162677459  47684   93405   female  female  NA12892
-FALSE   24774   0.11745685567987862 84482   126438  male    male    NA12893
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">error</span>   <span class="n">het_count</span>   <span class="n">het_ratio</span>   <span class="n">hom_alt_count</span>   <span class="n">hom_ref_count</span>   <span class="n">ped_sex</span> <span class="n">predicted_sex</span>   <span class="n">sample</span>
+<span class="n">FALSE</span>   <span class="mi">27056</span>   <span class="mf">0.1263089096893163</span>  <span class="mi">86640</span>   <span class="mi">127565</span>  <span class="n">male</span>    <span class="n">male</span>    <span class="n">NA12877</span>
+<span class="n">FALSE</span>   <span class="mi">103578</span>  <span class="mf">0.7371260212360158</span>  <span class="mi">48197</span>   <span class="mi">92319</span>   <span class="n">female</span>  <span class="n">female</span>  <span class="n">NA12878</span>
+<span class="n">FALSE</span>   <span class="mi">99578</span>   <span class="mf">0.7035623949015785</span>  <span class="mi">50029</span>   <span class="mi">91505</span>   <span class="n">female</span>  <span class="n">female</span>  <span class="n">NA12879</span>
+<span class="n">FALSE</span>   <span class="mi">98933</span>   <span class="mf">0.6946225083727102</span>  <span class="mi">51852</span>   <span class="mi">90575</span>   <span class="n">female</span>  <span class="n">female</span>  <span class="n">NA12880</span>
+<span class="n">FALSE</span>   <span class="mi">97733</span>   <span class="mf">0.6820833856762001</span>  <span class="mi">51843</span>   <span class="mi">91443</span>   <span class="n">female</span>  <span class="n">female</span>  <span class="n">NA12881</span>
+<span class="n">FALSE</span>   <span class="mi">25568</span>   <span class="mf">0.11903775333001225</span> <span class="mi">85114</span>   <span class="mi">129675</span>  <span class="n">male</span>    <span class="n">male</span>    <span class="n">NA12882</span>
+<span class="n">FALSE</span>   <span class="mi">25740</span>   <span class="mf">0.12030398489423158</span> <span class="mi">82830</span>   <span class="mi">131128</span>  <span class="n">male</span>    <span class="n">male</span>    <span class="n">NA12883</span>
+<span class="n">FALSE</span>   <span class="mi">26380</span>   <span class="mf">0.12349609100697533</span> <span class="mi">84861</span>   <span class="mi">128749</span>  <span class="n">male</span>    <span class="n">male</span>    <span class="n">NA12884</span>
+<span class="n">FALSE</span>   <span class="mi">98882</span>   <span class="mf">0.68974609375</span>   <span class="mi">51608</span>   <span class="mi">91752</span>   <span class="n">female</span>  <span class="n">female</span>  <span class="n">NA12885</span>
+<span class="n">FALSE</span>   <span class="mi">27341</span>   <span class="mf">0.12795900219965367</span> <span class="mi">85473</span>   <span class="mi">128197</span>  <span class="n">male</span>    <span class="n">male</span>    <span class="n">NA12886</span>
+<span class="n">FALSE</span>   <span class="mi">101838</span>  <span class="mf">0.7297442548709092</span>  <span class="mi">49321</span>   <span class="mi">90232</span>   <span class="n">female</span>  <span class="n">female</span>  <span class="n">NA12887</span>
+<span class="n">FALSE</span>   <span class="mi">24317</span>   <span class="mf">0.11512477334381199</span> <span class="mi">84141</span>   <span class="mi">127082</span>  <span class="n">male</span>    <span class="n">male</span>    <span class="n">NA12888</span>
+<span class="n">FALSE</span>   <span class="mi">28980</span>   <span class="mf">0.13943418013856812</span> <span class="mi">79538</span>   <span class="mi">128302</span>  <span class="n">male</span>    <span class="n">male</span>    <span class="n">NA12889</span>
+<span class="n">FALSE</span>   <span class="mi">100617</span>  <span class="mf">0.7108129874533741</span>  <span class="mi">48475</span>   <span class="mi">93077</span>   <span class="n">female</span>  <span class="n">female</span>  <span class="n">NA12890</span>
+<span class="n">FALSE</span>   <span class="mi">24443</span>   <span class="mf">0.11661792279543319</span> <span class="mi">83839</span>   <span class="mi">125760</span>  <span class="n">male</span>    <span class="n">male</span>    <span class="n">NA12891</span>
+<span class="n">FALSE</span>   <span class="mi">100453</span>  <span class="mf">0.7119832162677459</span>  <span class="mi">47684</span>   <span class="mi">93405</span>   <span class="n">female</span>  <span class="n">female</span>  <span class="n">NA12892</span>
+<span class="n">FALSE</span>   <span class="mi">24774</span>   <span class="mf">0.11745685567987862</span> <span class="mi">84482</span>   <span class="mi">126438</span>  <span class="n">male</span>    <span class="n">male</span>    <span class="n">NA12893</span>
 </pre></div>
 </div>
 <p>And we can see that there are no inferred errors along with other information used to make that inference.</p>
 <p>The <cite>ped-check</cite> file will contain <cite>n_samples</cite> * <cite>n_samples</cite> number of rows like below:</p>
-<div class="highlight-python"><div class="highlight"><pre>ibs0        ibs2    ibs2*   n       rel     sample_a        sample_b        pedigree_relatedness    pedigree_parents        predicted_parents       parent_error
-0.0801      0.0042  0.0165  4722    0.0245  NA12877 NA12878 0.0000  False   False   False
-0.0000      0.0125  0.0360  4723    0.5401  NA12877 NA12879 0.5000  True    True    False
-0.0000      0.0108  0.0390  4723    0.5482  NA12877 NA12880 0.5000  True    True    False
-0.0000      0.0119  0.0407  4723    0.5770  NA12877 NA12881 0.5000  True    True    False
-0.0000      0.0108  0.0351  4723    0.5448  NA12877 NA12882 0.5000  True    True    False
-0.0000      0.0112  0.0392  4723    0.5438  NA12877 NA12883 0.5000  True    True    False
-0.0000      0.0114  0.0379  4723    0.5452  NA12877 NA12884 0.5000  True    True    False
-0.0000      0.0110  0.0358  4723    0.5341  NA12877 NA12885 0.5000  True    True    False
-0.0000      0.0114  0.0390  4723    0.5597  NA12877 NA12886 0.5000  True    True    False
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ibs0</span>        <span class="n">ibs2</span>    <span class="n">ibs2</span><span class="o">*</span>   <span class="n">n</span>       <span class="n">rel</span>     <span class="n">sample_a</span>        <span class="n">sample_b</span>        <span class="n">pedigree_relatedness</span>    <span class="n">pedigree_parents</span>        <span class="n">predicted_parents</span>       <span class="n">parent_error</span>
+<span class="mf">0.0801</span>      <span class="mf">0.0042</span>  <span class="mf">0.0165</span>  <span class="mi">4722</span>    <span class="mf">0.0245</span>  <span class="n">NA12877</span> <span class="n">NA12878</span> <span class="mf">0.0000</span>  <span class="kc">False</span>   <span class="kc">False</span>   <span class="kc">False</span>
+<span class="mf">0.0000</span>      <span class="mf">0.0125</span>  <span class="mf">0.0360</span>  <span class="mi">4723</span>    <span class="mf">0.5401</span>  <span class="n">NA12877</span> <span class="n">NA12879</span> <span class="mf">0.5000</span>  <span class="kc">True</span>    <span class="kc">True</span>    <span class="kc">False</span>
+<span class="mf">0.0000</span>      <span class="mf">0.0108</span>  <span class="mf">0.0390</span>  <span class="mi">4723</span>    <span class="mf">0.5482</span>  <span class="n">NA12877</span> <span class="n">NA12880</span> <span class="mf">0.5000</span>  <span class="kc">True</span>    <span class="kc">True</span>    <span class="kc">False</span>
+<span class="mf">0.0000</span>      <span class="mf">0.0119</span>  <span class="mf">0.0407</span>  <span class="mi">4723</span>    <span class="mf">0.5770</span>  <span class="n">NA12877</span> <span class="n">NA12881</span> <span class="mf">0.5000</span>  <span class="kc">True</span>    <span class="kc">True</span>    <span class="kc">False</span>
+<span class="mf">0.0000</span>      <span class="mf">0.0108</span>  <span class="mf">0.0351</span>  <span class="mi">4723</span>    <span class="mf">0.5448</span>  <span class="n">NA12877</span> <span class="n">NA12882</span> <span class="mf">0.5000</span>  <span class="kc">True</span>    <span class="kc">True</span>    <span class="kc">False</span>
+<span class="mf">0.0000</span>      <span class="mf">0.0112</span>  <span class="mf">0.0392</span>  <span class="mi">4723</span>    <span class="mf">0.5438</span>  <span class="n">NA12877</span> <span class="n">NA12883</span> <span class="mf">0.5000</span>  <span class="kc">True</span>    <span class="kc">True</span>    <span class="kc">False</span>
+<span class="mf">0.0000</span>      <span class="mf">0.0114</span>  <span class="mf">0.0379</span>  <span class="mi">4723</span>    <span class="mf">0.5452</span>  <span class="n">NA12877</span> <span class="n">NA12884</span> <span class="mf">0.5000</span>  <span class="kc">True</span>    <span class="kc">True</span>    <span class="kc">False</span>
+<span class="mf">0.0000</span>      <span class="mf">0.0110</span>  <span class="mf">0.0358</span>  <span class="mi">4723</span>    <span class="mf">0.5341</span>  <span class="n">NA12877</span> <span class="n">NA12885</span> <span class="mf">0.5000</span>  <span class="kc">True</span>    <span class="kc">True</span>    <span class="kc">False</span>
+<span class="mf">0.0000</span>      <span class="mf">0.0114</span>  <span class="mf">0.0390</span>  <span class="mi">4723</span>    <span class="mf">0.5597</span>  <span class="n">NA12877</span> <span class="n">NA12886</span> <span class="mf">0.5000</span>  <span class="kc">True</span>    <span class="kc">True</span>    <span class="kc">False</span>
 </pre></div>
 </div>
 <p>Using <cite>IBS0</cite>, we can infer the parent-child relationship of a pair of samples. If the inferred value
 doesn&#8217;t match the relationship in the ped file, then the <cite>parent_error</cite> column will be <cite>True</cite>.
 We can see that the first line above has a high <cite>ibs0</cite> value (and low <cite>rel</cite> value) indicating it&#8217;s
 not expected to be a parent-child relation while the rest have low <cite>ibs0</cite> (and high <cite>rel</cite> values).</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="html.html">Example HTML output on 17 member CEPH pedigree</a></li>
+</ul>
+</div>
+</div>
+</div>
 </div>
 
 
       </div>
-      <div class="bottomnav">
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
         <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="html.html">Example HTML output on 17 member CEPH pedigree</a>&#160;&#160;»
         </p>
 
       </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Brent S Pedersen.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

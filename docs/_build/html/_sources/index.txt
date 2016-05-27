@@ -1,42 +1,96 @@
 manipulation, validation and exploration of pedigrees
 =====================================================
 
-Pedagree is a python module for manipulating pedigree files.
-While the python module has several useful features,
-most users will be intereseted in `peddy` for its 
-utility in finding discrepancies between the relationships specified
-in `.ped` files and the relationships inferred from a 
-corresponding `.vcf` file such as can occur from sample-swaps 
-or pedigree misspecifications.
 
-The python code to do this is quite simple. But we can automate multiple
-checks using the command-line interface. Below, we check for pedigree
-violations by looking at 5,000 sites (see :doc:`relatedness <relatedness>`
-for more details on selection) and for sex discrepancies by looking at the
-non-PA regions of the X chromosome where males should have very few HET calls.
+peddy compares familial-relationships and sexes as reported in a [PED file](http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped)
+with those inferred from a VCF.
+
+It samples the VCF at about 25000 sites (plus chrX) to accurately estimate **relatedness**, **IBS0**, **heterozygosity**, **sex** and **ancestry**. It uses 2504 thousand genome samples as backgrounds to calibrate the relatedness calculation and to make ancestry predictions.
+
+It does this very quickly by sampling, by using C for computationally intensive parts, and by parallelization.
+
 
 The command-line usage looks like:
 
 .. code-block:: bash
 
-    python -m peddy --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
+    python -m peddy -p 12 --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 
-This will create the images:
+This will use 12 cpus to run various checks and create **ceph-1463.html** which
+you can open in any browser to interactively explore your data.
 
-.. image:: _static/ped-check.png
+It will also create create 4 csv files and 4 QC plots.
+These will indicate:
 
-where samples are placed in the plot according to their relationship inferred from
-the genotypes in the VCF and colored by their expected relationship from the PED file.
-Parent-child relations (which should have IBS0 of 0) have an outline to differentiate
-them from sib-sib relations.
++ discrepancies between ped-reported and genotype-inferred relations
++ discrepancies between ped-reported and genotype-inferred sex
++ samples with higher levels of HET calls, lower depth, or more variance in b-allele-frequency (ref / (ref + alt )) for het calls.
++ an ancestry prediction based on projection onto the thousand genomes principal components
 
-and
+Finally, it will create a new file ped files `ceph1463.peddy.ped` that also lists
+the most useful columns from the `het-check` and `sex-check`. Users can **first
+look at this extended ped file for an overview of likely problems**.
 
-.. image:: _static/sex-check.png
+Static Images
+-------------
 
-From both of these cases, we can see that it doesn't look like there are any
-sample mixups. See the docs here for an example of how a sample mixup appears.
+This will create a number of images:
 
+Sex Check
++++++++++
+
+A sex-check assumes that males should have very few heterozygote calls on the X-
+chromosome and females should have relatively many. Here, we see, as expected
+that there are no sex issues in the CEPH cohort:
+
+.. image:: _static/ceph.sex_check.png
+
+
+Het Check
++++++++++
+
+The het check looks for samples with higher rates of het calls, usually, this
+can indicate sample contamination. This plot also shows depth along the X-axis
+as a way to quickly check for samples with lower coverage.
+
+
+.. image:: _static/ceph.het_check.png
+
+
+Ancestry Check
+++++++++++++++
+
+Since we know the ancestry of the thousand genomes samples
+we can project the current peddy input (in this case CEPH)
+onto the principal components of the thousand genomes samples
+and then predict the ancestry of incoming samples:
+
+.. image:: _static/ceph.pca_check.png
+
+
+Note that, as expected all of the members of the CEPH pedigree
+are of 'EUR'opean descent.
+
+Relatedness Check
++++++++++++++++++
+
+In this check, we compare the relatedness specified in the pedigree
+file to what is observed by the genotypes. For example, a sib-sib
+pair should have a relatedness coefficient of 0.5. In the plot,
+**sample-pairs are *colored* according to their expected relatedness
+specified in the ped file and *located* in the plot according to their
+relatedness (and IBS0) calculated from the genotypes**
+
+IBS0 is the proportion of sites for which the 2 samples shared 0 alleles.
+For parent-child pairs and IBS0 event is a (putative) *de novo* and so should
+happen very infrequently. Unrelated samples should have a relatedness of 0
+and a higher IBS0.
+
+
+.. image:: _static/ceph.ped_check.png
+
+CSVs
+++++
 
 For each of those images, there is a corresponding `.csv` file.
 
@@ -82,14 +136,7 @@ We can see that the first line above has a high `ibs0` value (and low `rel` valu
 not expected to be a parent-child relation while the rest have low `ibs0` (and high `rel` values).
 
 
-..
-    .. toctree::
-       :maxdepth: 2
-..
-    Indices and tables
-    ==================
-..
-    * :ref:`genindex`
-    * :ref:`modindex`
-    * :ref:`search`
+.. toctree::
+   :maxdepth: 1
 
+   html

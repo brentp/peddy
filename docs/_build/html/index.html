@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>manipulation, validation and exploration of pedigrees &mdash; peddy 0.1.0 documentation</title>
+    <title>manipulation, validation and exploration of pedigrees &mdash; peddy 0.1.9 documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.0',
+        VERSION:     '0.1.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,12 +23,12 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="peddy 0.1.0 documentation" href="#" />
+    <link rel="top" title="peddy 0.1.9 documentation" href="#" />
     <link rel="next" title="Example HTML output on 17 member CEPH pedigree" href="html.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><h1 class="heading"><a href="#">
-          <span>peddy 0.1.0 documentation</span></a></h1>
+          <span>peddy 0.1.9 documentation</span></a></h1>
         <h2 class="heading"><span>manipulation, validation and exploration of pedigrees</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
@@ -45,7 +45,7 @@
         
   <div class="section" id="manipulation-validation-and-exploration-of-pedigrees">
 <h1>manipulation, validation and exploration of pedigrees<a class="headerlink" href="#manipulation-validation-and-exploration-of-pedigrees" title="Permalink to this headline">¶</a></h1>
-<p>peddy compares familial-relationships and sexes as reported in a [PED file](<a class="reference external" href="http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped">http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped</a>)
+<p>peddy compares familial-relationships and sexes as reported in a <a class="reference external" href="http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped)">PED file</a>
 with those inferred from a VCF.</p>
 <p>It samples the VCF at about 25000 sites (plus chrX) to accurately estimate <strong>relatedness</strong>, <strong>IBS0</strong>, <strong>heterozygosity</strong>, <strong>sex</strong> and <strong>ancestry</strong>. It uses 2504 thousand genome samples as backgrounds to calibrate the relatedness calculation and to make ancestry predictions.</p>
 <p>It does this very quickly by sampling, by using C for computationally intensive parts, and by parallelization.</p>
@@ -53,9 +53,9 @@ with those inferred from a VCF.</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>python -m peddy -p <span class="m">12</span> --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 </pre></div>
 </div>
-<p>This will use 12 cpus to run various checks and create <strong>ceph-1463.html</strong> which
+<p>This will use 12 cpus to run various checks and create <a class="reference external" href="_static/ceph.html">ceph-1463.html</a> which
 you can open in any browser to interactively explore your data.</p>
-<p>It will also create create 4 csv files and 4 QC plots.
+<p>It will also create create 4 csv files and 4 static QC plots that mirror those in the interactive html.
 These will indicate:</p>
 <ul class="simple">
 <li>discrepancies between ped-reported and genotype-inferred relations</li>
@@ -63,7 +63,7 @@ These will indicate:</p>
 <li>samples with higher levels of HET calls, lower depth, or more variance in b-allele-frequency (ref / (ref + alt )) for het calls.</li>
 <li>an ancestry prediction based on projection onto the thousand genomes principal components</li>
 </ul>
-<p>Finally, it will create a new file ped files <cite>ceph1463.peddy.ped</cite> that also lists
+<p>Finally, it will create a new file ped file <cite>ceph1463.peddy.ped</cite> that also lists
 the most useful columns from the <cite>het-check</cite> and <cite>sex-check</cite>. Users can <strong>first
 look at this extended ped file for an overview of likely problems</strong>.</p>
 <div class="section" id="static-images">
@@ -171,7 +171,7 @@ not expected to be a parent-child relation while the rest have low <cite>ibs0</c
       </div>
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, Brent S Pedersen.
+        &copy; Copyright 2016, Brent S Pedersen.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>

@@ -2,7 +2,7 @@ manipulation, validation and exploration of pedigrees
 =====================================================
 
 
-peddy compares familial-relationships and sexes as reported in a [PED file](http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped)
+peddy compares familial-relationships and sexes as reported in a `PED file <http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped)>`_
 with those inferred from a VCF.
 
 It samples the VCF at about 25000 sites (plus chrX) to accurately estimate **relatedness**, **IBS0**, **heterozygosity**, **sex** and **ancestry**. It uses 2504 thousand genome samples as backgrounds to calibrate the relatedness calculation and to make ancestry predictions.
@@ -16,10 +16,10 @@ The command-line usage looks like:
 
     python -m peddy -p 12 --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
 
-This will use 12 cpus to run various checks and create **ceph-1463.html** which
+This will use 12 cpus to run various checks and create `ceph-1463.html <_static/ceph.html>`_ which
 you can open in any browser to interactively explore your data.
 
-It will also create create 4 csv files and 4 QC plots.
+It will also create create 4 csv files and 4 static QC plots that mirror those in the interactive html.
 These will indicate:
 
 + discrepancies between ped-reported and genotype-inferred relations
@@ -27,7 +27,7 @@ These will indicate:
 + samples with higher levels of HET calls, lower depth, or more variance in b-allele-frequency (ref / (ref + alt )) for het calls.
 + an ancestry prediction based on projection onto the thousand genomes principal components
 
-Finally, it will create a new file ped files `ceph1463.peddy.ped` that also lists
+Finally, it will create a new file ped file `ceph1463.peddy.ped` that also lists
 the most useful columns from the `het-check` and `sex-check`. Users can **first
 look at this extended ped file for an overview of likely problems**.
 

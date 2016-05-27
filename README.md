@@ -46,16 +46,29 @@ Speed
 -----
 
 Because of the sampling approach and parallelization, `peddy` is very fast.
-On an in-house dataset with 2076-sample, whole-genome VCF, peddy can run
-the het-check and PCA in < 8 minutes. It finishes the full set of checks in
-under 25 minutes. On smaller datasets, it is much faster.
+With 20 CPUs, on the 17-member *CEPH1643* pedigree whole-genome VCF, peddy can run
+the het-check and PCA in < 20 seconds. The pedigree check including all vs.
+all against the 2504 thousand genomes samples run in 85 seconds.
+It finishes the full set of checks in under two minutes.
 
-<!-- TODO: show comparison to KING -->
+In comparison [KING](http://people.virginia.edu/~wc9c/KING/manual.html) runs
+in 14 seconds (it is **extremely fast**); the time including the conversion
+from VCF to binary ped is 85 seconds.
 
-It can run on the 14-sample CEPH pedigree in about 1.5 minutes using 20 CPUs. This
-includes running a PCA on the 2504 samples from 1000 genomes, then fitting an SVM
-and predicting ancestry in addition to calculating relatedness among all pairwise
-combinations of the 2504+17 samples.
+
+Validation
+----------
+
+The results between peddy and KING are comparable, but peddy does better on
+cohorts where most samples are related. See the figure below where the peddy
+relatedness estimate is closer to the actual than KING which over-estimates relatedness.
+
+![Peddy Vs KING](https://raw.githubusercontent.com/brentp/peddy/master/docs/_static/peddy-v-king.png "Comparison with KING")
+
+Note that the peddy analysis is well-calibrated runs with the thousand genomes samples
+as background. It also includes running a PCA on the 2504 samples from 1000 genomes,
+then fitting an SVM and predicting ancestry in addition to calculating relatedness
+among all pairwise combinations of the 2504+17 samples.
 
 Warnings and Checks
 -------------------

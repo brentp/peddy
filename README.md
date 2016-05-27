@@ -10,9 +10,9 @@ It does this very quickly by sampling, by using C for computationally intensive 
 
 
 [![PyPI version](https://badge.fury.io/py/peddy.svg)](http://badge.fury.io/py/peddy)
+[![Documentation Status](https://readthedocs.org/projects/peddy/badge/?version=latest)](http://peddy.readthedocs.org/en/latest/?badge=latest)
 <!--
 [![Build Status](https://travis-ci.org/brentp/peddy.svg?branch=master)](https://travis-ci.org/brentp/peddy)
-[![Documentation Status](https://readthedocs.org/projects/peddy/badge/?version=latest)](http://peddy.readthedocs.org/en/latest/?badge=latest)
 -->
 
 

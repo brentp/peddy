@@ -278,6 +278,7 @@ function get_points(group, samples, keys) {
 	for(var i=0; i <samples.length;i++){
 		var sample_id=samples[i];
 		for (curveNumber = 0; curveNumber < datas[group].length; curveNumber++){
+			// don't show sites expected to be unrelated.
 			if(group == 'ped' && curveNumber == 0){ continue}
 			var d = datas[group][curveNumber];
 			var key, v;
@@ -403,7 +404,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
     peds[k]['y'].push(p[ibs0Index].toPrecision(3))
 	peds[k]['sample_a'].push(p[sampleAIndex])
 	peds[k]['parent'].push(p[parentIndex])
-	peds[k]['marker']['size'].push(250+p[nIndex])
+	peds[k]['marker']['size'].push(50+p[nIndex])
 	peds[k]['marker']['opacity'].push(1)
 	peds[k]['sample_b'].push(p[sampleBIndex])
 	peds[k]['text'].push("<b>" + p[sampleAIndex] + "</b>::<b>" + p[sampleBIndex] + "</b>")

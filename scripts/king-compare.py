@@ -1,3 +1,5 @@
+import sys
+
 import toolshed as ts
 import numpy as np
 import statsmodels.api as sm
@@ -15,13 +17,16 @@ actual_rel = {tuple(sorted([d['sample_a'], d['sample_b']])): float(d['pedigree_r
 peddy_ibs = {tuple(sorted([d['sample_a'], d['sample_b']])): float(d['ibs0']) for d in peddy}
 peddy_rel = {tuple(sorted([d['sample_a'], d['sample_b']])): float(d['rel']) for d in peddy}
 
-assert not set(king_ibs.keys()).symmetric_difference(peddy_ibs.keys())
+keys = king_ibs.keys()
+if set(king_ibs.keys()).symmetric_difference(peddy_ibs.keys()):
+    sys.stderr.write("WARNING: not all the same samples")
+    keys = list(set(keys).intersection(peddy_ibs.keys()))
+
 
 from matplotlib import pyplot as plt
 import seaborn as sns
 sns.set_style('ticks')
 
-keys = king_ibs.keys()
 
 fig, axes = plt.subplots(ncols=3, figsize=(15, 5))
 

@@ -27,6 +27,9 @@ def run(args):
         df = getattr(p, check)(vcf, plot=plot)
 
     df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.4g")
+    if 'keep' in df.columns:
+        df = df.ix[df['keep'], :]
+        df.drop(['keep'], axis=1, inplace=True)
     d, unit = time.time() - t0, "seconds"
     if d > 100:
         d /= 60

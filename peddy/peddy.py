@@ -481,7 +481,6 @@ class Ped(object):
             dicts = [s.dict() for s in self.samples()]
         else:
             dicts = [s.dict() for s in self.samples() if s.sample_id in set(samples)]
-        # do some extra work to keep order
         return json.dumps(dicts)
 
     def relation(self, sample_a, sample_b):
@@ -899,15 +898,14 @@ class Ped(object):
             print(sampling_rate)
             ru = (np.random.uniform(size=df.shape[0]) < sampling_rate)
             keep = df.eval('parent_error | sample_duplication_error | predicted_parents| @rd | @ru' +
-                    '| (rel > 0.17) | (ibs0 < 0.02) | (pedigree_relatedness > 0)')
+                    '| (rel > 0.17) | (ibs0 < 0.04) | (pedigree_relatedness > 0)')
 
             same_fam = []
             for a, b in it.izip(a_samples, b_samples):
                 same_fam.append(a.family_id == b.family_id)
             keep |= np.array(same_fam, dtype=bool)
+            df['keep'] = keep
 
-        else:
-            keep = np.ones(df.shape[0]).astype(bool)
 
         if not plot:
             return df
@@ -956,7 +954,7 @@ class Ped(object):
         else:
             plt.savefig(plot)
         plt.close()
-        return df.ix[keep, :]
+        return df
 
     def summary(self):
         atrios, aquads = 0, 0

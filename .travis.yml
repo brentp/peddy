@@ -1,10 +1,11 @@
 language: python
 python:
   - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
+    #- "3.3"
+    #- "3.4"
+    #- "3.5"
 script: 
+    - source activate travis
     - nosetests --with-doctest
 
 install:
@@ -22,9 +23,9 @@ install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
-    - pip install -U networkx
     - conda create -q -n travis python=$TRAVIS_PYTHON_VERSION scipy scikit-learn cython pandas numpy networkx
     - source activate travis
+    - pip install -U networkx
     - conda install -c bioconda cyvcf2
     - pip install -r requirements.txt
     - python setup.py install

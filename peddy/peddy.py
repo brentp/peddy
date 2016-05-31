@@ -617,7 +617,7 @@ class Ped(object):
         :param min_depth int: minimum depth of variants to consider (in at least 50% of samples).
         :param n_sites int: stop after sampling this many sites in the X chromosome.
         :param skip_missing bool: don't consider samples that are not in the ped file
-        :param plot bool: render a plot of the distributions by gender.
+        :param plot bool: render a plot of the distributions by sex.
         :param pars tuple(str): pseudo autosmal regions
 
         :return: pandas.DataFrame
@@ -743,9 +743,9 @@ class Ped(object):
         plt.xlim(-0.27, 1.27)
         plt.ylim(ymin=-0.08)
         plt.axhline(y=cutoff, color='0.75')
-        plt.xlabel('Gender From Ped')
+        plt.xlabel('Sex From Ped')
         plt.ylabel('HET / HOM_ALT [higher is more likely female]')
-        plt.legend(handles=[c0, c1], title="Gender predicted\nfrom genotypes",
+        plt.legend(handles=[c0, c1], title="Sex predicted\nfrom genotypes",
                    loc='upper center')
         plt.savefig(plot)
         plt.close()

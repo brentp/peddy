@@ -24,6 +24,7 @@ install:
     - conda update -q conda
     - pip install -U networkx
     - conda create -q -n travis python=$TRAVIS_PYTHON_VERSION scipy scikit-learn cython pandas numpy networkx
+    - source activate travis
     - conda install -c bioconda cyvcf2
     - pip install -r requirements.txt
     - python setup.py install

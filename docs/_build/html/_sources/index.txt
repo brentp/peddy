@@ -31,6 +31,8 @@ Finally, it will create a new file ped file `ceph1463.peddy.ped` that also lists
 the most useful columns from the `het-check` and `sex-check`. Users can **first
 look at this extended ped file for an overview of likely problems**.
 
+The columns in the CSV output are documented in :ref:`output`
+
 Static Images
 -------------
 
@@ -139,4 +141,5 @@ not expected to be a parent-child relation while the rest have low `ibs0` (and h
 .. toctree::
    :maxdepth: 1
 
+   output
    html

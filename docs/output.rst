@@ -1,0 +1,74 @@
+.. _output:
+
+CSV Output
+==========
+
+This document describes the columns in the CSV output
+
+
+sex_check
+---------
+
+Sex check performs a comparison between the sex reported in the ped
+file and that inferred from the genotypes on the non-PAR regions of
+the X chromosome.
+
+1 row per sample with columns of:
+
++ sample_id: sample from ped.
++ error: boolean indicating wether there is a mismatch between X genotypes and ped sex.
++ het_count: number of heterozygote calls
++ hom_alt_count: number of homozygous-alternate calls
++ hom_ref_count: number of homozygous-reference calls
++ het_ratio: ratio of `het_count` / `hom_alt_count`. Low for males, high for females
++ ped_sex: sex from .ped file 
++ prepdicted_sex: sex predicted from rate of hets on chrX.
+
+
+het_check
+---------
+
+Het check does general QC including rate of het calls, allele-balance at het calls,
+mean and median depth, and a PCA projection onto thousand genomes.
+
+1 row per sample with columns of:
+
++ sample_id: sample from ped.
++ sampled_sites: number of sites sampled (sufficient call-rate across samples and depth in this sample)
++ mean/median_depth: mean/median depths for the sites tested.
++ depth_outlier: boolean indicating that this sample's depth is considered an outlier relative to the other samples.
++ het_count: number of heterozygote calls in sampled sites. 
++ het_ratio: proportion of sites that were heterozygous.
++ ratio_outlier: boolean indicating that the het_ratio was outside what is normally seen.
++ iqr_baf: inter-quartile range of b-allele frequency (actually the 90% range). We make a distribution of all sites of
+  alts / (ref + alts) and then report the difference between the 90th and the 10th percentile. Large values indicated
+  likely sample contamination.
++ p10/p90: the numbers used to calculate iqr_baf.
+
+And the PCA columns:
+
++ PC1/PC2/PC3/PC4: the first 4 values after this sample was projected onto the thousand genomes principle components.
++ ancestry-prediction: one of `AFR AMR EAS EUR SAS UNKNOWN` where it is unknown if `ancestry-prob` < 0.65 for the
+  highest population 
++ ancestry-prob: the highest probability from the SVM for any ancestry (between 0 and 1).
+
+
+ped_check
+---------
+
+Ped check compares the relatedness of 2 samples as reported in a .ped file to the
+relatedness inferred from the genotypes and ~25K sites in the genome.
+
+This contains 1 row per sample-pair: (n_samples * n_samples) / 2 rows.
+
++ sample_a/sample_b: the samples indicating the pair in question.
++ n: the number of sites that was used to predict the relatedness.
++ rel: the relatedness calculated from the genotypes.
++ pedigree_relatedness: the relatedness reported in the ped file.
++ rel_difference: difference between the preceding 2 colummns.
++ ibs0: the proportion of sites and which the 2 samples shared no alleles (should be essentially 0 for parent-child pairs).
++ ibs0: the proportion of sites and which the 2 samples shared both alleles.
++ pedigree_parents: boolean indicating that this pair is a parent-child pair according to the ped file.
++ predicted_parents: boolean indicating that this pair is expected to be a parent-child pair according to the ibs0 (< 0.012) calculated from the genotypes.
++ parent_error: boolean indicating that the preceding 2 columns don't match
++ sample_duplication_error: boolean indicating that rel > 0.75 and ibs0 < 0.012

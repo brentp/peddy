@@ -24,7 +24,7 @@ See installation below.
 Most users will only need to run as a command-line tool with a ped and VCF, e.g:
 
 ```
-python -m peddy -p 12 --plot --prefix ceph-1463 ceph1463.vcf.gz ceph1463.ped
+python -m peddy -p 12 --plot --prefix ceph-1463 data/ceph1463.vcf.gz data/ceph1463.ped
 ```
 
 This will use 12 cpus to run various checks and create **ceph-1463.html** which

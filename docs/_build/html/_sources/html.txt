@@ -1,5 +1,5 @@
-Example HTML output on 17 member CEPH pedigree
-==============================================
+Example HTML
+============
 
 See `this link <_static/ceph.html>`_ for stand-alone html.
 

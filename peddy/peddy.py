@@ -433,7 +433,7 @@ class Ped(object):
                 toks = [x.strip() for x in re.split("\s+", l.strip("\n"))]
             else:
                 toks = l.split(sep)
-            if i == 0 and (toks[0][0] == "#" or toks[0] == "family_id"):
+            if i == 0 and (toks[0][0] == "#" or toks[0].lower() in ("family_id", "kindred_id")):
                 if toks[0][0] == "#":
                     toks[0] = toks[0][1:]
                 self.header = toks

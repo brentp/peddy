@@ -883,9 +883,10 @@ class Ped(object):
                                            zip(a_samples, b_samples)])
         df["pedigree_relatedness"] = np.array([self.relatedness_coefficient(a, b) for a, b in
                                                zip(df.sample_a, df.sample_b)])
-        df["predicted_parents"] = df['ibs0'] < 0.012
+        df['tmpibs0'] = df['ibs0'] / df['n']
+        df["predicted_parents"] = df['tmpibs0'] < 0.012
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
-        df["sample_duplication_error"] = (df['ibs0'] < 0.012) & (df['rel'] > 0.75)
+        df["sample_duplication_error"] = (df['tmpibs0'] < 0.012) & (df['rel'] > 0.75)
 
         pr = df['pedigree_relatedness'][:]
         pr[pr < 0] = 0
@@ -898,7 +899,7 @@ class Ped(object):
             print(sampling_rate)
             ru = (np.random.uniform(size=df.shape[0]) < sampling_rate)
             keep = df.eval('parent_error | sample_duplication_error | predicted_parents| @rd | @ru' +
-                    '| (rel > 0.17) | (ibs0 < 0.04) | (pedigree_relatedness > 0)')
+                    '| (rel > 0.17) | (tmpibs0 < 0.04) | (pedigree_relatedness > 0)')
 
             same_fam = []
             for a, b in it.izip(a_samples, b_samples):
@@ -908,6 +909,7 @@ class Ped(object):
 
 
         if not plot:
+            df.drop('tmpibs0', axis=1, inplace=True)
             return df
         from matplotlib import pyplot as plt
         plt.close()
@@ -922,14 +924,14 @@ class Ped(object):
             src = ("%.3f" % rc).rstrip('0')
             # outline parent kid relationships
             ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
-            plt.scatter(df['rel'][sel], df['ibs0'][sel],
+            plt.scatter(df['rel'][sel], df['tmpibs0'][sel],
                     c=colors[i], linewidth=1, edgecolors=ec,
                     s=14 * n[sel],
                     #s=14,
                     alpha=0.80,
                     label="ped coef: %s" % src)
         plt.xlabel('coefficient of relatedness')
-        plt.ylabel('ibs0')
+        plt.ylabel('ibs0 rate')
         if prefix:
             plt.title(prefix)
         if os.environ.get('FIXED'):
@@ -954,6 +956,7 @@ class Ped(object):
         else:
             plt.savefig(plot)
         plt.close()
+        df.drop('tmpibs0', axis=1, inplace=True)
         return df
 
     def summary(self):

@@ -12,7 +12,10 @@ peddy = list(ts.reader(2, sep=","))
 king_ibs = {tuple(sorted([d['ID1'], d['ID2']])): float(d['N_IBS0']) for d in king}
 king_rel = {tuple(sorted([d['ID1'], d['ID2']])): 2.0 * float(d['Kinship']) for d in king}
 
-actual_rel = {tuple(sorted([d['sample_a'], d['sample_b']])): float(d['pedigree_relatedness']) for d in peddy}
+try:
+    actual_rel = {tuple(sorted([d['sample_a'], d['sample_b']])): float(d['pedigree_relatedness']) for d in peddy}
+except KeyError:
+    actual_rel = None
 
 peddy_ibs = {tuple(sorted([d['sample_a'], d['sample_b']])): float(d['ibs0']) for d in peddy}
 peddy_rel = {tuple(sorted([d['sample_a'], d['sample_b']])): float(d['rel']) for d in peddy}
@@ -28,10 +31,25 @@ import seaborn as sns
 sns.set_style('ticks')
 
 
-fig, axes = plt.subplots(ncols=3, figsize=(15, 5))
 
 values = {}
 values['king'], values['peddy'] = [king_rel[k] for k in keys], [peddy_rel[k] for k in keys]
+if not actual_rel:
+
+    plt.scatter(values['king'], values['peddy'])
+    plt.xlabel('king')
+    plt.ylabel('other')
+    xs, ys = plt.xlim(), plt.ylim()
+    lims = [np.min([xs, ys]), np.max([xs, ys])]
+    plt.plot(lims, lims, ls='-', c='0.75', lw=3, zorder=0)
+    plt.show()
+    sys.exit()
+
+
+
+
+fig, axes = plt.subplots(ncols=4, figsize=(15, 5))
+
 values['actual'] = [actual_rel[k] for k in keys]
 
 xys = [('actual', 'king'), ('actual', 'peddy')]
@@ -63,10 +81,20 @@ for i in range(2):
 
 
 axes[2].scatter([king_ibs[k] for k in keys], [peddy_ibs[k] for k in keys])
-axes[2].set_xlabel('king ibs')
-axes[2].set_ylabel('peddy ibs')
+axes[2].set_xlabel('king ibs0')
+axes[2].set_ylabel('peddy ibs0')
 fit = sm.OLS([king_ibs[k] for k in keys], [peddy_ibs[k] for k in keys]).fit()
 axes[2].text(0.2, 0.8, fmt % (fit.rsquared, fit.f_pvalue),
         transform=axes[2].transAxes)
+
+king_ibs = {tuple(sorted([d['ID1'], d['ID2']])): float(d['N_IBS2']) for d in king}
+peddy_ibs = {tuple(sorted([d['sample_a'], d['sample_b']])): float(d['ibs2']) for d in peddy}
+axes[3].scatter([king_ibs[k] for k in keys], [peddy_ibs[k] for k in keys])
+axes[3].set_xlabel('king ibs2')
+axes[3].set_ylabel('peddy ibs2')
+fit = sm.OLS([king_ibs[k] for k in keys], [peddy_ibs[k] for k in keys]).fit()
+axes[3].text(0.2, 0.8, fmt % (fit.rsquared, fit.f_pvalue),
+        transform=axes[3].transAxes)
+
 plt.tight_layout()
 plt.show()

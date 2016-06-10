@@ -883,7 +883,7 @@ class Ped(object):
                                            zip(a_samples, b_samples)])
         df["pedigree_relatedness"] = np.array([self.relatedness_coefficient(a, b) for a, b in
                                                zip(df.sample_a, df.sample_b)])
-        df['tmpibs0'] = df['ibs0'] / df['n']
+        df['tmpibs0'] = df['ibs0'] / df['n'].astype(float)
         df["predicted_parents"] = df['tmpibs0'] < 0.012
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
         df["sample_duplication_error"] = (df['tmpibs0'] < 0.012) & (df['rel'] > 0.75)
@@ -919,44 +919,63 @@ class Ped(object):
         colors = [(0.85, 0.85, 0.85)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
         n = df['n'] / df['n'].mean()
 
-        for i, rc in enumerate(sorted(set(df['pedigree_relatedness']))):
-            sel = df['pedigree_relatedness'] == rc
-            src = ("%.3f" % rc).rstrip('0')
-            # outline parent kid relationships
-            ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
-            plt.scatter(df['rel'][sel], df['tmpibs0'][sel],
-                    c=colors[i], linewidth=1, edgecolors=ec,
-                    s=14 * n[sel],
-                    #s=14,
-                    alpha=0.80,
-                    label="ped coef: %s" % src)
-        plt.xlabel('coefficient of relatedness')
-        plt.ylabel('ibs0 rate')
-        if prefix:
-            plt.title(prefix)
-        if os.environ.get('FIXED'):
-            print("fixed axes")
-            plt.xlim(-0.2, 1.1)
-            plt.ylim(-0.02, 0.14)
-        plt.legend()
-        xmin, xmax = plt.xlim()
-        if xmin < -0.3:
-            plt.xlim(xmin=-0.3)
-        if xmax > 1.25:
-            plt.xlim(xmax=1.25)
+        fig, axes = plt.subplots(3, figsize=(6, 18))
+        df['tmpibs2'] = df['ibs2'] / df['n'].astype(float)
 
+        for k, key in enumerate(('tmpibs0', 'tmpibs2')):
+
+            for i, rc in enumerate(sorted(set(df['pedigree_relatedness']))):
+                sel = df['pedigree_relatedness'] == rc
+                src = ("%.3f" % rc).rstrip('0')
+                # outline parent kid relationships
+                ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
+                print(src, rc, colors[i], sel.sum())
+                axes[k].scatter(df['rel'][sel], df[key][sel],
+                        c=colors[i], linewidth=1, edgecolors=ec,
+                        s=((12 * (i > 0)) + 12 * n[sel]),
+                        zorder=i,
+                        alpha=0.80,
+                        label="ped coef: %s" % src)
+                axes[k].set_xlabel('coefficient of relatedness')
+                axes[k].set_ylabel(key[3:])
+
+        for i, rc in enumerate(sorted(set(df['pedigree_relatedness']))):
+                sel = df['pedigree_relatedness'] == rc
+                src = ("%.3f" % rc).rstrip('0')
+                # outline parent kid relationships
+                ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
+                axes[2].scatter(df['ibs0'][sel], df['ibs2'][sel],
+                        c=colors[i], linewidth=1, edgecolors=ec,
+                        s=((12 * (i > 0)) + 12 * n[sel]),
+                        zorder=i,
+                        alpha=0.80,
+                        label="ped coef: %s" % src)
+                axes[2].set_xlabel('ibs0')
+                axes[2].set_ylabel('ibs2')
+
+        plt.legend()
+        if prefix:
+            fig.suptitle(prefix)
+        xmin, xmax = axes[0].get_xlim()
+        if xmin < -0.3:
+            axes[0].set_xlim(xmin=-0.3)
+        if xmax > 1.25:
+            axes[0].set_xlim(xmax=1.25)
+
+        """
         ymin, ymax = plt.ylim()
         if ymin < -0.02:
             plt.ylim(ymin=-0.02)
         if ymax > 0.20:
             plt.ylim(ymax=0.20)
+        """
 
         if plot is True:
             plt.show()
         else:
             plt.savefig(plot)
         plt.close()
-        df.drop('tmpibs0', axis=1, inplace=True)
+        df.drop(['tmpibs0', 'tmpibs2'], axis=1, inplace=True)
         return df
 
     def summary(self):

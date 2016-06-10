@@ -68,7 +68,12 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
     ped_df.family_id = ped_df.family_id.astype(basestring)
     ped_df.sample_id = ped_df.sample_id.astype(basestring)
     ped_df.index = ped_df.sample_id
+
+    samples = set(samples)
+    samples = [s for s in ped_df['sample_id'] if s in samples]
+
     ped_df = ped_df.ix[samples, :]
+
 
     keep_cols = {"ped_check": [],
                  "het_check": ["het_ratio", "mean_depth", "iqr_baf", "ancestry-prediction", "PC1", "PC2", "PC3"],
@@ -78,7 +83,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
     # background_df only present for het-check. It's the PC's from 1000G for
     # plotting.
     for check, df, background_df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus) for check
-                                 in ("het_check", "ped_check", "sex_check")]):
+                                 in ("ped_check", "het_check", "sex_check")]):
         vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
 
         if check != "ped_check":
@@ -87,8 +92,8 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
                 c = check.split("_")[0] + "_"
                 col_name = col if col.startswith(("PC", c)) else c + col
                 ped_df[col_name] = df.ix[samples, :][col]
-            if background_df is not None:
-                vals["background_pca"] = background_df.to_json(orient='records', double_precision=3)
+        if background_df is not None:
+            vals["background_pca"] = background_df.to_json(orient='records', double_precision=3)
 
     new_pedf = prefix + ".peddy.ped"
     cols = list(ped_df.columns)

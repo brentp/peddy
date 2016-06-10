@@ -809,6 +809,11 @@ class Ped(object):
             d['iqr_baf'] = d.pop('range')
 
         import pandas as pd
+        from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+        from matplotlib.cbook import get_sample_data
+
+        image_path = get_sample_data('/tmp/image.png')
+
         df = pd.DataFrame(sample_ranges.values())
         cols = ['sample_id'] + sorted([x for x in df.columns if x != 'sample_id'])
         df = df[cols]
@@ -826,18 +831,46 @@ class Ped(object):
         from matplotlib import pyplot as plt
         import seaborn as sns
         colors = sns.color_palette('Set1', 4)
+        matplotlib.pyplot.xkcd()
 
         cs = [colors[1 - int(v['depth_outlier'])] for v in sample_ranges.values()]
         ecs = ['none' if not v['ratio_outlier'] else 'k' for v in sample_ranges.values()]
 
         s = get_s(np.array([v['median_depth'] for v in sample_ranges.values()]))
 
+        def imscatter(x, y, image, ax=None, zoom=1):
+            if ax is None:
+                ax = plt.gca()
+            try:
+                image = plt.imread(image)
+            except TypeError:
+                # Likely already an array...
+                pass
+            import random
+            from scipy import ndimage
+            images = [ndimage.rotate(image, random.randint(10, 180),
+                        mode='constant') for i in range(10)]
+            ims = [OffsetImage(image, zoom=zoom) for image in images]
+            x, y = np.atleast_1d(x, y)
+            artists = []
+            for x0, y0 in zip(x, y):
+                ab = AnnotationBbox(random.choice(ims), (x0, y0), xycoords='data', frameon=False)
+                artists.append(ax.add_artist(ab))
+            ax.update_datalim(np.column_stack([x, y]))
+            ax.autoscale()
+            return artists
+
+
+        imscatter(depth[depth > 50], ratios[depth > 50], image_path, zoom=0.12)
+        """
+        plt.show()
         plt.scatter(depth, ratios, c=cs, edgecolors=ecs, s=s)
 
         for k, v in ((k, v) for k, v in sample_ranges.items()
                       if v['ratio_outlier'] or v['depth_outlier']):
           plt.text(v['median_depth'], v['het_ratio'], k, color=colors[1], fontsize=7)
 
+        """
         plt.xlabel('median depth')
         plt.ylabel('proportion het calls')
         plt.savefig(plot)

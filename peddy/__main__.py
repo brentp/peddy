@@ -64,7 +64,8 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
                                           'sex', 'phenotype'],
                            # if there's a header, we skip it as it's inidcated
                            # above.
-                           skiprows=1 if ped.header else None)
+                           skiprows=1 if ped.header else None,
+                           sep="\t")
     ped_df.family_id = ped_df.family_id.astype(basestring)
     ped_df.sample_id = ped_df.sample_id.astype(basestring)
     ped_df.index = ped_df.sample_id
@@ -91,7 +92,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
             for col in keep_cols[check]:
                 c = check.split("_")[0] + "_"
                 col_name = col if col.startswith(("PC", c)) else c + col
-                ped_df[col_name] = df.ix[samples, :][col]
+                ped_df[col_name] = list(df.ix[samples, :][col])
         if background_df is not None:
             vals["background_pca"] = background_df.to_json(orient='records', double_precision=3)
 

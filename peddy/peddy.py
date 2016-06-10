@@ -919,8 +919,9 @@ class Ped(object):
         colors = [(0.85, 0.85, 0.85)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
         n = df['n'] / df['n'].mean()
 
-        fig, axes = plt.subplots(3, figsize=(6, 18))
+        fig, axesb = plt.subplots(2, 2, figsize=(12, 12))
         df['tmpibs2'] = df['ibs2'] / df['n'].astype(float)
+        axes = axesb[0]
 
         for k, key in enumerate(('tmpibs0', 'tmpibs2')):
 
@@ -939,21 +940,6 @@ class Ped(object):
                 axes[k].set_xlabel('coefficient of relatedness')
                 axes[k].set_ylabel(key[3:])
 
-        for i, rc in enumerate(sorted(set(df['pedigree_relatedness']))):
-                sel = df['pedigree_relatedness'] == rc
-                src = ("%.3f" % rc).rstrip('0')
-                # outline parent kid relationships
-                ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
-                axes[2].scatter(df['ibs0'][sel], df['ibs2'][sel],
-                        c=colors[i], linewidth=1, edgecolors=ec,
-                        s=((12 * (i > 0)) + 12 * n[sel]),
-                        zorder=i,
-                        alpha=0.80,
-                        label="ped coef: %s" % src)
-                axes[2].set_xlabel('ibs0')
-                axes[2].set_ylabel('ibs2')
-
-        plt.legend()
         if prefix:
             fig.suptitle(prefix)
         xmin, xmax = axes[0].get_xlim()
@@ -961,6 +947,24 @@ class Ped(object):
             axes[0].set_xlim(xmin=-0.3)
         if xmax > 1.25:
             axes[0].set_xlim(xmax=1.25)
+
+        axes = axesb[1]
+        for k, key in enumerate(('ibs2', 'shared_hets')):
+            for i, rc in enumerate(sorted(set(df['pedigree_relatedness']))):
+                    sel = df['pedigree_relatedness'] == rc
+                    src = ("%.3f" % rc).rstrip('0')
+                    # outline parent kid relationships
+                    ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
+                    axes[k].scatter(df['ibs0'][sel], df[key][sel],
+                            c=colors[i], linewidth=1, edgecolors=ec,
+                            s=((12 * (i > 0)) + 12 * n[sel]),
+                            zorder=i,
+                            alpha=0.80,
+                            label="ped coef: %s" % src)
+                    axes[k].set_xlabel('ibs0')
+                    axes[k].set_ylabel(key)
+
+        plt.legend()
 
         """
         ymin, ymax = plt.ylim()

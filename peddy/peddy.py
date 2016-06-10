@@ -662,11 +662,12 @@ class Ped(object):
         print("sex-check: %s skipped / %d kept" % (skipped, kept), file=sys.stderr)
 
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
+                    'unknown': [], 'unknown_errors': [], 'unknown_samples': [],
                     'female_errors': [], 'male_samples': [], 'female_samples':[]}
         res = []
         for i, s in enumerate(vcf.samples):
             try:
-                ped_sex = self[s].sex
+                ped_sex = str(self[s].sex)
             except KeyError:
                 if skip_missing:
                     print(s)
@@ -675,17 +676,18 @@ class Ped(object):
             val = -0.06 if np.isnan(het_ratio[i]) else het_ratio[i]
             predicted_sex = "UNKNOWN" if val < 0 else SEX.MALE if val < cutoff else SEX.FEMALE
             error = predicted_sex != ped_sex
-            if ped_sex == "NA":
-                error = "NA"
-            else:
-                try:
-                    plot_vals[ped_sex].append(val)
-                except KeyError:
-                    # sex unknown
-                    continue
+            if ped_sex in ("NA", "-9"):
+                ped_sex = "unknown"
+            try:
+                plot_vals[ped_sex].append(val)
+            except KeyError:
+                print(s, ped_sex, ped_sex.strip() == "-9")
+                # sex unknown
+                raise
 
             plot_vals[ped_sex + '_errors'].append(error)
             plot_vals[ped_sex + '_samples'].append(s)
+
             res.append(dict(sample_id=s, ped_sex=ped_sex, hom_ref_count=hom_ref[i],
                        het_count=het[i], hom_alt_count=hom_alt[i],
                        het_ratio=val, predicted_sex=predicted_sex,
@@ -896,7 +898,6 @@ class Ped(object):
             rd = np.abs(df['rel_difference']) > 0.17
 
             sampling_rate = 1 / (len(samps)**0.6)
-            print(sampling_rate)
             ru = (np.random.uniform(size=df.shape[0]) < sampling_rate)
             keep = df.eval('parent_error | sample_duplication_error | predicted_parents| @rd | @ru' +
                     '| (rel > 0.17) | (tmpibs0 < 0.04) | (pedigree_relatedness > 0)')
@@ -930,7 +931,6 @@ class Ped(object):
                 src = ("%.3f" % rc).rstrip('0')
                 # outline parent kid relationships
                 ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
-                print(src, rc, colors[i], sel.sum())
                 axes[k].scatter(df['rel'][sel], df[key][sel],
                         c=colors[i], linewidth=1, edgecolors=ec,
                         s=((12 * (i > 0)) + 12 * n[sel]),
@@ -965,14 +965,6 @@ class Ped(object):
                     axes[k].set_ylabel(key)
 
         plt.legend()
-
-        """
-        ymin, ymax = plt.ylim()
-        if ymin < -0.02:
-            plt.ylim(ymin=-0.02)
-        if ymax > 0.20:
-            plt.ylim(ymax=0.20)
-        """
 
         if plot is True:
             plt.show()

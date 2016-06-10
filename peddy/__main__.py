@@ -12,6 +12,7 @@ def run(args):
     # only print warnings for het_check
     p = Ped(pedf, warn=False)
     print("\033[1;31m%s\033[0m" % check)
+
     t0 = time.time()
     sys.stdout.flush()
     background_df = None
@@ -88,11 +89,11 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
         vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
 
         if check != "ped_check":
-            df.index = df.sample_id
+            df.index = df['sample_id'].astype(basestring)
             for col in keep_cols[check]:
                 c = check.split("_")[0] + "_"
                 col_name = col if col.startswith(("PC", c)) else c + col
-                ped_df[col_name] = list(df.ix[samples, :][col])
+                ped_df[col_name] = list(df[col].ix[samples])
         if background_df is not None:
             vals["background_pca"] = background_df.to_json(orient='records', double_precision=3)
 
@@ -104,7 +105,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
 
     # output the new version with the extra columns.
     # avoid extra stuff to stderr
-    vals['pedigree'] = Ped(new_pedf).to_json(samples)
+    vals['pedigree'] = Ped(new_pedf, warn=False).to_json(samples)
 
     sys.stdout.flush()
     with open("%s.html" % prefix, "w") as fh:

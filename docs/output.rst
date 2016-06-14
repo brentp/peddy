@@ -22,7 +22,7 @@ the X chromosome.
 + hom_ref_count: number of homozygous-reference calls
 + het_ratio: ratio of `het_count` / `hom_alt_count`. Low for males, high for females
 + ped_sex: sex from .ped file 
-+ prepdicted_sex: sex predicted from rate of hets on chrX.
++ predicted_sex: sex predicted from rate of hets on chrX.
 
 
 het_check
@@ -67,7 +67,7 @@ This contains 1 row per sample-pair: (n_samples * n_samples) / 2 rows.
 + pedigree_relatedness: the relatedness reported in the ped file.
 + rel_difference: difference between the preceding 2 colummns.
 + ibs0: the number of sites at which the 2 samples shared no alleles (should approach 0 for parent-child pairs).
-+ ibs2: the proportion of sites and which the 2 samples where both hom-ref, both het, or both hom-alt.
++ ibs2: the number of sites and which the 2 samples where both hom-ref, both het, or both hom-alt.
 + shared_hets: the number of sites at which both samples were hets.
 + hets_a/b: the number of sites at which sample_a/b was het.
 + pedigree_parents: boolean indicating that this pair is a parent-child pair according to the ped file.

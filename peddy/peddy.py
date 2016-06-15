@@ -919,6 +919,10 @@ class Ped(object):
 
         colors = [(0.85, 0.85, 0.85)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
         n = df['n'] / df['n'].mean()
+        if len(df) < 100:
+            colors[0] = (0.3, 0.3, 0.3)
+
+        mult = 24 if len(df) < 50 else 12
 
         fig, axesb = plt.subplots(2, 2, figsize=(12, 12))
         df['tmpibs2'] = df['ibs2'] / df['n'].astype(float)
@@ -933,7 +937,7 @@ class Ped(object):
                 ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
                 axes[k].scatter(df['rel'][sel], df[key][sel],
                         c=colors[i], linewidth=1, edgecolors=ec,
-                        s=((12 * (i > 0)) + 12 * n[sel]),
+                        s=((mult * (i > 0 or len(df) < 36)) + mult * n[sel]),
                         zorder=i,
                         alpha=0.80,
                         label="ped coef: %s" % src)
@@ -957,7 +961,7 @@ class Ped(object):
                     ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
                     axes[k].scatter(df['ibs0'][sel], df[key][sel],
                             c=colors[i], linewidth=1, edgecolors=ec,
-                            s=((12 * (i > 0)) + 12 * n[sel]),
+                            s=((mult * (i > 0 or len(df) < 36)) + mult * n[sel]),
                             zorder=i,
                             alpha=0.80,
                             label="ped coef: %s" % src)

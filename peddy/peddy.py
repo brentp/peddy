@@ -3,6 +3,7 @@
 from __future__ import print_function
 import sys
 import os
+import os.path as op
 import collections
 import re
 import itertools as it
@@ -752,9 +753,11 @@ class Ped(object):
         plt.close()
         return pd.DataFrame(res)
 
-    def het_check(self, vcf_path, plot=False, ncpus=1, min_depth=8, **kwargs):
+    def het_check(self, vcf_path, plot=False, ncpus=1, min_depth=8,
+                  sites=op.join(op.dirname(__file__), '1kg.sites'),
+                  **kwargs):
         """
-        each is not used, but added here to have same sig as ped_check
+        kwargs is not used, but added here to allow same args as ped_check
         """
         import cyvcf2
         import numpy as np
@@ -771,7 +774,8 @@ class Ped(object):
             raise Exception("error: no samples from VCF found in ped")
 
         samps = vcf.samples
-        sample_ranges, sites, gt_types = cyvcf2.par_het(vcf_path, samps, ncpus, min_depth=min_depth)
+        sample_ranges, sites, gt_types = cyvcf2.par_het(vcf_path, samps, ncpus,
+                sites, min_depth=min_depth)
 
         from .pca import pca
         if plot:
@@ -843,7 +847,9 @@ class Ped(object):
         plt.savefig(plot)
         return df, background_pca_df
 
-    def ped_check(self, vcf, ncpus=1, plot=False, min_depth=5, each=1, prefix=''):
+    def ped_check(self, vcf, ncpus=1, plot=False, min_depth=5, each=1,
+            prefix='',
+            sites=op.join(op.dirname(__file__), '1kg.sites')):
         """
         Given the current pedigree and a VCF of genotypes, find sample-pairs where
         the relationship reported in the pedigree file do not match those inferred
@@ -868,6 +874,7 @@ class Ped(object):
         d = cyvcf2.par_relatedness(vcf_str,
                                    [x.sample_id for x in samps],
                                    ncpus,
+                                   sites,
                                    min_depth=min_depth, each=each)
         cols = ['sample_a', 'sample_b']
         cols += [c for c in d if not c in ('sample_a', 'sample_b') and not c.endswith('error')]

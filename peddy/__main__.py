@@ -8,7 +8,7 @@ import io
 import time
 
 def run(args):
-    check, pedf, vcf, plot, prefix, each, ncpus = args
+    check, pedf, vcf, plot, prefix, each, ncpus, sites = args
     # only print warnings for het_check
     p = Ped(pedf, warn=False)
     print("\033[1;31m%s\033[0m" % check)
@@ -20,8 +20,9 @@ def run(args):
         plot = prefix + "." + check + ".png"
 
     if check in ("ped_check", "het_check"):
+        kwargs = {'sites': sites} if check == 'ped_check' else {}
         df = getattr(p, check)(vcf, plot=plot, each=each, ncpus=ncpus,
-                               prefix=prefix)
+                               prefix=prefix, **kwargs)
         if check == "het_check":
             df, background_df = df
     else:
@@ -48,7 +49,7 @@ def run(args):
 
     return (check, df, background_df) #
 
-def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
+def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
 
     tmpl = string.Template(open(op.join(op.dirname(__file__), "tmpl.html")).read())
 
@@ -84,7 +85,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3):
     vals = {'title': op.splitext(op.basename(pedf))[0], 'each': each}
     # background_df only present for het-check. It's the PC's from 1000G for
     # plotting.
-    for check, df, background_df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus) for check
+    for check, df, background_df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus, sites) for check
                                  in ("ped_check", "het_check", "sex_check")]):
         vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
 
@@ -118,10 +119,13 @@ if __name__ == "__main__":
     p.add_argument("--plot", default=False, action="store_true")
     p.add_argument("-p", "--procs", type=int, default=3, help="number of processors to use")
     p.add_argument("--prefix", help="prefix for output files (default is basename of vcf)")
-    p.add_argument("--each", help="sample every nth value from the ~5800 instead of every value to speed processing.",
+    p.add_argument("--each", help="sample every nth value from the selected sites instead of every value to speed processing.",
                    type=int, default=1)
+    p.add_argument("--sites", help=r"This is rarely used. The path to a file with alternative sites to use for calculating relatedness in format 1:234234\n1:45345345\n..." +
+                                " with chrom:pos[:ref:alt] on each line",
+                   default=op.join(op.dirname(__file__)))
     p.add_argument("vcf", help="bgzipped and tabix'ed VCF")
     p.add_argument("ped", help="pedigree file")
     a = p.parse_args()
     prefix = a.prefix or a.vcf[:-6]
-    main(a.vcf, a.ped, prefix, a.plot, a.each, a.procs)
+    main(a.vcf, a.ped, prefix, a.plot, a.each, a.procs, a.sites)

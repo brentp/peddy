@@ -123,7 +123,7 @@ if __name__ == "__main__":
                    type=int, default=1)
     p.add_argument("--sites", help=r"This is rarely used. The path to a file with alternative sites to use for calculating relatedness in format 1:234234\n1:45345345\n..." +
                                 " with chrom:pos[:ref:alt] on each line",
-                   default=op.join(op.dirname(__file__)))
+                   default=op.join(op.dirname(__file__), '1kg.sites'))
     p.add_argument("vcf", help="bgzipped and tabix'ed VCF")
     p.add_argument("ped", help="pedigree file")
     a = p.parse_args()

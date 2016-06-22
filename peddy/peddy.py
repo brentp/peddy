@@ -915,6 +915,14 @@ class Ped(object):
             keep |= np.array(same_fam, dtype=bool)
             df['keep'] = keep
 
+        def asum(a):
+            return np.abs(a).sum()
+            a = np.abs(a)
+            return a[a > 0.08].sum()
+
+
+        from matplotlib import pyplot as plt
+
 
         if not plot:
             df.drop('tmpibs0', axis=1, inplace=True)
@@ -923,6 +931,16 @@ class Ped(object):
         plt.close()
         import seaborn as sns
         sns.set_style('whitegrid')
+
+        # get total rel_difference by sample. large values indicate the likely problem
+        sub = df.eval('((rel > 0.1) & (pedigree_relatedness < 0.05)) | ((rel < 0.05) & (pedigree_relatedness > 0.1)) | (rel_difference > 0.1) | (rel_difference < -0.1)')
+        da = df[sub].groupby('sample_a')['rel_difference'].agg(asum)
+        db = df[sub].groupby('sample_b')['rel_difference'].agg(asum)
+        diff = da.add(db, fill_value=0)
+        diff.sort_values(inplace=True, ascending=False)
+
+        diff.to_csv(plot.rsplit(".", 1)[0] + ".rel-difference.csv", index=True,
+                index_label="sample", header=True)
 
         colors = [(0.85, 0.85, 0.85)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
         n = df['n'] / df['n'].mean()

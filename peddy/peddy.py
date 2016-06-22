@@ -160,6 +160,8 @@ class Sample(object):
     def __eq__(self, other):
         if self is None or other is None:
             return False
+        if isinstance(other, basestring):
+            return self.sample_id == other
         return (self.sample_id == other.sample_id) and (self.family_id ==
                                                         other.family_id)
     def __hash__(self):
@@ -354,14 +356,14 @@ class Family(object):
                     s.dad = by_id[s.paternal_id]
                     s.dad.kids.append(s)
                 except KeyError:
-                    s.dad = None
+                    s.dad = s.paternal_id
                     self.unknown_samples.append(s.paternal_id)
             if s.maternal_id != UNKNOWN:
                 try:
                     s.mom = by_id[s.maternal_id]
                     s.mom.kids.append(s)
                 except KeyError:
-                    s.mom = None
+                    s.mom = s.maternal_id
                     self.unknown_samples.append(s.maternal_id)
 
     @property
@@ -551,9 +553,15 @@ class Ped(object):
         gr = self._graph = nx.DiGraph()
         for s in self.samples():
             if s.mom is not None:
-                gr.add_edge(s.sample_id, s.mom.sample_id)
+                if isinstance(s.mom, basestring):
+                    gr.add_edge(s.sample_id, s.mom)
+                elif s.mom != UNKNOWN:
+                    gr.add_edge(s.sample_id, s.mom.sample_id)
             if s.dad is not None:
-                gr.add_edge(s.sample_id, s.dad.sample_id)
+                if isinstance(s.dad, basestring):
+                    gr.add_edge(s.sample_id, s.dad)
+                elif s.dad != UNKNOWN:
+                    gr.add_edge(s.sample_id, s.dad.sample_id)
             #if s.dad is None and s.mom is None:
                 # shoudl top-node be s.family_id?
             #    gr.add_edge(s.sample_id, None)

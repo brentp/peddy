@@ -283,7 +283,7 @@ class Family(object):
     """
     def __init__(self, samples, warn=True):
         assert len(set(s.family_id for s in samples)) == 1
-        self.unknown_samples = []
+        self.unknown_samples = {}
         self.samples = samples
         self.warn = warn
         self._build()
@@ -354,17 +354,22 @@ class Family(object):
             if s.paternal_id != UNKNOWN:
                 try:
                     s.dad = by_id[s.paternal_id]
-                    s.dad.kids.append(s)
                 except KeyError:
-                    s.dad = s.paternal_id
-                    self.unknown_samples.append(s.paternal_id)
+                    if not s.paternal_id in self.unknown_samples:
+                        self.unknown_samples[s.paternal_id] = Sample(s.family_id, s.paternal_id, "-9", "-9", "1", "-9")
+                    #self.unknown_samples[s.paternal_id].kids.append(s)
+                    s.dad = self.unknown_samples[s.paternal_id]
+                s.dad.kids.append(s)
+
             if s.maternal_id != UNKNOWN:
                 try:
                     s.mom = by_id[s.maternal_id]
-                    s.mom.kids.append(s)
                 except KeyError:
-                    s.mom = s.maternal_id
-                    self.unknown_samples.append(s.maternal_id)
+                    if not s.maternal_id in self.unknown_samples:
+                        self.unknown_samples[s.maternal_id] = Sample(s.family_id, s.maternal_id, "-9", "-9", "2", "-9")
+                    #self.unknown_samples[s.maternal_id].kids.append(s)
+                    s.mom = self.unknown_samples[s.maternal_id]
+                s.mom.kids.append(s)
 
     @property
     def affecteds(self):
@@ -425,6 +430,7 @@ class Ped(object):
         self.warn = warn
         self._parse(ped)
         self._graph = None
+        self._cache = {}
 
     def _parse(self, fh):
         self.header = None
@@ -501,19 +507,36 @@ class Ped(object):
             b = sample_b
 
         if a is None or b is None:
-            return 'unknown'
+            #    return 'unknown'
+            a = a or sample_a
+            b = b or sample_b
 
-        # TODO: should we check anyway or just bail early like this
-        if a.family_id != b.family_id:
-            return 'unrelated'
+        else:
+            if a.family_id != b.family_id:
+                return 'unrelated'
 
         if set(a.kids).intersection(b.kids):
             return "mom-dad"
-
         if a.mom == b or b.mom == a or a.dad == b or b.dad == a:
             return 'parent-child'
 
-        # TODO: do BFS
+        # grand-parents
+        for (s, o) in ((a, b), (b, a)):
+            for aa in ('mom', 'dad'):
+                parent = getattr(s, aa, None)
+                if parent is None: continue
+                for bb in ('mom', 'dad'):
+                    gparent = getattr(parent, bb, None)
+                    if gparent is None: continue
+                    if gparent == o: return "grandchild"
+                    if o in gparent.kids:
+                        return "niece/nephew"
+                    for cc in ('mom', 'dad'):
+                        ggparent = getattr(gparent, cc, None)
+                        if ggparent is None: continue
+                        if ggparent == o: return "great-grandchild"
+
+
         if a.mom is None and a.dad is None and b.mom is None and b.dad is None:
             return 'unrelated'
 
@@ -523,16 +546,29 @@ class Ped(object):
         if (a.mom is not None and a.mom == b.mom) or (a.dad is not None and a.dad == b.dad):
             return 'siblings'
 
-        else:
-            return 'related level 2'
+        if None in (a.mom, b.mom, a.dad, b.dad):
+            return 'related at unknown level'
 
-    def get(self, sample_id, family_id=None, cache={}):
+
+        if 'siblings' in self.relation(a.mom, b.mom):
+            return 'cousins'
+        if 'siblings' in self.relation(a.dad, b.dad):
+            return 'cousins'
+        if 'siblings' in self.relation(a.mom, b.dad):
+            return 'cousins'
+        if 'siblings' in self.relation(a.dad, b.mom):
+            return 'cousins'
+
+
+        return 'unknown'
+
+    def get(self, sample_id, family_id=None):
         """
         get takes a sample id and optional family_id and returns the object(s)
         associated with it.
         """
-        if (sample_id, family_id) in cache:
-            return cache[(sample_id, family_id)]
+        if (sample_id, family_id) in self._cache:
+            return self._cache[(sample_id, family_id)]
         a = [x for x in self.samples() if x.sample_id == sample_id]
         if len(a) > 1 and family_id is None:
             print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
@@ -542,11 +578,16 @@ class Ped(object):
         if len(a) > 1:
             print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
         elif len(a) == 0:
-            print("no sample found in ped file for %s" % sample_id, file=sys.stderr)
+            for f in self.families.values():
+                if sample_id in f.unknown_samples:
+                    a = f.unknown_samples[sample_id]
+                    return a
+            else:
+                print("no sample found in ped file for %s" % sample_id, file=sys.stderr)
             return None
         elif len(a) == 1:
             a = a[0]
-        cache[(sample_id, family_id)] = a
+        self._cache[(sample_id, family_id)] = a
         return a
 
     def _setup_graph(self):

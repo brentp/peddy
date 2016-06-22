@@ -1,0 +1,6 @@
+fam	kid1	mom	dad	1	2
+fam	mom	grandad	grandma	1	2
+fam	kid2	mom	dad	1	1
+fam	cousin1	uncle	aunt	1	1
+fam	cousin2	uncle	aunt	2	2
+fam	aunt	grandad	grandma	1	2

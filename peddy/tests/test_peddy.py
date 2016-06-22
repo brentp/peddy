@@ -303,3 +303,35 @@ def test_attrs():
     assert str(kid) == "fam1 kid dad mom 2 2 asdf hello", str(kid)
     assert repr(kid) == "Sample('fam1', 'kid', 'dad', 'mom', 'female', 'affected', ['asdf', 'hello'])", repr(kid)
 
+
+def test_distant():
+
+    p = Ped(op.join(HERE, 'peddy/tests/test-unknown-gma.ped'))
+
+    d = p.relatedness_coefficient('kid1', 'cousin1')
+    assert d == 0.125, d
+    d = p.relatedness_coefficient('kid1', 'aunt')
+    assert d == 0.25, d
+    d = p.relatedness_coefficient('cousin1', 'aunt')
+    assert d == 0.5, d
+    d = p.relatedness_coefficient('mom', 'aunt')
+    assert d == 0.5, d
+
+    r = p.relation('kid1', 'cousin1')
+    assert r == 'cousins', r
+
+    r = p.relation('kid1', 'grandma')
+    assert r == 'grandchild', r
+
+    r = p.relation('kid1', 'aunt')
+    assert r == 'niece/nephew', r
+
+    # because we don't know that the uncle is related
+    r = p.relation('kid1', 'uncle')
+    assert r == 'related at unknown level', r
+
+    r = p.relation('cousin1', 'mom')
+    assert r == 'niece/nephew', r
+    r = p.relation('cousin1', 'dad')
+    # because we don't know that the dad is related
+    assert r == 'related at unknown level', r

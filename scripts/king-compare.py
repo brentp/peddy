@@ -28,7 +28,7 @@ if set(king_ibs.keys()).symmetric_difference(peddy_ibs.keys()):
 
 from matplotlib import pyplot as plt
 import seaborn as sns
-sns.set_style('ticks')
+sns.set_style('whitegrid')
 
 
 
@@ -71,8 +71,8 @@ for i in range(2):
     fmt = "R-squared: %.3f\np-value: %.3g"
 
     fit =  sm.OLS(values[yn], values[xn]).fit()
-    print(fit.summary())
-    print "\n\n\n"
+    #print(fit.summary())
+    #print "\n\n\n"
     slope = fit.params[0]
     #ax.text(0.2, 0.8, fmt % (fit.rsquared, fit.f_pvalue),
     #        transform=ax.transAxes)
@@ -97,4 +97,27 @@ axes[3].text(0.2, 0.8, fmt % (fit.rsquared, fit.f_pvalue),
         transform=axes[3].transAxes)
 
 plt.tight_layout()
+plt.show()
+
+
+plt.close()
+
+for k in values:
+    values[k] = np.array(values[k])
+
+fig, ax = plt.subplots(1, figsize=(10, 10))
+
+colors = sns.color_palette("Set1")
+
+for i, a in enumerate(sorted(np.unique(values['actual']))):
+    subset = values['actual'] == a
+    ax.scatter(values['king'][subset], values['peddy'][subset], c=colors[i],
+            label=("%.2f" % a).rstrip("0.") or "0")
+
+ax.set_xlabel('king relatedness')
+ax.set_ylabel('peddy relatedness')
+plt.legend(title='actual relatedness', loc='upper left')
+plt.tight_layout()
+if len(sys.argv) > 3:
+    plt.savefig(sys.argv[3])
 plt.show()

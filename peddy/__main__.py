@@ -115,7 +115,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
-    p = ArgumentParser()
+    p = ArgumentParser(prog="python -m peddy")
     p.add_argument("--plot", default=False, action="store_true")
     p.add_argument("-p", "--procs", type=int, default=3, help="number of processors to use")
     p.add_argument("--prefix", help="prefix for output files (default is basename of vcf)")

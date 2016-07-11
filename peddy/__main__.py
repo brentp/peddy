@@ -73,6 +73,15 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
     ped_df.index = ped_df.sample_id
 
     samples = set(samples)
+
+    in_vcf_not_in_ped = samples - set(ped_df.index)
+    in_ped_not_in_vcf = set(ped_df.index) - samples
+    if in_vcf_not_in_ped:
+        print("WARNING:\n%d samples in vcf not in ped:\n%s\n" % (len(in_vcf_not_in_ped), ",".join(in_vcf_not_in_ped)))
+    if in_ped_not_in_vcf:
+        print("WARNING:\n%d samples in ped not in vcf:\n%s\n" % (len(in_ped_not_in_vcf), ",".join(in_ped_not_in_vcf)))
+
+    # keep order.
     samples = [s for s in ped_df['sample_id'] if s in samples]
 
     ped_df = ped_df.ix[samples, :]

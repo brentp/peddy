@@ -1,9 +1,7 @@
-language: c
+language: python
 python:
   - "2.7"
-    #- "3.3"
-    #- "3.4"
-    #- "3.5"
+  - "3.5"
 script: 
     - source activate travis
     - nosetests --with-doctest
@@ -14,13 +12,17 @@ install:
     - unset PYTHONPATH
     - unset PYTHONHOME
     - unset PYTHONUSER
-    - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
-    - conda create -q -n travis python=2 scipy scikit-learn cython pandas numpy networkx nose
+    - conda create -q -n travis python=$TRAVIS_PYTHON_VERSION scipy scikit-learn cython pandas numpy networkx nose
     - source activate travis
     - pip install -U networkx
     - conda install -c bioconda cyvcf2

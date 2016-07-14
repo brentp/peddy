@@ -89,7 +89,7 @@ def lowest_common_ancestors(G, targets):
     return lowest_common
 
 if sys.version_info[0] == 3:
-    basestring = str
+    basestring = (str, bytes)
 
 class UNKNOWN(object):
     def __str__(self):
@@ -158,7 +158,7 @@ class Sample(object):
         return d
 
     def __eq__(self, other):
-        if self is None or other is None:
+        if self is None or other is None or other is UNKNOWN:
             return False
         if isinstance(other, basestring):
             return self.sample_id == other

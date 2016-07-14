@@ -42,16 +42,16 @@ Finally, it will create a new file ped files `ceph1463.peddy.ped` that also list
 the most useful columns from the `het-check` and `sex-check`. Users can **first
 look at this extended ped file for an overview of likely problems**.
 
-See [the docs](TODO) for a walk-through and thorough explanation of each plot.
+See [the docs](http://peddy.readthedocs.io/en/latest/) for a walk-through and thorough explanation of each plot.
 
 Speed
 -----
 
 Because of the sampling approach and parallelization, `peddy` is very fast.
 With 20 CPUs, on the 17-member *CEPH1643* pedigree whole-genome VCF, peddy can run
-the het-check and PCA in < 20 seconds. The pedigree check including all vs.
-all against the 2504 thousand genomes samples run in 85 seconds.
-It finishes the full set of checks in under two minutes.
+the het-check and PCA in ~ 15 seconds. The pedigree check including all vs.
+all against the 2504 thousand genomes samples also run in 15 seconds.
+It finishes the full set of checks in under 40 seconds.
 
 In comparison [KING](http://people.virginia.edu/~wc9c/KING/manual.html) runs
 in 14 seconds (it is **extremely fast**); the time including the conversion

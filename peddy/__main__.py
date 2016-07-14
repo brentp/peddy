@@ -7,6 +7,9 @@ from cyvcf2 import VCF
 import io
 import time
 
+if sys.version_info[0] == 3:
+    basestring = str
+
 def run(args):
     check, pedf, vcf, plot, prefix, each, ncpus, sites = args
     # only print warnings for het_check
@@ -36,7 +39,7 @@ def run(args):
     if d > 100:
         d /= 60
         unit = "minutes"
-    print "ran in %.1f %s" % (d, unit)
+    print("ran in %.1f %s" % (d, unit))
     if df.shape[0] > 50000 and check == "ped_check":
         # remove unknown relationships that aren't in error.
         df = df[((df.pedigree_relatedness != -1) &
@@ -55,7 +58,6 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
 
     ped = Ped(pedf)
     prefix = prefix.rstrip(".-")
-    print("")
 
     samples = VCF(vcf).samples
 
@@ -66,20 +68,24 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
                                           'sex', 'phenotype'],
                            # if there's a header, we skip it as it's inidcated
                            # above.
+                           index_col=False,
                            skiprows=1 if ped.header else None,
                            sep="\t")
-    ped_df.family_id = ped_df.family_id.astype(basestring)
-    ped_df.sample_id = ped_df.sample_id.astype(basestring)
-    ped_df.index = ped_df.sample_id
+
+    ped_df.family_id = [str(x) for x in ped_df.family_id]
+    ped_df.index = ped_df.sample_id = [str(x) for x in ped_df.sample_id]
 
     samples = set(samples)
 
+    # exhaust list explicitly to get str from bytes.
     in_vcf_not_in_ped = samples - set(ped_df.index)
     in_ped_not_in_vcf = set(ped_df.index) - samples
     if in_vcf_not_in_ped:
-        print("WARNING:\n%d samples in vcf not in ped:\n%s\n" % (len(in_vcf_not_in_ped), ",".join(in_vcf_not_in_ped)))
+        print("WARNING:\n%d samples in vcf not in ped:\n%s\n" %
+                (len(in_vcf_not_in_ped), ",".join(in_vcf_not_in_ped)))
     if in_ped_not_in_vcf:
-        print("WARNING:\n%d samples in ped not in vcf:\n%s\n" % (len(in_ped_not_in_vcf), ",".join(in_ped_not_in_vcf)))
+        print("WARNING:\n%d samples in ped not in vcf:\n%s\n" %
+               (len(in_ped_not_in_vcf), ",".join(in_ped_not_in_vcf)))
 
     # keep order.
     samples = [s for s in ped_df['sample_id'] if s in samples]
@@ -99,7 +105,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
         vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
 
         if check != "ped_check":
-            df.index = df['sample_id'].astype(basestring)
+            df.index = [str(s) for s in df['sample_id']]
             for col in keep_cols[check]:
                 c = check.split("_")[0] + "_"
                 col_name = col if col.startswith(("PC", c)) else c + col

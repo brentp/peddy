@@ -1,5 +1,4 @@
 import sys
-
 import toolshed as ts
 import numpy as np
 import statsmodels.api as sm
@@ -48,11 +47,12 @@ if not actual_rel:
 
 
 
-fig, axes = plt.subplots(ncols=4, figsize=(15, 5))
 
 values['actual'] = [actual_rel[k] for k in keys]
 
 xys = [('actual', 'king'), ('actual', 'peddy')]
+"""
+fig, axes = plt.subplots(ncols=4, figsize=(15, 5))
 
 for i in range(2):
     ax = axes[i]
@@ -101,6 +101,7 @@ plt.show()
 
 
 plt.close()
+"""
 
 for k in values:
     values[k] = np.array(values[k])
@@ -112,11 +113,14 @@ colors = sns.color_palette("Set1")
 for i, a in enumerate(sorted(np.unique(values['actual']))):
     subset = values['actual'] == a
     ax.scatter(values['king'][subset], values['peddy'][subset], c=colors[i],
+            edgecolor='0.7',
+            s=56,
             label=("%.2f" % a).rstrip("0.") or "0")
 
-ax.set_xlabel('king relatedness')
-ax.set_ylabel('peddy relatedness')
-plt.legend(title='actual relatedness', loc='upper left')
+ax.set_xlabel('KING Relatedness', fontsize=18)
+ax.set_ylabel('Peddy Relatedness', fontsize=18)
+plt.legend(title='Actual Relatedness', loc='upper left', fontsize=14)
+plt.tick_params(axis='both', which='major', labelsize=14)
 plt.tight_layout()
 if len(sys.argv) > 3:
     plt.savefig(sys.argv[3])

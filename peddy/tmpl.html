@@ -61,31 +61,41 @@ input[type='range'] {
 .dataTables_filter {
 		display: none;
 }
-body {
-  color: #404040;
+.plotdiv {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
-  padding: 4px;
 }
-
+body {
+  padding: 4px;
+  justify-content: space-around;
+  align-items: center;
+  color: #404040;
+}
 
 
  </style>
 	</head>
 
 <body>
-<div id="link"></div>
-<div class="container" style="width:98%">
-<div id="sexplot"> </div>
-<div id="hetplot"> </div>
-<div id="pedplot"> </div>
-</div>
+<div class="plotdiv">
+	<div id="link"></div>
+		<div class="container" style="width:98%">
+		<div id="sexplot"> </div>
+		<div id="hetplot"> </div>
+		<div id="pedplot"> </div>
+	</div>
 
-<div>
-Redraw points with table selection: <input type="checkbox" id="redraw" checked /><br/>
-</div>
+</div> <!-- plotdiv -->
+
+<span style="float:right">
+Select Y-Axis Display:
+<select name="yaxis" id="yaxis">
+	<option value="ibs2" selected>IBS2</option>
+	<option value="rel" >Coefficient of Relatedness</option>
+</select>
+</span>
 
 <div class="container" style="width:98%">
 <table id="pedigree" class="stripe row-border" cellspacing="0"></table>
@@ -174,12 +184,14 @@ sex_good['marker']['sizeref'] = mean_size;
 sex_bad['marker']['sizeref'] = mean_size;
 sex_unknown['marker']['sizeref'] = mean_size;
 
+
+
 var sex_layout = {
   height: HEIGHT,
   title: "Rate of HET calls on chrX",
   //width: '50%',
   xaxis: {
-	title: 'Sex From Ped',
+	title: 'Sex From PED',
 	titlefont: {size: 16},
 	fixedrange: true,
 	tickvals: [0, 0.5, 1],
@@ -242,7 +254,7 @@ var het_layout = {
   title: "Depth and Heterozygosity",
   //width: '50%',
   xaxis: {
-	title: 'median depth',
+	title: 'Median Depth',
 	titlefont: {size: 16},
 	fixedrange: true,
 	showline: false,
@@ -320,20 +332,29 @@ sexplot.on('plotly_unhover', function(data) {
 </script>
 
 <script>
+
+axis_lookups = {
+	'ibs0': 'IBS0 (no alleles shared)',
+	'ibs2': 'IBS2 (both alleles shared)',
+    'rel':  'Coefficient Of Relatedness'}
+
+pedX = 'ibs0'
+pedY = 'ibs2'
+
 var ped_data = $ped_check
 var ped_layout = {
   title: "Expected ('.ped' colors) vs observed ('.vcf' location) allele sharing",
   height: HEIGHT,
   //width: '50%',
   xaxis: {
-	title: 'IBS0 (no alleles shared)',
+	title: axis_lookups[pedX],
 	titlefont: {size: 16},
 	fixedrange: true,
 	showline: false,
 	tickfont: {size: 8},
   },
   yaxis: {
-	title: 'IBS2 (both alleles shared)',
+	title: axis_lookups[pedY],
 	titlefont: {size: 16},
 	showline: false,
 	tickfont: {size: 8},
@@ -360,12 +381,16 @@ var prIndex = column_lookup.indexOf('pedigree_relatedness')
 if(prIndex == -1){
 	alert("pedigree_relatedness not found in ped data");
 }
-var relIndex = column_lookup.indexOf('rel');
 var pedRelIndex = column_lookup.indexOf('pedigree_relatedness');
 var parentIndex = column_lookup.indexOf('pedigree_parents')
 var nIndex = column_lookup.indexOf('n');
-var ibs0Index = column_lookup.indexOf('ibs0');
-var ibs2Index = column_lookup.indexOf('ibs2');
+
+var dIdxs = {'ibs0': column_lookup.indexOf('ibs0'),
+	         'ibs2': column_lookup.indexOf('ibs2'),
+			 'rel': column_lookup.indexOf('rel') }
+var relIndex = dIdxs.rel;
+
+
 var sampleAIndex = column_lookup.indexOf('sample_a');
 var sampleBIndex = column_lookup.indexOf('sample_b');
 
@@ -386,6 +411,8 @@ if (ped_data['data'].length > CUTOFF){
 	})
 }
 
+var xIndex = dIdxs[pedX]
+var yIndex = dIdxs[pedY]
 for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 
 	if (skip0 && p[pedRelIndex] == 0 && (p[relIndex] < -0.15 || Math.abs(p[relIndex]  - p[pedRelIndex]) < 0.1)){
@@ -408,8 +435,8 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 		datas['ped'].push(peds[k]);
 
 	}
-	peds[k]['x'].push(p[ibs0Index].toPrecision(3))
-	peds[k]['y'].push(p[ibs2Index].toPrecision(3))
+	peds[k]['x'].push(p[xIndex].toPrecision(3))
+	peds[k]['y'].push(p[yIndex].toPrecision(3))
 	peds[k]['sample_a'].push(p[sampleAIndex])
 	peds[k]['parent'].push(p[parentIndex])
 	peds[k]['marker']['size'].push(50+p[nIndex])

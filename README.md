@@ -24,10 +24,10 @@ See installation below.
 Most users will only need to run as a command-line tool with a ped and VCF, e.g:
 
 ```
-python -m peddy -p 12 --plot --prefix ceph-1463 data/ceph1463.vcf.gz data/ceph1463.ped
+python -m peddy -p 4 --plot --prefix ceph-1463 data/ceph1463.vcf.gz data/ceph1463.ped
 ```
 
-This will use 12 cpus to run various checks and create **ceph-1463.html** which
+This will use 4 cpus to run various checks and create **ceph-1463.html** which
 you can open in any browser to interactively explore your data.
 
 It will also create create 4 csv files and 4 QC plots.
@@ -48,14 +48,17 @@ Speed
 -----
 
 Because of the sampling approach and parallelization, `peddy` is very fast.
-With 20 CPUs, on the 17-member *CEPH1643* pedigree whole-genome VCF, peddy can run
-the het-check and PCA in ~ 15 seconds. The pedigree check including all vs.
-all against the 2504 thousand genomes samples also run in 15 seconds.
-It finishes the full set of checks in under 40 seconds.
+With 4 CPUs, on the 17-member *CEPH1643* pedigree whole-genome VCF, peddy can run the het-check and PCA in ~ 8 seconds. The pedigree check comparing all vs.
+all samples run in 3.6 seconds.
+It finishes the full set of checks in about 20 seconds.
 
 In comparison [KING](http://people.virginia.edu/~wc9c/KING/manual.html) runs
 in 14 seconds (it is **extremely fast**); the time including the conversion
 from VCF to binary ped is 85 seconds.
+
+On larger datasets, with hundreds or thousands of samples, it can be beneficial to add as many
+cores as possible; for smaller datasets with dozens of samples about 4 processors reduces the
+computation time as much as 8 or more would.
 
 
 Validation
@@ -67,10 +70,11 @@ relatedness estimate is closer to the actual than KING which over-estimates rela
 
 ![Peddy Vs KING](https://raw.githubusercontent.com/brentp/peddy/master/docs/_static/peddy-v-king.png "Comparison with KING")
 
-Note that the peddy analysis is well-calibrated as it runs with the thousand genomes samples
-as background. It also includes running a PCA on the 2504 samples from 1000 genomes,
-then fitting an SVM and predicting ancestry in addition to calculating relatedness
-among all pairwise combinations of the 2504+17 samples.
+Peddy uses the KING algorithm for calculating relatedness and so they
+match quite well.
+Peddy also runs PCA on the 2504 samples from 1000 genomes,
+then fitting an SVM and predicting ancestry in addition to
+calculating relatedness among all pairwise combinations of the 17 samples.
 
 Warnings and Checks
 -------------------
@@ -113,7 +117,7 @@ conda install -y peddy
 This should install all dependencies so you can then run peddy with 8 processes as:
 
 ```
-python -m peddy --plot -p 8 --prefix mystudy $VCF $PED
+python -m peddy --plot -p 4 --prefix mystudy $VCF $PED
 ```
 
 To get the development versions of peddy (and cyvcf2), you can follow the above steps and then do:

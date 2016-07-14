@@ -215,18 +215,6 @@ class Sample(object):
 
     dad = property(_get_dad, _set_dad)
 
-    def __repr__(self):
-        v = "%s('%s', '%s', '%s', '%s', '%s', '%s'" % (self.__class__.__name__,
-                                                       self.family_id,
-                                                       self.sample_id,
-                                                       self.paternal_id,
-                                                       self.maternal_id,
-                                                       SEX.rlookup(self.sex),
-                                                       PHENOTYPE.rlookup(self.affected))
-        if self.attrs:
-            v += ", " + str(self.attrs)
-        v += ")"
-        return v
 
     def __getattr__(self, key):
         if not key in self.header:
@@ -264,6 +252,18 @@ class Sample(object):
         return cls(row[0], row[1], row[2] or "-9", row[3] or "-9", row[4], row[5],
                    row[6:] if len(row) > 6 else None, header=header, warn=warn)
 
+    def __repr__(self):
+        v = "%s('%s', '%s', '%s', '%s', '%s', '%s'" % (self.__class__.__name__,
+                                                       self.family_id,
+                                                       self.sample_id,
+                                                       self.paternal_id,
+                                                       self.maternal_id,
+                                                       SEX.rlookup(self.sex),
+                                                       PHENOTYPE.rlookup(self.affected))
+        if self.attrs:
+            v += ", " + str(self.attrs)
+        v += ")"
+        return v
     def __str__(self):
         v = "%s %s %s %s %s %s" % (self.family_id, self.sample_id,
                                    self.paternal_id,
@@ -680,7 +680,7 @@ class Ped(object):
                   samples=[s.sample_id for s in self.samples()])
 
         pars = [x.split(':') for x in pars]
-        pars = [(x[0], map(int, x[1].split('-'))) for x in pars]
+        pars = [(x[0], [int(p) for p in x[1].split('-')]) for x in pars]
 
         chrom = pars[0][0]
 
@@ -862,7 +862,10 @@ class Ped(object):
             d['iqr_baf'] = d.pop('range')
 
         import pandas as pd
-        df = pd.DataFrame(sample_ranges.values())
+        if sys.version_info[0] == 2:
+            df = pd.DataFrame(sample_ranges.values())
+        else:
+            df = pd.DataFrame(list(sample_ranges.values()))
         cols = ['sample_id'] + sorted([x for x in df.columns if x != 'sample_id'])
         df = df[cols]
 

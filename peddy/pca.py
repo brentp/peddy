@@ -9,7 +9,10 @@ import toolshed as ts
 from sklearn import svm
 from sklearn.pipeline import make_pipeline
 from sklearn.decomposition import RandomizedPCA
-import cPickle
+try:
+    import cPickle
+except ImportError:
+    import pickle as cPickle
 
 
 HERE = op.dirname(op.abspath(__file__))
@@ -18,12 +21,12 @@ def pca(fig_path, genotype_matrix=None, sites=None):
 
     f = op.join(HERE, "1kg.sites.bin.gz")
     t0 = time.time()
-    tmp = np.fromstring(gzip.open(f).read(), dtype=np.uint8).astype(np.int32)
-    genos1kg = tmp.reshape((23556, len(tmp) / 23556)).T
+    tmp = np.fromstring(gzip.open(f, 'rb').read(), dtype=np.uint8).astype(np.int32)
+    genos1kg = tmp.reshape((23556, int(len(tmp) / 23556))).T
 
 
     if genotype_matrix is not None:
-        kgsites = [x.strip() for x in open(op.join(HERE, "1kg.sites"))]
+        kgsites = [x.strip() for x in open(op.join(HERE, "1kg.sites"), "r")]
 
         # exclude missing from 1kg. these may come out of order because of
         # parallelization so we put 1kg is same order
@@ -39,13 +42,12 @@ def pca(fig_path, genotype_matrix=None, sites=None):
         genos1kg = np.array(genos1kg[:, idxs])
 
         assert genotype_matrix.shape[1] == genos1kg.shape[1]
-    sys.stderr.write("loaded and subsetted thousand-genomes genotypes in %.1f seconds\n" % (time.time() - t0))
+    sys.stderr.write("loaded and subsetted thousand-genomes genotypes (shape: %s) in %.1f seconds\n" % (genos1kg.shape, time.time() - t0))
 
     t0 = time.time()
     clf = make_pipeline(RandomizedPCA(n_components=4, whiten=True, copy=True),
                     svm.SVC(C=2, probability=True))
-
-    background_target = np.array(map(int, _str.split("|")))
+    background_target = np.array([int(x) for x in _str.split("|")])
 
     clf.fit(genos1kg, background_target)
     sys.stderr.write("ran randomized PCA on thousand-genomes samples at %d sites in %.1f seconds\n" % (genos1kg.shape[1], time.time() - t0))

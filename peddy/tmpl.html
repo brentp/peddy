@@ -17,55 +17,19 @@
 
  <style>
 .container {
-	display: inline-flex;
-}
+  display: table;
+  width: 100%;
+} 
 
-#pedplot {
-}
-#hetplot {
-}
-
-
-.rangeslider,
-input[type='range'] {
-  max-width: 300px;
-  max-height: 300px;
-}
-
-.rangeslider--vertical {
-  min-height: 220px;
-}
-
-.vertical-text {
-	transform: rotate(90deg);
-	transform-origin: left top 0;
-}
-
-.rangeslider__handle {
-  border-radius: 12px;
-  min-width: 42px;
-  line-height: 38px;
-  text-align: center;
-
-  &:after {
-	background: 0;
-  }
-}
-
-.rangeslider__fill {
-  background: #3182bd;
-  position: absolute;
-  height: 250px;
-}
+.cchild {
+    display: table-cell;
+    width: 30%;
+}   
 
 .dataTables_filter {
-		display: none;
+        display: none;
 }
 .plotdiv {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
 }
 body {
   padding: 4px;
@@ -73,20 +37,17 @@ body {
   align-items: center;
   color: #404040;
 }
-
-
  </style>
 	</head>
 
 <body>
 <div class="plotdiv">
-	<div id="link"></div>
-		<div class="container" style="width:98%">
-		<div id="sexplot"> </div>
-		<div id="hetplot"> </div>
-		<div id="pedplot"> </div>
+		<div id="link"></div>
+		<div class="container">
+			<div class="cchild" id="sexplot"> </div>
+			<div class="cchild" id="hetplot"> </div>
+			<div class="cchild" id="pedplot"> </div>
 	</div>
-
 </div> <!-- plotdiv -->
 
 <span style="float:right">

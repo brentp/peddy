@@ -52,7 +52,7 @@ body {
 
 <span style="float:right">
 Select Y-Axis Display:
-<select name="yaxis" id="yaxis">
+<select name="y_axis" id="y_axis">
 	<option value="ibs2" selected>IBS2</option>
 	<option value="rel" >Coefficient of Relatedness</option>
 </select>
@@ -374,6 +374,9 @@ if (ped_data['data'].length > CUTOFF){
 
 var xIndex = dIdxs[pedX]
 var yIndex = dIdxs[pedY]
+
+var PED_Y = 'ibs2'
+
 for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 
 	if (skip0 && p[pedRelIndex] == 0 && (p[relIndex] < -0.15 || Math.abs(p[relIndex]  - p[pedRelIndex]) < 0.1)){
@@ -382,7 +385,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	var k = get_rel_key(p, prIndex, parentIndex);
 
 	if(peds[k] === undefined) {
-		peds[k] = {name: k, x:[], y:[], parent: [], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
+		peds[k] = {name: k, x:[], y:[], z: [], parent: [], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
 				   marker: {size: [], sizemode: "area", sizeref: 23556/($each * 100), opacity:[]}, hoverinfo: "text"}
 		// differentiate between parent-kid and sib-sib and use open for <= 0 relatedness
 		if(k.indexOf("sib") > -1){
@@ -398,6 +401,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	}
 	peds[k]['x'].push(p[xIndex].toPrecision(3))
 	peds[k]['y'].push(p[yIndex].toPrecision(3))
+	peds[k]['z'].push(p[relIndex].toPrecision(3))
 	peds[k]['sample_a'].push(p[sampleAIndex])
 	peds[k]['parent'].push(p[parentIndex])
 	peds[k]['marker']['size'].push(50+p[nIndex])
@@ -455,6 +459,7 @@ jQuery(document).ready(function(){
 			ibsrelfilter(parseFloat(elrel.val()), elibs.prop('checked'))
 		}) 
 
+		jQuery('#y_axis').change(redraw)
 
 
 		var cols = ""
@@ -540,6 +545,18 @@ function ibsrelfilter(rel, check_ibs0) {
 function redraw(all) {
 	// these are the samples that are visible in the table.
 	var samples
+	val = jQuery('#y_axis').val()
+	if(val != PED_Y) {
+		PED_Y = val;
+		for(k in peds){
+			var tmp = peds[k]['y'];
+			peds[k]['y'] = peds[k]['z']
+			peds[k]['z'] = tmp;
+		}
+		ped_layout.yaxis.title = axis_lookups[val];
+	}
+
+
 	if(all == undefined){
 	   samples = table.rows({filter:"applied"}).data().pluck(1)
 	} else {

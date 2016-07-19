@@ -6,6 +6,7 @@ script:
     - source activate travis
     - nosetests --with-doctest
     - python -m peddy -h
+    - pwd
 
 install:
     - sudo apt-get update
@@ -28,3 +29,4 @@ install:
     - conda install -c bioconda cyvcf2
     - pip install -r requirements.txt
     - python setup.py install
+    - pwd

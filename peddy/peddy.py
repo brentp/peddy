@@ -826,6 +826,8 @@ class Ped(object):
         sample_ranges, sites, gt_types = cyvcf2.par_het(vcf_path, samps, ncpus,
                 sites, min_depth=min_depth)
 
+        call_rate = (gt_types != 3).mean(axis=1)
+
         from .pca import pca
         if plot:
             pca_plot = plot.replace('het_', 'pca_').replace('het-', 'pca-')
@@ -870,6 +872,8 @@ class Ped(object):
         df = df[cols]
 
         df.index = df['sample_id']
+        l = {s: i for i, s in enumerate(samps)}
+        df['call_rate'] = [call_rate[l[s]] for s in df.index]
 
         if pca_df is not None:
             # merge the 2 dataframes.

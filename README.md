@@ -105,7 +105,7 @@ have your own version of python easily installed via:
 INSTALL_PATH=~/anaconda
 wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
 # or wget http://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh
-bash Miniconda2-latest\* -bp $INSTALL_PATH
+bash Miniconda2-latest* -fbp $INSTALL_PATH
 PATH=$INSTALL_PATH/bin:$PATH
 
 conda update -y conda
@@ -114,18 +114,8 @@ conda config --add channels bioconda
 conda install -y peddy
 ```
 
-This should install all dependencies so you can then run peddy with 8 processes as:
+This should install all dependencies so you can then run peddy with 4 processes as:
 
 ```
 python -m peddy --plot -p 4 --prefix mystudy $VCF $PED
-```
-
-To get the development versions of peddy (and cyvcf2), you can follow the above steps and then do:
-
-```
-git clone https://github.com/brentp/cyvcf2
-cd cyvcf2 && python setup.py install
-cd ..
-git clone https://github.com/brentp/peddy
-cd peddy && python setup.py install
 ```

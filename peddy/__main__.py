@@ -94,7 +94,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
 
 
     keep_cols = {"ped_check": [],
-                 "het_check": ["het_ratio", "mean_depth", "iqr_baf", "ancestry-prediction", "PC1", "PC2", "PC3"],
+                 "het_check": ["call_rate", "het_ratio", "mean_depth", "iqr_baf", "ancestry-prediction", "PC1", "PC2", "PC3"],
                  "sex_check": ["het_ratio", "error"]}
 
     vals = {'title': op.splitext(op.basename(pedf))[0], 'each': each}

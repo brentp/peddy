@@ -183,32 +183,25 @@ Plotly.plot('sexplot', datas['sex'], sex_layout);
 
 var het_data = $het_check
 
-var mean_size = 0;
 
 var het_good = {name: "OK", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-				marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[], opacity:[]}}
+				marker:{color:'#4daf4a', sizemode: 'diameter', sizeref: 7, size:[], opacity:[]}}
 var het_depth = {name: "depth-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-				marker:{color:'#377eb8', sizemode: 'area', sizeref: 0, size:[], opacity:[]}}
+				marker:{color:'#377eb8', sizemode: 'diameter', sizeref: 7, size:[], opacity:[]}}
 var het_ratio = {name: "ratio-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-				marker:{color:'#e41a1c', sizemode: 'area', sizeref: 0, size:[], opacity:[]}}
+				marker:{color:'#e41a1c', sizemode: 'diameter', sizeref: 7, size:[], opacity:[]}}
 
 for(i=0; v=het_data[i], i<het_data.length; i++){
 	var a = v['depth_outlier'] ? het_depth : v['ratio_outlier'] ? het_ratio : het_good;
-	mean_size += v['mean_depth'];
 
 	a['x'].push(v['median_depth'].toPrecision(3))
 	a['y'].push(v['het_ratio'].toPrecision(3))
-	a['text'].push("sample: <b>" + v['sample_id'] + "</b> mean depth:" + v['mean_depth'].toFixed(1))
-	a['marker']['size'].push(10 + v['mean_depth'])
+	a['text'].push("sample: <b>" + v['sample_id'] + "<br></b>mean depth:" + v['mean_depth'].toFixed(1) +
+			       "<br>call-rate:" + v['call_rate'].toFixed(2))
+	a['marker']['size'].push(40 + v['call_rate'] * 100)
 	a['marker']['opacity'].push(1)
 	a['sample'].push(v['sample_id'])
 }
-
-mean_size /= het_data.length;
-
-het_good['marker']['sizeref'] = mean_size / 140;
-het_depth['marker']['sizeref'] = mean_size / 140;
-het_ratio['marker']['sizeref'] = mean_size / 140;
 
 var het_layout = {
   height: HEIGHT,

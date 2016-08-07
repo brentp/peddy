@@ -17,6 +17,11 @@ REQUIRED = ['family_id', 'sample_id', 'paternal_id',
             'maternal_id', 'sex', 'phenotype']
 
 try:
+    zip = it.izip
+except AttributeError:
+    pass
+
+try:
     import matplotlib
     matplotlib.use("Agg")
 except ImportError:
@@ -562,14 +567,14 @@ class Ped(object):
 
         return 'unknown'
 
-    def get(self, sample_id, family_id=None):
+    def get(self, sample_id, family_id=None, samples=None):
         """
         get takes a sample id and optional family_id and returns the object(s)
         associated with it.
         """
         if (sample_id, family_id) in self._cache:
             return self._cache[(sample_id, family_id)]
-        a = [x for x in self.samples() if x.sample_id == sample_id]
+        a = [x for x in (samples or self.samples()) if x.sample_id == sample_id]
         if len(a) > 1 and family_id is None:
             print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
 
@@ -923,31 +928,46 @@ class Ped(object):
         vcf_str = vcf
         np.random.seed(42)
 
-        samps = list(self.samples())
+        ped_samples = list(self.samples())
         if isinstance(vcf, basestring):
-            vcf = cyvcf2.VCF(vcf, gts012=True, samples=[x.sample_id for x in samps])
+            vcf = cyvcf2.VCF(vcf, gts012=True, samples=[x.sample_id for x in ped_samples])
 
         d = cyvcf2.par_relatedness(vcf_str,
-                                   [x.sample_id for x in samps],
+                                   [x.sample_id for x in ped_samples],
                                    ncpus,
                                    sites,
                                    min_depth=min_depth, each=each)
         cols = ['sample_a', 'sample_b']
         cols += [c for c in d if not c in ('sample_a', 'sample_b') and not c.endswith('error')]
         cols += [c for c in d if c.endswith('error')]
-        if len(samps) > 200:
+        if len(ped_samples) > 200:
             print("large dataset: only reporting pedigree checks where in same"
                   + " family or relationship does not match expected",
                   file=sys.stderr)
         df = pd.DataFrame(d, columns=cols)
-        a_samples = [self.get(a) for a in df.sample_a]
-        assert all(not isinstance(a, list) for a in a_samples)
-        b_samples = [self.get(b) for b in df.sample_b]
-        assert all(not isinstance(b, list) for b in a_samples)
-        df["pedigree_parents"] = np.array([self.relation(a, b) == 'parent-child' for a, b in
-                                           zip(a_samples, b_samples)])
-        df["pedigree_relatedness"] = np.array([self.relatedness_coefficient(a, b) for a, b in
-                                               zip(df.sample_a, df.sample_b)])
+
+        # most of these 2 will be false and 0, respectively
+        df['pedigree_parents'] = np.zeros(len(df), dtype=bool)
+        df['pedigree_relatedness'] = np.zeros(len(df), dtype=np.float32)
+
+        same_fam = np.zeros(len(df), dtype=bool)
+
+        # if they aren't in the same fam, cant be related.
+        for i, (aid, bid) in enumerate(zip(df.sample_a, df.sample_b)):
+            a_sample, b_sample = self.get(aid, samples=ped_samples), self.get(bid, samples=ped_samples)
+            assert not isinstance(a_sample, list)
+            assert not isinstance(b_sample, list)
+            if a_sample.family_id == b_sample.family_id:
+                same_fam[i] = True
+                if b_sample in (a_sample.mom, a_sample.dad) or a_sample in (b_sample.mom, b_sample.dad):
+                    df.loc[i, 'pedigree_parents'] = True
+
+                # setting directly is expensive, but we expect that for big cohorts, the above 2 sets will
+                # be relatively rare (and they default to False). Since we need to set the relatedness fcolors
+                # every sample, we use an array.array and then set at the end.
+                df.loc[i, 'pedigree_relatedness'] = self.relatedness_coefficient(aid, bid)
+
+
         df['tmpibs0'] = df['ibs0'] / df['n'].astype(float)
         df["predicted_parents"] = df['tmpibs0'] < 0.012
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
@@ -957,32 +977,27 @@ class Ped(object):
         pr[pr < 0] = 0
         df["rel_difference"] = pr - df['rel']
         # make the column order a bit more sane.
-        if len(samps) > 200:
+        if len(ped_samples) > 200:
             rd = np.abs(df['rel_difference']) > 0.17
 
-            sampling_rate = 1 / (len(samps)**0.6)
+            sampling_rate = 1 / (len(ped_samples)**0.6)
             ru = (np.random.uniform(size=df.shape[0]) < sampling_rate)
-            keep = df.eval('parent_error | sample_duplication_error | predicted_parents| @rd | @ru' +
+            df['keep'] = df.eval('parent_error | sample_duplication_error | predicted_parents| @rd | @ru' +
                     '| (rel > 0.17) | (tmpibs0 < 0.04) | (pedigree_relatedness > 0)')
 
-            same_fam = []
-            for a, b in it.izip(a_samples, b_samples):
-                same_fam.append(a.family_id == b.family_id)
-            keep |= np.array(same_fam, dtype=bool)
-            df['keep'] = keep
+            df['keep'] |= same_fam
+
+
+        if not plot:
+            df.drop('tmpibs0', axis=1, inplace=True)
+            return df
+
 
         def asum(a):
             return np.abs(a).sum()
             a = np.abs(a)
             return a[a > 0.08].sum()
 
-
-        from matplotlib import pyplot as plt
-
-
-        if not plot:
-            df.drop('tmpibs0', axis=1, inplace=True)
-            return df
         from matplotlib import pyplot as plt
         plt.close()
         import seaborn as sns

@@ -64,19 +64,6 @@ Select Y-Axis Display:
 
 <div id="pcaplot"> </div>
 
-<!-- hide for now -->
-<div style="display:none">
-<span style="padding:10px">
-filter by <b>deviation from</b> expected <b>relatedness</b>
-</span>
-<input id="relslider" type="range" min="0.00" max="1" step="0.01" value="0">
-<br/>
-
-<span style="padding:10px">
-filter by <b>deviation from</b> expected <b>IBS0</b>
-<input id="ibscheck" type="checkbox">
-</span>
-</div>
 
 </body>
 <script>
@@ -378,8 +365,8 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	var k = get_rel_key(p, prIndex, parentIndex);
 
 	if(peds[k] === undefined) {
-		peds[k] = {name: k, x:[], y:[], z: [], parent: [], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
-				   marker: {size: [], sizemode: "area", sizeref: 23556/($each * 100), opacity:[]}, hoverinfo: "text"}
+		peds[k] = {name: k, x:[], y:[], z: [], parent: [], save_text: [], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
+				   marker: {size: [], sizemode: "area", sizeref: 23556/($each * 100), save_size:[]}, hoverinfo: "text"}
 		// differentiate between parent-kid and sib-sib and use open for <= 0 relatedness
 		if(k.indexOf("sib") > -1){
 			peds[k]["marker"]["symbol"] = "triangle-left"
@@ -397,10 +384,13 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	peds[k]['z'].push(p[relIndex].toPrecision(3))
 	peds[k]['sample_a'].push(p[sampleAIndex])
 	peds[k]['parent'].push(p[parentIndex])
-	peds[k]['marker']['size'].push(50+p[nIndex])
-	peds[k]['marker']['opacity'].push(1)
+	var sz = 50 + p[nIndex];
+	peds[k]['marker']['size'].push(sz)
+	peds[k]['marker']['save_size'].push(sz)
 	peds[k]['sample_b'].push(p[sampleBIndex])
-	peds[k]['text'].push("<b>" + p[sampleAIndex] + "</b>::<b>" + p[sampleBIndex] + "</b>")
+	var itxt = "<b>" + p[sampleAIndex] + "</b>::<b>" + p[sampleBIndex] + "</b>";
+	peds[k]['text'].push(itxt);
+	peds[k]['save_text'].push(itxt);
 
 }
 
@@ -433,24 +423,6 @@ for (var i=0;i<pedigree.length, row=pedigree[i]; i++){
 }
 var table;
 jQuery(document).ready(function(){
-
-		elrel = jQuery('#relslider')
-		elibs = jQuery('#ibscheck')
-		relslider = elrel.rangeslider({
-			polyfill:false,
-			onInit: function() {
-				jQuery('.rangeslider__handle')[0].innerHTML = this.value;
-			},
-		})
-		relslider.on('input', function(){
-			jQuery('.rangeslider__handle')[0].innerHTML = this.value;
-			ibsrelfilter(parseFloat(elrel.val()), elibs.prop('checked'))
-		}) 
-
-
-		elibs.on('change', function(){
-			ibsrelfilter(parseFloat(elrel.val()), elibs.prop('checked'))
-		}) 
 
 		jQuery('#y_axis').change(redraw)
 
@@ -490,50 +462,10 @@ jQuery(document).ready(function(){
 					that.search(this.value, true, true).draw();
 				}
 
-				if(jQuery('#redraw').prop('checked')){
-					redraw()
-				}
+				redraw()
 			})
 		})
 })
-
-function ibsrelfilter(rel, check_ibs0) {
-	var expected_rels = [];
-	var d = pedplot.data
-	var samples = {};
-	for(var i=0;i<d.length;i++){
-		expected_rel = parseFloat(d[i].name)
-		for(var j=0;j<d[i]['x'].length;j++){
-			var obs_rel = d[i]['x'][j];
-			if(Math.abs(obs_rel - expected_rel) <= rel) {
-				d[i]['marker']['opacity'][j] = 0.02;
-				continue
-			}
-			// now check ibs0;
-			var obs_ibs = d[i]['y'][j];
-			var is_parent = d[i]['parent'][j]
-			if(check_ibs0 && ((obs_ibs > 0.01) != is_parent)){
-				d[i]['marker']['opacity'][j] = 0.02;
-				continue
-			}
-			samples[d[i]['sample_a'][j]] = true;
-			samples[d[i]['sample_b'][j]] = true;
-			d[i]['marker']['opacity'][j] = 1;
-
-		}
-
-	} 
-
-	// hack to apply the search.
-	jQuery.fn.dataTable.ext.search.push(function(settings, data, dataIndex){
-			return samples[data[1]] != undefined;
-	});
-	table.draw();
-	// the search is applied to the table, now just use redraw machinery to update the other plots.
-	jQuery.fn.dataTable.ext.search.pop();
-	redraw();
-}
-
 
 function redraw(all) {
 	// these are the samples that are visible in the table.
@@ -590,9 +522,11 @@ function redraw(all) {
 			var sa = pedplot.data[k]['sample_a'][i];
 			var sb = pedplot.data[k]['sample_b'][i];
 			if(so[sa] || so[sb]){
-				pedplot.data[k]['marker']['opacity'][i] = 1;
+				pedplot.data[k]['marker']['size'][i] = pedplot.data[k]['marker']['save_size'][i];
+				pedplot.data[k]['text'][i] = pedplot.data[k]['save_text'][i];
 			} else {
-				pedplot.data[k]['marker']['opacity'][i] = 0.04;
+				pedplot.data[k]['marker']['size'][i] = 0.0;
+				pedplot.data[k]['text'][i] = null;
 			}
 		}
 	}

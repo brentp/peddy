@@ -7,6 +7,7 @@ script:
     - nosetests --with-doctest
     - python -m peddy -h
     - pwd
+    - python -m peddy data/ceph1463.peddy.vcf.gz data/ceph1463.ped
 
 install:
     - sudo apt-get update

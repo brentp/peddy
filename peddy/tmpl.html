@@ -7,6 +7,7 @@
 
  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.css">
+ <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.2.2/css/buttons.dataTables.min.css">
 
  <script src="http://cdn.plot.ly/plotly-latest.min.js"></script>
  <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
@@ -14,6 +15,12 @@
  <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.js"></script>
  <script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/1.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.2.2/js/buttons.flash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.2.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.2.2/js/buttons.print.min.js"></script>
 
  <style>
 .container {
@@ -140,20 +147,20 @@ var sex_layout = {
   //width: '50%',
   xaxis: {
 	title: 'Sex From PED',
-	titlefont: {size: 16},
+	titlefont: {size: 19},
 	fixedrange: true,
 	tickvals: [0, 0.5, 1],
 	ticktext: ["female", "unknown", "male"],
 	showline: false,
-	tickfont: {size: 11},
+	tickfont: {size: 12},
 	domain: 0.6,
 	zeroline: false,
   },
   yaxis: {
 	title: 'HET / HOM_ALT',
-	titlefont: {size: 16},
+	titlefont: {size: 19},
 	showline: false,
-	tickfont: {size: 11},
+	tickfont: {size: 12},
   },
   margin: { t: 30 },
   legend: {x: 0.5, y: 0.9, bgcolor: '#EEE'},
@@ -196,17 +203,17 @@ var het_layout = {
   //width: '50%',
   xaxis: {
 	title: 'Median Depth',
-	titlefont: {size: 16},
+	titlefont: {size: 19},
 	fixedrange: true,
 	showline: false,
-	tickfont: {size: 11},
+	tickfont: {size: 12},
 	zeroline: false,
   },
   yaxis: {
 	title: 'Proportion of HET calls',
-	titlefont: {size: 16},
+	titlefont: {size: 19},
 	showline: false,
-	tickfont: {size: 11},
+	tickfont: {size: 12},
   },
   legend: {x: 0.7, y: 0.7, bgcolor: '#EEE'},
   margin: { t: 30 },
@@ -289,16 +296,16 @@ var ped_layout = {
   //width: '50%',
   xaxis: {
 	title: axis_lookups[pedX],
-	titlefont: {size: 16},
+	titlefont: {size: 19},
 	fixedrange: true,
 	showline: false,
-	tickfont: {size: 11},
+	tickfont: {size: 12},
   },
   yaxis: {
 	title: axis_lookups[pedY],
-	titlefont: {size: 16},
+	titlefont: {size: 19},
 	showline: false,
-	tickfont: {size: 11},
+	tickfont: {size: 12},
   },
   margin: { t: 30 },
   legend: {x: 0.5, y: 0.9, bgcolor: '#EEE'},
@@ -436,6 +443,8 @@ jQuery(document).ready(function(){
 
 		table = jQuery('#pedigree').DataTable({
 			data: dataSet,
+			buttons: ['copy', 'csv', 'excel', 'print'],
+			dom: 'Bfrtip',
 			columns: columns,
 			paging: false,
 			scrollY: "400px",
@@ -547,16 +556,16 @@ var pca_layout = {
   width: HEIGHT * 2,
   xaxis: {
 	title: 'PC1',
-	titlefont: {size: 16},
+	titlefont: {size: 19},
 	showline: false,
-	tickfont: {size: 11},
+	tickfont: {size: 12},
 	zeroline: false,
   },
   yaxis: {
 	title: 'PC2',
-	titlefont: {size: 16},
+	titlefont: {size: 19},
 	showline: false,
-	tickfont: {size: 11},
+	tickfont: {size: 12},
   },
   margin: { t: 30 },
   legend: {x: 0.9, y: 0.01, bgcolor: '#EEE'},

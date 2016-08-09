@@ -161,7 +161,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
     cols[0] = '#' + cols[0]
     ped_df.columns = cols
 
-    ped_df.to_csv(new_pedf, sep=b"\t", index=False, mode='w', float_format=b"%.4g")
+    ped_df.to_csv(new_pedf, sep="\t", index=False, mode='w', float_format="%.4g")
 
     # output the new version with the extra columns.
     # avoid extra stuff to stderr
@@ -169,7 +169,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
 
     excl = correct_sex_errors(ped_df)
 
-    ped_df[[c for c in ped_df.columns if not c in excl]].to_csv(new_pedf, sep=b"\t", index=False, mode='w', float_format=b"%.4g")
+    ped_df[[c for c in ped_df.columns if not c in excl]].to_csv(new_pedf, sep="\t", index=False, mode='w', float_format="%.4g")
 
 
     sys.stdout.flush()

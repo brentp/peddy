@@ -1,11 +1,14 @@
 import sys
 import os.path as op
 import string
-from .peddy import Ped
-import pandas as pd
-from cyvcf2 import VCF
 import io
 import time
+
+import numpy as np
+import pandas as pd
+
+from .peddy import Ped
+from cyvcf2 import VCF
 
 if sys.version_info[0] == 3:
     basestring = str
@@ -51,6 +54,46 @@ def run(args):
         df.sort_values(inplace=True, by=["pedigree_relatedness"])
 
     return (check, df, background_df) #
+
+def correct_sex_errors(ped_df):
+    excl = []
+    if np.any(ped_df['sex_error']):
+        try:
+            ped_df.pop(u'sex_fixed')
+        except KeyError:
+            pass
+        ped_df.rename(columns={'sex_error': 'sex_fixed'}, inplace=True)
+
+        sex_col = ped_df.columns[4]
+        # now adjust the sex column as needed.
+        sc = np.array(ped_df[sex_col])
+        osc = np.array(ped_df[sex_col])
+        sf = np.asarray(ped_df['sex_fixed'])
+        gt = np.asarray(ped_df['sex_het_ratio'] > 0)
+        if sc.dtype.char == 'S':
+            sel = (gt & sf & (sc == '1'))
+            sc[sel] = '2'
+            if sel.sum():
+                print("set sex of samples: %s to female in peddy.ped" % ",".join(map(str, ped_df.ix[1, sel])))
+
+            sel = (gt & sf & (sc == '2'))
+            sc[sel] = '1'
+            if sel.sum():
+                print("set sex of samples: %s to male in peddy.ped" % ",".join(map(str, ped_df.ix[1, sel])))
+        else:
+            for (ifrom, ito) in ((1, 2), (2, 1)):
+                sel = (gt & sf & (sc == ifrom))
+                osc[sel] = ito
+                if sel.sum():
+                    print("\nNOTE: changed sex of samples: %s to %s in peddy.ped" % (
+                          ",".join(map(str, ped_df.ix[sel, 1])),
+                          ["", "male", "female"][ito]))
+
+            
+        ped_df[sex_col] = osc
+    else:
+        excl = ['sex_error']
+    return excl
 
 def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
 
@@ -108,7 +151,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
             df.index = [str(s) for s in df['sample_id']]
             for col in keep_cols[check]:
                 c = check.split("_")[0] + "_"
-                col_name = col if col.startswith(("PC", c)) else c + col
+                col_name = col if col.startswith(("PC", c, "ancestry")) else c + col
                 ped_df[col_name] = list(df[col].ix[samples])
         if background_df is not None:
             vals["background_pca"] = background_df.to_json(orient='records', double_precision=3)
@@ -117,11 +160,17 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
     cols = list(ped_df.columns)
     cols[0] = '#' + cols[0]
     ped_df.columns = cols
-    ped_df.to_csv(new_pedf, sep="\t", index=False, float_format="%.4g")
+
+    ped_df.to_csv(new_pedf, sep=b"\t", index=False, mode='w', float_format=b"%.4g")
 
     # output the new version with the extra columns.
     # avoid extra stuff to stderr
     vals['pedigree'] = Ped(new_pedf, warn=False).to_json(samples, exclude=('PC1', 'PC2', 'PC3'))
+
+    excl = correct_sex_errors(ped_df)
+
+    ped_df[[c for c in ped_df.columns if not c in excl]].to_csv(new_pedf, sep=b"\t", index=False, mode='w', float_format=b"%.4g")
+
 
     sys.stdout.flush()
     with open("%s.html" % prefix, "w") as fh:

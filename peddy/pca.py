@@ -33,7 +33,13 @@ def pca(fig_path, genotype_matrix=None, sites=None):
         kgsites_index = dict((k, i) for i, k in enumerate(kgsites))
 
         # pull all things in sites:
-        idxs = np.array([kgsites_index[s] for s in sites])
+        try:
+            idxs = np.array([kgsites_index[s] for s in sites])
+        except KeyError:  # check 'chr' prefix'
+            kgsites = ['chr' + kg for kg in kgsites]
+            kgsites_index = dict((k, i) for i, k in enumerate(kgsites))
+            idxs = np.array([kgsites_index[s] for s in sites])
+
         kgsites = np.array(kgsites)[idxs]
 
         # now we have the kgsites but need them in order of incoming sites

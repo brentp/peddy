@@ -688,6 +688,15 @@ class Ped(object):
         pars = [(x[0], [int(p) for p in x[1].split('-')]) for x in pars]
 
         chrom = pars[0][0]
+        try:
+            next(vcf(chrom))
+        except StopIteration:  # check for chrX
+            if chrom.startswith('chr'): raise
+            chrom = 'chr' + chrom
+            # try with chr prefix
+            next(vcf(chrom))
+            pars = [('chr' + c, v) for c, v in pars]
+
 
         hom_ref = np.zeros(len(vcf.samples), dtype=int)
         het     = np.zeros(len(vcf.samples), dtype=int)

@@ -8,6 +8,11 @@ script:
     - python -m peddy -h
     - pwd
     - python -m peddy data/ceph1463.peddy.vcf.gz data/ceph1463.ped
+    - conda install -c bioconda htslib # for bgzip and tabix
+    - zcat data/ceph1463.peddy.vcf.gz | awk 'BEGIN{FS=OFS="\t"}{ if ($1 !~ /^#/){ $0="chr"$0 } print $0; }' | bgzip -c > chr.vcf.gz
+    - tabix chr.vcf.gz
+    - python -m peddy chr.vcf.gz data/ceph1463.ped
+
 
 install:
     - sudo apt-get update
@@ -27,7 +32,7 @@ install:
     - conda create -q -n travis python=$TRAVIS_PYTHON_VERSION scipy scikit-learn cython pandas numpy networkx nose
     - source activate travis
     - pip install -U networkx
-    - conda install -c bioconda cyvcf2
+    - conda install -c bioconda "cyvcf2>=0.5.3"
     - pip install -r requirements.txt
     - python setup.py install
     - pwd

@@ -121,7 +121,7 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
 
     # output the new version with the extra columns.
     # avoid extra stuff to stderr
-    vals['pedigree'] = Ped(new_pedf, warn=False).to_json(samples)
+    vals['pedigree'] = Ped(new_pedf, warn=False).to_json(samples, exclude=('PC1', 'PC2', 'PC3'))
 
     sys.stdout.flush()
     with open("%s.html" % prefix, "w") as fh:

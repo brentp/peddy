@@ -155,8 +155,10 @@ class Sample(object):
         self.header[:6] = REQUIRED
         self.attrs = extra_attrs or []
 
-    def dict(self):
-        d = OrderedDict((k, getattr(self, k)) for k in self.header)
+    def dict(self, exclude=None):
+        if exclude is None:
+            exclude = {}
+        d = OrderedDict((k, getattr(self, k)) for k in self.header if not k in exclude)
         for k in ('maternal_id', 'paternal_id', 'sex'):
             d[k] = str(d[k])
         d['phenotype'] = 'affected' if self.affected else 'unaffected'
@@ -489,12 +491,13 @@ class Ped(object):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.filename)
 
-    def to_json(self, samples=None):
+    def to_json(self, samples=None, exclude=None):
         import json
+        if exclude is None: exclude = {}
         if samples is None:
-            dicts = [s.dict() for s in self.samples()]
+            dicts = [s.dict(exclude=exclude) for s in self.samples()]
         else:
-            dicts = [s.dict() for s in self.samples() if s.sample_id in set(samples)]
+            dicts = [s.dict(exclude=exclude) for s in self.samples() if s.sample_id in set(samples)]
         return json.dumps(dicts)
 
     def relation(self, sample_a, sample_b):

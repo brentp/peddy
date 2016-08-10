@@ -957,6 +957,9 @@ class Ped(object):
                   + " family or relationship does not match expected",
                   file=sys.stderr)
         df = pd.DataFrame(d, columns=cols)
+        del d
+        import gc; gc.collect()
+
 
         # most of these 2 will be false and 0, respectively
         df['pedigree_parents'] = np.zeros(len(df), dtype=bool)
@@ -987,16 +990,16 @@ class Ped(object):
             rels.append(self.relatedness_coefficient(aid, bid))
 
         df.loc[np.asarray(parent_is), 'pedigree_parents'] = True
-        df.loc[idxs, 'pedigree_relatedness'] = np.asarray(rels)
+        df.loc[idxs, 'pedigree_relatedness'] = np.asarray(rels, np.float32)
 
 
-        df['tmpibs0'] = df['ibs0'] / df['n'].astype(float)
+        df['tmpibs0'] = (df['ibs0'] / df['n'].astype(np.float32)).astype(np.float32)
         df["predicted_parents"] = df['tmpibs0'] < 0.012
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
         df["sample_duplication_error"] = (df['tmpibs0'] < 0.012) & (df['rel'] > 0.75)
 
         pr = df['pedigree_relatedness']
-        df["rel_difference"] = pr - df['rel']
+        df["rel_difference"] = (pr - df['rel']).astype(np.float32)
         # make the column order a bit more sane.
         if len(ped_samples) > 200:
             rd = np.abs(df['rel_difference']) > 0.17

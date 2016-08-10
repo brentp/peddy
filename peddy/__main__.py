@@ -34,6 +34,9 @@ def run(args):
     else:
         df = getattr(p, check)(vcf, plot=plot)
 
+    if df is None:
+        return check, None, None
+
     df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.4g")
     if 'keep' in df.columns:
         df = df.ix[df['keep'], :]
@@ -57,6 +60,8 @@ def run(args):
 
 def correct_sex_errors(ped_df):
     excl = []
+    if not 'sex_error' in ped_df.columns:
+        return excl
     if np.any(ped_df['sex_error']):
         try:
             ped_df.pop(u'sex_fixed')
@@ -145,6 +150,9 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
     # plotting.
     for check, df, background_df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus, sites) for check
                                  in ("ped_check", "het_check", "sex_check")]):
+        if df is None:
+            vals[check] = []
+            continue
         vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
 
         if check != "ped_check":

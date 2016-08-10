@@ -697,7 +697,11 @@ class Ped(object):
             if chrom.startswith('chr'): raise
             chrom = 'chr' + chrom
             # try with chr prefix
-            next(vcf(chrom))
+            try:
+                next(vcf(chrom))
+            except StopIteration:
+                print("\nWARNING: no values found for sex chromosome", file=sys.stderr)
+                return None
             pars = [('chr' + c, v) for c, v in pars]
 
 

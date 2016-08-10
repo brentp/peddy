@@ -962,22 +962,32 @@ class Ped(object):
         df['pedigree_parents'] = np.zeros(len(df), dtype=bool)
         df['pedigree_relatedness'] = np.zeros(len(df), dtype=np.float32)
 
-        same_fam = np.zeros(len(df), dtype=bool)
+        fam_lookup = {s.sample_id: s.family_id for s in ped_samples}
+        same_fam = np.array([fam_lookup[a] == fam_lookup[b] for a, b in zip(df.sample_a, df.sample_b)])
+
+        asample_ids, bsample_ids = df.sample_a[same_fam], df.sample_b[same_fam]
+        idxs, = np.where(same_fam)
+
+        import array
+        parent_is = array.array('L', [])
+        rels = array.array('f', [])
 
         # if they aren't in the same fam, cant be related.
-        for i, (aid, bid) in enumerate(zip(df.sample_a, df.sample_b)):
-            a_sample, b_sample = self.get(aid, samples=ped_samples), self.get(bid, samples=ped_samples)
-            assert not isinstance(a_sample, list)
-            assert not isinstance(b_sample, list)
-            if a_sample.family_id == b_sample.family_id:
-                same_fam[i] = True
-                if b_sample in (a_sample.mom, a_sample.dad) or a_sample in (b_sample.mom, b_sample.dad):
-                    df.loc[i, 'pedigree_parents'] = True
+        for (i, aid, bid) in zip(idxs, asample_ids, bsample_ids):
 
-                # setting directly is expensive, but we expect that for big cohorts, the above 2 sets will
-                # be relatively rare (and they default to False). Since we need to set the relatedness fcolors
-                # every sample, we use an array.array and then set at the end.
-                df.loc[i, 'pedigree_relatedness'] = self.relatedness_coefficient(aid, bid)
+            a_sample, b_sample = self.get(aid, samples=ped_samples), self.get(bid, samples=ped_samples)
+            if b_sample in (a_sample.mom, a_sample.dad) or a_sample in (b_sample.mom, b_sample.dad):
+                parent_is.append(i)
+                #df.loc[i, 'pedigree_parents'] = True
+
+            # setting directly is expensive, but we expect that for big cohorts, the above 2 sets will
+            # be relatively rare (and they default to False). Since we need to set the relatedness fcolors
+            # every sample, we use an array.array and then set at the end.
+            #df.loc[i, 'pedigree_relatedness'] = self.relatedness_coefficient(aid, bid)
+            rels.append(self.relatedness_coefficient(aid, bid))
+
+        df.loc[np.asarray(parent_is), 'pedigree_parents'] = True
+        df.loc[idxs, 'pedigree_relatedness'] = np.asarray(rels)
 
 
         df['tmpibs0'] = df['ibs0'] / df['n'].astype(float)
@@ -985,8 +995,7 @@ class Ped(object):
         df["parent_error"] = df['pedigree_parents'] != df['predicted_parents']
         df["sample_duplication_error"] = (df['tmpibs0'] < 0.012) & (df['rel'] > 0.75)
 
-        pr = df['pedigree_relatedness'][:]
-        pr[pr < 0] = 0
+        pr = df['pedigree_relatedness']
         df["rel_difference"] = pr - df['rel']
         # make the column order a bit more sane.
         if len(ped_samples) > 200:
@@ -1024,6 +1033,8 @@ class Ped(object):
 
         diff.to_csv(plot.rsplit(".", 1)[0] + ".rel-difference.csv", index=True,
                 index_label="sample", header=True)
+        del diff; del da; del db; del sub
+
 
         colors = [(0.85, 0.85, 0.85)] + sns.color_palette('Set1', len(set(df['pedigree_relatedness'])))
         n = df['n'] / df['n'].mean()
@@ -1035,6 +1046,7 @@ class Ped(object):
         fig, axesb = plt.subplots(2, 2, figsize=(12, 12))
         df['tmpibs2'] = df['ibs2'] / df['n'].astype(float)
         axes = axesb[0]
+        print("plotting")
 
         for k, key in enumerate(('tmpibs0', 'tmpibs2')):
 
@@ -1042,8 +1054,10 @@ class Ped(object):
                 sel = df['pedigree_relatedness'] == rc
                 src = ("%.3f" % rc).rstrip('0')
                 # outline parent kid relationships
-                ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
-                axes[k].scatter(df['rel'][sel], df[key][sel],
+                #ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
+                ec = np.where(df.loc[sel, 'pedigree_parents'], 'k', 'none')
+
+                axes[k].scatter(df.loc[sel, 'rel'], df.loc[sel, key],
                         c=colors[i], linewidth=1, edgecolors=ec,
                         s=((mult * (i > 0 or len(df) < 36)) + mult * n[sel]),
                         zorder=i,
@@ -1059,6 +1073,7 @@ class Ped(object):
             axes[0].set_xlim(xmin=-0.3)
         if xmax > 1.25:
             axes[0].set_xlim(xmax=1.25)
+        df.drop(['tmpibs0', 'tmpibs2'], axis=1, inplace=True)
 
         axes = axesb[1]
         for k, key in enumerate(('ibs2', 'shared_hets')):
@@ -1066,8 +1081,9 @@ class Ped(object):
                     sel = df['pedigree_relatedness'] == rc
                     src = ("%.3f" % rc).rstrip('0')
                     # outline parent kid relationships
-                    ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
-                    axes[k].scatter(df['ibs0'][sel], df[key][sel],
+                    #ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
+                    ec = np.where(df.loc[sel, 'pedigree_parents'], 'k', 'none')
+                    axes[k].scatter(df.loc[sel, 'ibs0'], df.loc[sel, key],
                             c=colors[i], linewidth=1, edgecolors=ec,
                             s=((mult * (i > 0 or len(df) < 36)) + mult * n[sel]),
                             zorder=i,
@@ -1083,7 +1099,6 @@ class Ped(object):
         else:
             plt.savefig(plot)
         plt.close()
-        df.drop(['tmpibs0', 'tmpibs2'], axis=1, inplace=True)
         return df
 
     def summary(self):

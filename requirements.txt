@@ -1,6 +1,6 @@
 numpy
 cython
-cyvcf2
+cyvcf2>=0.5.3
 networkx
 pandas
 scikit-learn

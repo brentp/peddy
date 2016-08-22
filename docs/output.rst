@@ -40,10 +40,10 @@ mean and median depth, and a PCA projection onto thousand genomes.
 + het_count: number of heterozygote calls in sampled sites. 
 + het_ratio: proportion of sites that were heterozygous.
 + ratio_outlier: boolean indicating that the het_ratio was outside what is normally seen.
-+ iqr_baf: inter-quartile range of b-allele frequency (actually the 90% range). We make a distribution of all sites of
++ idr_baf: inter-decile range (90th percentile - 10th percentile) of b-allele frequency. We make a distribution of all sites of
   alts / (ref + alts) and then report the difference between the 90th and the 10th percentile. Large values indicated
   likely sample contamination.
-+ p10/p90: the numbers used to calculate iqr_baf.
++ p10/p90: the numbers used to calculate idr_baf.
 
 And the PCA columns:
 

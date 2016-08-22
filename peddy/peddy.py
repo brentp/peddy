@@ -882,7 +882,7 @@ class Ped(object):
                                        ratios_outlier):
             d['ratio_outlier'] = ratio_o
             d['depth_outlier'] = depth_o
-            d['iqr_baf'] = d.pop('range')
+            d['idr_baf'] = d.pop('range')
 
         import pandas as pd
         if sys.version_info[0] == 2:

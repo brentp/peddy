@@ -991,7 +991,7 @@ class Ped(object):
             # be relatively rare (and they default to False). Since we need to set the relatedness fcolors
             # every sample, we use an array.array and then set at the end.
             #df.loc[i, 'pedigree_relatedness'] = self.relatedness_coefficient(aid, bid)
-            rels.append(self.relatedness_coefficient(aid, bid))
+            rels.append(max(0, self.relatedness_coefficient(aid, bid)))
 
         df.loc[np.asarray(parent_is), 'pedigree_parents'] = True
         df.loc[idxs, 'pedigree_relatedness'] = np.asarray(rels, np.float32)

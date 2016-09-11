@@ -9,6 +9,7 @@ It samples the VCF at about 25000 sites (plus chrX) to accurately estimate **rel
 It does this very quickly by sampling, by using C for computationally intensive parts, and by parallelization.
 
 
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/peddy/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
 [![PyPI version](https://badge.fury.io/py/peddy.svg)](http://badge.fury.io/py/peddy)
 [![Documentation Status](https://readthedocs.org/projects/peddy/badge/?version=latest)](http://peddy.readthedocs.org/en/latest/?badge=latest)
 <!--

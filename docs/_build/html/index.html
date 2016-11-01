@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>manipulation, validation and exploration of pedigrees &mdash; peddy 0.1.9 documentation</title>
+    <title>manipulation, validation and exploration of pedigrees &mdash; peddy 0.2.7 documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.9',
+        VERSION:     '0.2.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,12 +23,12 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="peddy 0.1.9 documentation" href="#" />
+    <link rel="top" title="peddy 0.2.7 documentation" href="#" />
     <link rel="next" title="CSV Output" href="output.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><h1 class="heading"><a href="#">
-          <span>peddy 0.1.9 documentation</span></a></h1>
+          <span>peddy 0.2.7 documentation</span></a></h1>
         <h2 class="heading"><span>manipulation, validation and exploration of pedigrees</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
@@ -50,11 +50,12 @@ with those inferred from a VCF.</p>
 <p>It samples the VCF at about 25000 sites (plus chrX) to accurately estimate <strong>relatedness</strong>, <strong>IBS0</strong>, <strong>heterozygosity</strong>, <strong>sex</strong> and <strong>ancestry</strong>. It uses 2504 thousand genome samples as backgrounds to calibrate the relatedness calculation and to make ancestry predictions.</p>
 <p>It does this very quickly by sampling, by using C for computationally intensive parts, and by parallelization.</p>
 <p>The command-line usage looks like:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>python -m peddy -p <span class="m">12</span> --plot ceph1463.vcf.gz ceph1463.ped
+<div class="highlight-bash"><div class="highlight"><pre><span></span>python -m peddy -p <span class="m">4</span> --plot ceph1463.vcf.gz ceph1463.ped
 </pre></div>
 </div>
-<p>This will use 12 cpus to run various checks and create <a class="reference external" href="_static/ceph.html">ceph1463.html</a> which
-you can open in any browser to interactively explore your data.</p>
+<p>This will use 4 cpus to run various checks and create <a class="reference external" href="_static/ceph.html">ceph1463.html</a> which
+you can open in any browser to interactively explore your data. Unless you have triple digit numbers
+of samples, using more than 4 cpus will give only marginal improvement.</p>
 <p>It will also create create 4 csv files and 4 static QC plots that mirror those in the interactive html.
 These will indicate:</p>
 <ul class="simple">
@@ -66,7 +67,7 @@ These will indicate:</p>
 <p>Finally, it will create a new file ped file <cite>ceph1463.peddy.ped</cite> that also lists
 the most useful columns from the <cite>het-check</cite> and <cite>sex-check</cite>. Users can <strong>first
 look at this extended ped file for an overview of likely problems</strong>.</p>
-<p>The columns in the CSV output are documented in <a class="reference internal" href="output.html#output"><span class="std std-ref">CSV Output</span></a></p>
+<p>The columns in the CSV output are documented in <a class="reference internal" href="resolve.html#output"><span class="std std-ref">Error Resolution</span></a></p>
 <div class="section" id="static-images">
 <h2>Static Images<a class="headerlink" href="#static-images" title="Permalink to this headline">¶</a></h2>
 <p>This will create a number of images:</p>
@@ -120,6 +121,7 @@ See <cite>output</cite> for a description of the columns.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="output.html">CSV Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="html.html">Example HTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resolve.html">Error Resolution</a></li>
 </ul>
 </div>
 </div>

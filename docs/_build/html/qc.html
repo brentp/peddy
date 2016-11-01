@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>QC &mdash; peddy 0.1.9 documentation</title>
+    <title>QC &mdash; peddy 0.2.7 documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.9',
+        VERSION:     '0.2.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,11 +23,11 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="peddy 0.1.9 documentation" href="index.html" /> 
+    <link rel="top" title="peddy 0.2.7 documentation" href="index.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><h1 class="heading"><a href="index.html">
-          <span>peddy 0.1.9 documentation</span></a></h1>
+          <span>peddy 0.2.7 documentation</span></a></h1>
         <h2 class="heading"><span>QC</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
@@ -52,12 +52,12 @@ and other methods, such as KING (<a class="reference external" href="http://www.
 have fast methods to do this on the entire genome.</p>
 <p>The limitations of these methods is that they assume the average pair of samples
 is unrelated.</p>
-<p>In <cite>peddy</cite>, we use about 5,000 variants described in <a class="reference external" href="http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html">http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html</a>
+<p>In <cite>peddy</cite>, we use about 25,000 variants described in <a class="reference external" href="http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html">http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html</a>
 that are known to be targeted by most exome platforms, in hardy weinberg equilibrium in 1000 genomes,
 and mostly unlinked.</p>
-<p>When a user requests to calculate relatedness, we use those 5K sites and
+<p>When a user requests to calculate relatedness, we use those 25K sites and
 the genotypes from the 2504 1KG samples to provide a background of samples so
-that most samples are indeed unrelated. Since we are sampling on 5K sites,
+that most samples are indeed unrelated. Since we are sampling on 25K sites,
 the calculations are quite fast (~5 minutes) and match very well what
 we get from a whole-genome scan because of the properties of those sites.
 Though we use the additional 2504 1KG samples internally, only the information

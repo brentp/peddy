@@ -15,13 +15,13 @@ have fast methods to do this on the entire genome.
 The limitations of these methods is that they assume the average pair of samples
 is unrelated. 
 
-In `peddy`, we use about 5,000 variants described in http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html
+In `peddy`, we use about 25,000 variants described in http://www.nature.com/nature/journal/v506/n7487/full/nature12975.html
 that are known to be targeted by most exome platforms, in hardy weinberg equilibrium in 1000 genomes,
 and mostly unlinked.
 
-When a user requests to calculate relatedness, we use those 5K sites and
+When a user requests to calculate relatedness, we use those 25K sites and
 the genotypes from the 2504 1KG samples to provide a background of samples so
-that most samples are indeed unrelated. Since we are sampling on 5K sites,
+that most samples are indeed unrelated. Since we are sampling on 25K sites,
 the calculations are quite fast (~5 minutes) and match very well what
 we get from a whole-genome scan because of the properties of those sites.
 Though we use the additional 2504 1KG samples internally, only the information

@@ -14,10 +14,11 @@ The command-line usage looks like:
 
 .. code-block:: bash
 
-    python -m peddy -p 12 --plot ceph1463.vcf.gz ceph1463.ped
+    python -m peddy -p 4 --plot ceph1463.vcf.gz ceph1463.ped
 
-This will use 12 cpus to run various checks and create `ceph1463.html <_static/ceph.html>`_ which
-you can open in any browser to interactively explore your data.
+This will use 4 cpus to run various checks and create `ceph1463.html <_static/ceph.html>`_ which
+you can open in any browser to interactively explore your data. Unless you have triple digit numbers
+of samples, using more than 4 cpus will give only marginal improvement.
 
 It will also create create 4 csv files and 4 static QC plots that mirror those in the interactive html.
 These will indicate:
@@ -109,3 +110,4 @@ See `output` for a description of the columns.
 
    output
    html
+   resolve

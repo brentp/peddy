@@ -3,6 +3,7 @@ import os.path as op
 import string
 import io
 import time
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -94,7 +95,7 @@ def correct_sex_errors(ped_df):
                           ",".join(map(str, ped_df.ix[sel, 1])),
                           ["", "male", "female"][ito]))
 
-            
+
         ped_df[sex_col] = osc
     else:
         excl = ['sex_error']
@@ -153,7 +154,10 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
         if df is None:
             vals[check] = []
             continue
-        vals[check] = df.to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
+        columns = df.columns
+        if check == "sex_check" and not np.any(df["error"]):
+            columns = [c for c in columns if not "error" == c]
+        vals[check] = df[columns].to_json(orient='split' if check == "ped_check" else 'records', double_precision=3)
 
         if check != "ped_check":
             df.index = [str(s) for s in df['sample_id']]
@@ -161,6 +165,19 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
                 c = check.split("_")[0] + "_"
                 col_name = col if col.startswith(("PC", c, "ancestry")) else c + col
                 ped_df[col_name] = list(df[col].ix[samples])
+        elif any(df['sample_duplication_error']):
+            da = df.ix[df['sample_duplication_error'], 'sample_a']
+            db = df.ix[df['sample_duplication_error'], 'sample_b']
+            d = defaultdict(list)
+            for a, b in zip(da, db):
+                d[a].append(b)
+                d[b].append(a)
+            d = dict(d)
+            for k in d:
+                d[k] = ",".join(d[k])
+
+            ped_df['duplicates'] = [d.get(s, "") for s in samples]
+
         if background_df is not None:
             vals["background_pca"] = background_df.to_json(orient='records', double_precision=3)
 

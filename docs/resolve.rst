@@ -1,4 +1,4 @@
-.. _output:
+.. _resolve:
 
 Error Resolution
 ================
@@ -41,12 +41,12 @@ In our experience a general strategy to follow is this:
 
 
 Example
-=======
+-------
 
 Below we show an example screenshot where we have a couple samples with low quality evidenced in the depth
 vs heterozygosity plot that manifests in the other QC plots.
 
-.. image:: docs/_static/peddy-resolve-2.png
+.. image:: _static/peddy-resolve-2.png
 
 Here, sample `15-0025870` has a very low median depth. This skews its apparent relatedness to its parents as
 seen in the plot on the right. We also see that it is reported to be in error in the sex-check plot. After

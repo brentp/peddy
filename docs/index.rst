@@ -1,3 +1,14 @@
+Table of Contents
+=================
+
+.. toctree::
+   :maxdepth: 1
+
+   output
+   html
+   resolve
+
+
 manipulation, validation and exploration of pedigrees
 =====================================================
 
@@ -102,12 +113,5 @@ CSVs
 ++++
 
 For each of those images, there is a corresponding `.csv` file.
-See `output` for a description of the columns.
+See :ref:`output` for a description of the columns.
 
-
-.. toctree::
-   :maxdepth: 1
-
-   output
-   html
-   resolve

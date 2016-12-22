@@ -76,7 +76,6 @@ This contains 1 row per sample-pair: (n_samples * n_samples) / 2 rows.
 + sample_duplication_error: boolean indicating that rel > 0.75 and ibs0 < 0.012
 
 
-
 ancestry
 --------
 
@@ -95,3 +94,6 @@ To classify the query cohort, we do a dimensionality reduction by projecting the
 components of the 1KG cohort. We take the resulting, reduced matrix and use the SVM to predict the ancestry of each
 sample. The SVM reports a confidence in the prediction. We assign the most likely ancestry if the prediction is greater
 than 0.65.
+
+`peddy` also outputs a JSON file with the principal components for each sample in the thousand genomes. Most users will not need this as it is plotted by `peddy`. This file is named `$prefix.background_pca.json`.
+

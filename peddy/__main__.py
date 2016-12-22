@@ -180,6 +180,8 @@ def main(vcf, pedf, prefix, plot=False, each=1, ncpus=3, sites=None):
 
         if background_df is not None:
             vals["background_pca"] = background_df.to_json(orient='records', double_precision=3)
+            with open("%s.background_pca.json" % prefix, "w") as fh:
+                fh.write(vals["background_pca"])
 
     new_pedf = prefix + ".peddy.ped"
     cols = list(ped_df.columns)

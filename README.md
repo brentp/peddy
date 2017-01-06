@@ -1,6 +1,8 @@
 Fast Pedigree::VCF QC
 ---------------------
 
+<img src="https://cloud.githubusercontent.com/assets/1739/21734388/5a927926-d420-11e6-8ff9-534046df3305.png" style="width:287px;height:168px">
+
 peddy compares familial-relationships and sexes as reported in a [PED file](http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped)
 with those inferred from a VCF.
 

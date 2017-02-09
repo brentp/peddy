@@ -10,6 +10,10 @@ It samples the VCF at about 25000 sites (plus chrX) to accurately estimate **rel
 
 It does this very quickly by sampling, by using C for computationally intensive parts, and by parallelization.
 
+If you use peddy, please cite [Pedersen and Quinlan, Who’s Who? Detecting and Resolving Sample Anomalies in Human DNA
+Sequencing Studies with Peddy, The American Journal of Human Genetics (2017),
+http://dx.doi.org/10.1016/j.ajhg.2017.01.017](http://www.cell.com/action/showFullTextImages?pii=S0002-9297(17)30017-4)
+
 
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/peddy/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
 [![PyPI version](https://badge.fury.io/py/peddy.svg)](http://badge.fury.io/py/peddy)

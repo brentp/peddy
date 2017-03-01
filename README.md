@@ -3,7 +3,7 @@ Fast Pedigree::VCF QC
 
 <img src="https://cloud.githubusercontent.com/assets/1739/21734388/5a927926-d420-11e6-8ff9-534046df3305.png" style="width:287px;height:168px">
 
-peddy compares familial-relationships and sexes as reported in a [PED file](http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped)
+peddy compares familial-relationships and sexes as reported in a [PED/FAM file](https://www.cog-genomics.org/plink2/formats#fam)
 with those inferred from a VCF.
 
 It samples the VCF at about 25000 sites (plus chrX) to accurately estimate **relatedness**, **IBS0**, **heterozygosity**, **sex** and **ancestry**. It uses 2504 thousand genome samples as backgrounds to calibrate the relatedness calculation and to make ancestry predictions.

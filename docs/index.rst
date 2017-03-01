@@ -13,7 +13,7 @@ manipulation, validation and exploration of pedigrees
 =====================================================
 
 
-peddy compares familial-relationships and sexes as reported in a `PED file <http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped)>`_
+peddy compares familial-relationships and sexes as reported in a `PED/FAM file <https://www.cog-genomics.org/plink2/formats#fam>`_
 with those inferred from a VCF.
 
 It samples the VCF at about 25000 sites (plus chrX) to accurately estimate **relatedness**, **IBS0**, **heterozygosity**, **sex** and **ancestry**. It uses 2504 thousand genome samples as backgrounds to calibrate the relatedness calculation and to make ancestry predictions.

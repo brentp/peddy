@@ -863,14 +863,14 @@ class Ped(object):
         depth = np.array([v['median_depth'] for v in sample_ranges.values()])
         #ranges = np.array([d['range'] for d in sample_ranges.values()])
         ratios = np.array([d['het_ratio'] for d in sample_ranges.values()])
-        ratios_outlier = ((ratios < 0.305) | (ratios > 0.41))
+        ratios_outlier = ((ratios < 0.30) | (ratios > 0.42))
         #ranges_outlier = ((ranges < 0.08) | (ranges > 0.31))
 
         bot = depth.mean() - 2 * depth.std()
         # remove outliers and re-calc.
-        bot = depth[depth > bot].mean() - 2 * depth[depth > bot].std()
+        bot = depth[depth > bot].mean() - 5 * depth[depth > bot].std()
         # care less if we have really high samples so make it 5.
-        top = depth.mean() + 5 * depth.std()
+        top = depth.mean() + 8 * depth.std()
 
         depth_outlier = ((depth < bot) | (depth > top))
 

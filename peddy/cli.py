@@ -20,7 +20,7 @@ from . import __version__
 if sys.version_info[0] == 3:
     basestring = str
 
-
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 log = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ def correct_sex_errors(ped_df):
     return excl
 
 
-@click.command()
+@click.command(context_settings=CONTEXT_SETTINGS)
 @click.argument('vcf')
 @click.argument('ped')
 @click.option("--plot", 

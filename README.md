@@ -105,6 +105,7 @@ unknown sample: 5180-5180 in family: K8565
 Installation
 ------------
 
+## Conda
 Nearly all users should install using conda in the anaconda python distribution. This means
 have your own version of python easily installed via:
 
@@ -125,4 +126,19 @@ This should install all dependencies so you can then run peddy with 4 processes 
 
 ```
 python -m peddy --plot -p 4 --prefix mystudy $VCF $PED
+```
+
+## Github
+
+```
+git clone https://github.com/brentp/peddy
+cd peddy
+pip install -r requirements.txt
+pip install --editable .
+```
+
+run with 
+
+```
+peddy --plot -p 4 --prefix mystudy $VCF $PED
 ```

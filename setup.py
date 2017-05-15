@@ -17,19 +17,30 @@ def get_version():
     except StopIteration:
         raise ValueError("version could not be located")
 
-setup(version=get_version(),
-      name='peddy',
-      description="pleasingly pythonic pedigree manipulation",
-      packages=['peddy', 'peddy.tests'],
-      long_description=open('README.md').read(),
-      author="Brent Pedersen",
-      author_email="bpederse@gmail.com",
-      zip_safe=False,
-      test_suite='nose.collector',
-      include_package_data=True,
-      tests_require='nose',
-      classifiers=[
-              'Development Status :: 4 - Beta',
-              'Intended Audience :: Science/Research',
-              'License :: OSI Approved :: MIT License',
-              'Topic :: Scientific/Engineering :: Bio-Informatics'])
+setup(
+    version=get_version(),
+    name='peddy',
+    description="pleasingly pythonic pedigree manipulation",
+    packages=['peddy', 'peddy.tests'],
+    long_description=open('README.md').read(),
+    author="Brent Pedersen",
+    author_email="bpederse@gmail.com",
+    zip_safe=False,
+    test_suite='nose.collector',
+    # To provide executable scripts, use entry points in preference to the
+       # "scripts" keyword. Entry points provide cross-platform support and
+       # allow pip to create the appropriate form of executable for the
+       # target platform.
+    entry_points=dict(
+        console_scripts=[
+            'peddy = peddy.__main__:cli',
+        ],
+    ),
+    include_package_data=True,
+    tests_require='nose',
+    classifiers=[
+            'Development Status :: 4 - Beta',
+            'Intended Audience :: Science/Research',
+            'License :: OSI Approved :: MIT License',
+            'Topic :: Scientific/Engineering :: Bio-Informatics']
+)

@@ -6,3 +6,5 @@ pandas
 matplotlib>=1.5.0
 scikit-learn
 toolshed
+click
+coloredlogs

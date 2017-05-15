@@ -15,6 +15,8 @@ import pandas as pd
 from .peddy import Ped
 from cyvcf2 import VCF
 
+from . import __version__
+
 if sys.version_info[0] == 3:
     basestring = str
 
@@ -147,7 +149,7 @@ def correct_sex_errors(ped_df):
 def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
     """pleasingly pythonic pedigree manipulation"""
     coloredlogs.install(log_level=loglevel)
-    
+    log.info("Running Peddy version %s", __version__)
     prefix = prefix or vcf[:-6]
     
     tmpl = string.Template(open(op.join(op.dirname(__file__), "tmpl.html")).read())

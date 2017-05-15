@@ -54,7 +54,7 @@ def run(args):
     if d > 100:
         d /= 60
         unit = "minutes"
-    log("ran in %.1f %s" % (d, unit))
+    log.info("ran in %.1f %s" % (d, unit))
     if df.shape[0] > 50000 and check == "ped_check":
         # remove unknown relationships that aren't in error.
         df = df[((df.pedigree_relatedness != -1) &
@@ -117,12 +117,6 @@ def correct_sex_errors(ped_df):
 @click.command()
 @click.argument('vcf')
 @click.argument('ped')
-@click.option('--loglevel',
-    default='INFO',
-    type=click.Choice(LOG_LEVELS),
-    help="Set the level of log output.",
-    show_default=True,
-)
 @click.option("--plot", 
     is_flag=True
 )
@@ -144,29 +138,34 @@ def correct_sex_errors(ped_df):
           " with chrom:pos[:ref:alt] on each line",
     default=op.join(op.dirname(__file__), '1kg.sites')
 )
-def peddy(vcf, ped, procs, prefix, each, sites, loglevels):
+@click.option('--loglevel',
+    default='INFO',
+    type=click.Choice(LOG_LEVELS),
+    help="Set the level of log output.",
+    show_default=True,
+)
+def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
     """pleasingly pythonic pedigree manipulation"""
     coloredlogs.install(log_level=loglevel)
-    log.info("Running scout version %s", __version__)
     
     prefix = prefix or vcf[:-6]
     
     tmpl = string.Template(open(op.join(op.dirname(__file__), "tmpl.html")).read())
 
-    ped = Ped(pedf)
+    ped_obj = Ped(ped)
     prefix = prefix.rstrip(".-")
 
     samples = VCF(vcf).samples
 
-    ped_df = pd.read_table(pedf,
+    ped_df = pd.read_table(ped,
                            header=None,
-                           names=ped.header or ['family_id', 'sample_id',
+                           names=ped_obj.header or ['family_id', 'sample_id',
                                           'paternal_id', 'maternal_id',
                                           'sex', 'phenotype'],
                            # if there's a header, we skip it as it's inidcated
                            # above.
                            index_col=False,
-                           skiprows=1 if ped.header else None,
+                           skiprows=1 if ped_obj.header else None,
                            sep="\t")
 
     ped_df.family_id = [str(x) for x in ped_df.family_id]
@@ -194,10 +193,10 @@ def peddy(vcf, ped, procs, prefix, each, sites, loglevels):
                  "het_check": ["call_rate", "het_ratio", "mean_depth", "idr_baf", "ancestry-prediction", "PC1", "PC2", "PC3"],
                  "sex_check": ["het_ratio", "error"]}
 
-    vals = {'title': op.splitext(op.basename(pedf))[0], 'each': each}
+    vals = {'title': op.splitext(op.basename(ped))[0], 'each': each}
     # background_df only present for het-check. It's the PC's from 1000G for
     # plotting.
-    for check, df, background_df in map(run, [(check, pedf, vcf, plot, prefix, each, ncpus, sites) for check
+    for check, df, background_df in map(run, [(check, ped, vcf, plot, prefix, each, procs, sites) for check
                                  in ("ped_check", "het_check", "sex_check")]):
         if df is None:
             vals[check] = []

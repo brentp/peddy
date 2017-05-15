@@ -1,6 +1,6 @@
 import sys
 
-from peddy.cli import peddy as cli
+from .cli import peddy as cli
 
 """
 peddy.__main__

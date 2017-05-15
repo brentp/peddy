@@ -3,6 +3,7 @@
 from __future__ import print_function
 import sys
 import os
+import logging
 import os.path as op
 import collections
 import re
@@ -15,6 +16,8 @@ import random
 
 REQUIRED = ['family_id', 'sample_id', 'paternal_id',
             'maternal_id', 'sex', 'phenotype']
+
+log = logging.getLogger(__name__)
 
 try:
     zip = it.izip
@@ -296,8 +299,8 @@ class Family(object):
         self._build()
         for u in self.unknown_samples:
             if self.warn:
-                print("unknown sample: %s in family: %s" % (u,
-                      samples[0].family_id), file=sys.stderr)
+                log.info("unknown sample: %s in family: %s" % (u,
+                      samples[0].family_id))
 
     def __iter__(self):
         self._index = 0
@@ -579,19 +582,19 @@ class Ped(object):
             return self._cache[(sample_id, family_id)]
         a = [x for x in (samples or self.samples()) if x.sample_id == sample_id]
         if len(a) > 1 and family_id is None:
-            print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
+            log.info("multiple samples found in ped file for %s" % sample_id)
 
         if family_id is not None:
             a = [x for x in a if x.family_id == family_id]
         if len(a) > 1:
-            print("multiple samples found in ped file for %s" % sample_id, file=sys.stderr)
+            log.info("multiple samples found in ped file for %s" % sample_id)
         elif len(a) == 0:
             for f in self.families.values():
                 if sample_id in f.unknown_samples:
                     a = f.unknown_samples[sample_id]
                     return a
             else:
-                print("no sample found in ped file for %s" % sample_id, file=sys.stderr)
+                log.info("no sample found in ped file for %s" % sample_id)
             return None
         elif len(a) == 1:
             a = a[0]
@@ -700,7 +703,7 @@ class Ped(object):
             try:
                 next(vcf(chrom))
             except StopIteration:
-                print("\nWARNING: no values found for sex chromosome", file=sys.stderr)
+                log.warning("no values found for sex chromosome")
                 return None
             pars = [('chr' + c, v) for c, v in pars]
 
@@ -730,7 +733,7 @@ class Ped(object):
 
         # this should be high for females and low for males
         het_ratio = het.astype(float) / (hom_alt)
-        print("sex-check: %s skipped / %d kept" % (skipped, kept), file=sys.stderr)
+        log.info("sex-check: %s skipped / %d kept" % (skipped, kept))
 
         plot_vals = {'male': [], 'female': [], 'male_errors': [],
                     'unknown': [], 'unknown_errors': [], 'unknown_samples': [],
@@ -741,7 +744,7 @@ class Ped(object):
                 ped_sex = str(self[s].sex)
             except KeyError:
                 if skip_missing:
-                    print(s)
+                    log.info(s)
                     continue
                 ped_sex = "NA"
             val = -0.06 if np.isnan(het_ratio[i]) else het_ratio[i]
@@ -752,7 +755,7 @@ class Ped(object):
             try:
                 plot_vals[ped_sex].append(val)
             except KeyError:
-                print(s, ped_sex, ped_sex.strip() == "-9")
+                log.info(s, ped_sex, ped_sex.strip() == "-9")
                 # sex unknown
                 raise
 
@@ -837,9 +840,9 @@ class Ped(object):
         samps = [x.sample_id for x in self.samples()]
         vcf = cyvcf2.VCF(vcf_path, gts012=True, samples=samps)
         if sorted(vcf.samples) != sorted(samps):
-            print("warning: sample overlap issues\n\tin vcf, not in ped: %s\n\tin ped, not in vcf: %s" % (
+            log.warning("sample overlap issues\n\tin vcf, not in ped: %s\n\tin ped, not in vcf: %s" % (
                   ",".join(set(vcf.samples) - set(samps)),
-                  ",".join(set(samps) - set(vcf.samples))), file=sys.stderr)
+                  ",".join(set(samps) - set(vcf.samples))))
         if set(vcf.samples) - set(samps) == set(vcf.samples):
             raise Exception("error: no samples from VCF found in ped")
 
@@ -957,9 +960,8 @@ class Ped(object):
         cols += [c for c in d if not c in ('sample_a', 'sample_b') and not c.endswith('error')]
         cols += [c for c in d if c.endswith('error')]
         if len(ped_samples) > 200:
-            print("large dataset: only reporting pedigree checks where in same"
-                  + " family or relationship does not match expected",
-                  file=sys.stderr)
+            log.info("large dataset: only reporting pedigree checks where in same"
+                  + " family or relationship does not match expected")
         df = pd.DataFrame(d, columns=cols)
         del d
         import gc; gc.collect()
@@ -1053,7 +1055,7 @@ class Ped(object):
         fig, axesb = plt.subplots(2, 2, figsize=(12, 12))
         df['tmpibs2'] = df['ibs2'] / df['n'].astype(float)
         axes = axesb[0]
-        print("plotting")
+        log.info("plotting")
 
         for k, key in enumerate(('tmpibs0', 'tmpibs2')):
 

@@ -3,6 +3,7 @@ import os.path as op
 import sys
 import time
 import gzip
+import logging
 
 import numpy as np
 import toolshed as ts
@@ -14,6 +15,7 @@ try:
 except ImportError:
     import pickle as cPickle
 
+log = logging.getLogger(__name__)
 
 HERE = op.dirname(op.abspath(__file__))
 
@@ -48,7 +50,8 @@ def pca(fig_path, genotype_matrix=None, sites=None):
         genos1kg = np.array(genos1kg[:, idxs])
 
         assert genotype_matrix.shape[1] == genos1kg.shape[1]
-    sys.stderr.write("loaded and subsetted thousand-genomes genotypes (shape: %s) in %.1f seconds\n" % (genos1kg.shape, time.time() - t0))
+    log.info("loaded and subsetted thousand-genomes genotypes (shape: %s) in %.1f seconds" % 
+            (genos1kg.shape, time.time() - t0))
 
     t0 = time.time()
     clf = make_pipeline(RandomizedPCA(n_components=4, whiten=True, copy=True),
@@ -56,7 +59,8 @@ def pca(fig_path, genotype_matrix=None, sites=None):
     background_target = np.array([int(x) for x in _str.split("|")])
 
     clf.fit(genos1kg, background_target)
-    sys.stderr.write("ran randomized PCA on thousand-genomes samples at %d sites in %.1f seconds\n" % (genos1kg.shape[1], time.time() - t0))
+    log.info("ran randomized PCA on thousand-genomes samples at %d sites in %.1f seconds" 
+             % (genos1kg.shape[1], time.time() - t0))
 
     ipops = "AFR AMR EAS EUR SAS UNKNOWN".split()
 
@@ -86,7 +90,8 @@ def pca(fig_path, genotype_matrix=None, sites=None):
                                       'PC2': background_tf[:, 1],
                                       'PC3': background_tf[:, 2],
                                       'PC4': background_tf[:, 3]})
-    sys.stderr.write("Projected thousand-genomes genotypes and sample genotypes and predicted ancestry via SVM in %.1f seconds\n" % (time.time() - t0))
+    log.info("Projected thousand-genomes genotypes and sample genotypes and predicted ancestry via SVM in %.1f seconds"
+             % (time.time() - t0))
     if not fig_path:
         return df, background_df
 

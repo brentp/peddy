@@ -5,6 +5,7 @@ import io
 import time
 from collections import defaultdict
 import logging
+from . import __version__
 
 import coloredlogs
 import click
@@ -119,22 +120,22 @@ def correct_sex_errors(ped_df):
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.argument('vcf')
 @click.argument('ped')
-@click.option("--plot", 
+@click.option("--plot",
     is_flag=True
 )
-@click.option("-p", "--procs", 
-    default=3, 
+@click.option("-p", "--procs",
+    default=3,
     help="number of processors to use"
 )
-@click.option("--prefix", 
+@click.option("--prefix",
     help="prefix for output files (default is basename of vcf)"
 )
-@click.option("--each", 
+@click.option("--each",
     help="sample every nth value from the selected sites instead of every value"\
          " to speed processing.",
     default=1
 )
-@click.option("--sites", 
+@click.option("--sites",
     help=r"This is rarely used. The path to a file with alternative sites to"\
           " use for calculating relatedness in format 1:234234\n1:45345345..."\
           " with chrom:pos[:ref:alt] on each line",
@@ -146,12 +147,13 @@ def correct_sex_errors(ped_df):
     help="Set the level of log output.",
     show_default=True,
 )
+@click.version_option(version=__version__, prog_name="peddy")
 def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
     """pleasingly pythonic pedigree manipulation"""
     coloredlogs.install(log_level=loglevel)
     log.info("Running Peddy version %s", __version__)
     prefix = prefix or vcf[:-6]
-    
+
     tmpl = string.Template(open(op.join(op.dirname(__file__), "tmpl.html")).read())
 
     ped_obj = Ped(ped)
@@ -251,5 +253,3 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
     sys.stdout.flush()
     with open("%s.html" % prefix, "w") as fh:
         fh.write(tmpl.substitute(**vals))
-    
-    

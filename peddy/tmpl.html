@@ -182,11 +182,9 @@ var het_good = {name: "OK", x:[], y:[], text: [], sample: [], mode:'markers', ty
 				marker:{color:'#4daf4a', sizemode: 'diameter', sizeref: 7, size:[], opacity:[]}}
 var het_depth = {name: "depth-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
 				marker:{color:'#377eb8', sizemode: 'diameter', sizeref: 7, size:[], opacity:[]}}
-var het_ratio = {name: "ratio-outlier", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-				marker:{color:'#e41a1c', sizemode: 'diameter', sizeref: 7, size:[], opacity:[]}}
 
 for(i=0; v=het_data[i], i<het_data.length; i++){
-	var a = v['depth_outlier'] ? het_depth : v['ratio_outlier'] ? het_ratio : het_good;
+	var a = v['depth_outlier'] ? het_depth : het_good;
 
 	a['x'].push(v['median_depth'].toPrecision(3))
 	a['y'].push(v['het_ratio'].toPrecision(3))
@@ -220,7 +218,7 @@ var het_layout = {
   hovermode: 'closest'
 };
 
-datas['het'] = [het_good, het_depth, het_ratio]
+datas['het'] = [het_good, het_depth]
 Plotly.plot('hetplot', datas['het'], het_layout);
 
 hetplot = document.getElementById('hetplot')

@@ -866,8 +866,6 @@ class Ped(object):
         depth = np.array([v['median_depth'] for v in sample_ranges.values()])
         #ranges = np.array([d['range'] for d in sample_ranges.values()])
         ratios = np.array([d['het_ratio'] for d in sample_ranges.values()])
-        ratios_outlier = ((ratios < 0.30) | (ratios > 0.42))
-        #ranges_outlier = ((ranges < 0.08) | (ranges > 0.31))
 
         bot = depth.mean() - 2 * depth.std()
         # remove outliers and re-calc.
@@ -881,9 +879,7 @@ class Ped(object):
             v['sample_id'] = k
 
 
-        for d, depth_o, ratio_o in zip(sample_ranges.values(), depth_outlier,
-                                       ratios_outlier):
-            d['ratio_outlier'] = ratio_o
+        for d, depth_o in zip(sample_ranges.values(), depth_outlier):
             d['depth_outlier'] = depth_o
             d['idr_baf'] = d.pop('range')
 
@@ -912,14 +908,14 @@ class Ped(object):
         colors = sns.color_palette('Set1', 4)
 
         cs = [colors[1 - int(v['depth_outlier'])] for v in sample_ranges.values()]
-        ecs = ['none' if not v['ratio_outlier'] else 'k' for v in sample_ranges.values()]
+        ecs = ['none' for k in sample_ranges]
 
         s = get_s(np.array([v['median_depth'] for v in sample_ranges.values()]))
 
         plt.scatter(depth, ratios, c=cs, edgecolors=ecs, s=s)
 
         for k, v in ((k, v) for k, v in sample_ranges.items()
-                      if v['ratio_outlier'] or v['depth_outlier']):
+                      if v['depth_outlier']):
           plt.text(v['median_depth'], v['het_ratio'], k, color=colors[1], fontsize=7)
 
         plt.xlabel('median depth')
@@ -1034,6 +1030,7 @@ class Ped(object):
         sns.set_style('whitegrid')
 
         # get total rel_difference by sample. large values indicate the likely problem
+        df['rel_difference'][df['rel_difference'] == 0] = 0.001
         sub = df.eval('((rel > 0.1) & (pedigree_relatedness < 0.05)) | ((rel < 0.05) & (pedigree_relatedness > 0.1)) | (rel_difference > 0.1) | (rel_difference < -0.1)')
         da = df[sub].groupby('sample_a')['rel_difference'].agg(asum)
         db = df[sub].groupby('sample_b')['rel_difference'].agg(asum)

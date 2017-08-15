@@ -228,6 +228,8 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
                 d[k] = ",".join(d[k])
 
             ped_df['duplicates'] = [d.get(s, "") for s in samples]
+        if check == "ped_check":
+            obs_vs_expected(prefix, df[['sample_a', 'sample_b', 'pedigree_relatedness', 'rel', 'n']])
 
         if background_df is not None:
             vals["background_pca"] = background_df.to_json(orient='records', double_precision=3)
@@ -252,4 +254,11 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
 
     sys.stdout.flush()
     with open("%s.html" % prefix, "w") as fh:
+        fh.write(tmpl.substitute(**vals))
+
+def obs_vs_expected(prefix, df):
+    tmpl = string.Template(open(op.join(op.dirname(__file__), "tmpl.vs.html")).read())
+    vals = {'title': 'observed vs expected relatedness'}
+    vals['data'] = df.to_json(orient='records', double_precision=3)
+    with open("%s.vs.html" % prefix, "w") as fh:
         fh.write(tmpl.substitute(**vals))

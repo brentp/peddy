@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <meta charset="utf-8" />
+        <title>$title</title>
+
+ <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+ <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.css">
+ <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.2.2/css/buttons.dataTables.min.css">
+
+ <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+ <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+
+ <style>
+.container {
+  display: table;
+  width: 100%;
+} 
+
+.cchild {
+    display: table-cell;
+    width: 30%;
+}   
+
+.dataTables_filter {
+        display: none;
+}
+.plotdiv {
+}
+body {
+  padding: 4px;
+  justify-content: space-around;
+  align-items: center;
+  color: #404040;
+}
+ </style>
+    </head>
+
+<body>
+<div class="plotdiv">
+  <div id="link"></div>
+  <div class="container">
+    <div class="cchild" id="vsplot"> </div>
+  </div>
+</div> <!-- plotdiv -->
+
+</body>
+<script>
+
+var HEIGHT = 450;
+var vs_data = $data;
+var plotdata = {name: "sample-pairs", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
+                marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[]}}
+
+var mean_size = 0
+var max_size = 0
+for(var i=0; v=vs_data[i], i<vs_data.length; i++){
+    mean_size += v['n'] / 10000;
+    max_size = Math.max(max_size, v['n'])
+    plotdata['x'].push(v['rel'])
+    plotdata['y'].push(v['pedigree_relatedness'])
+    plotdata['text'].push('<b>' + v['sample_a'] + "</b>:<b>" + v['sample_b'] + "</b>")
+    plotdata['marker']['size'].push(v['n'])
+}
+
+for(i=0; i<plotdata['marker']['size'].length; i++){
+    var v = Math.sqrt(plotdata['marker']['size'][i]) + 10;
+    plotdata['marker']['size'][i] = v;
+}
+//console.log(plotdata['marker']['size'])
+
+mean_size /= vs_data.length
+mean_size *= 10000;
+mean_size /= 4400;
+
+plotdata['marker']['sizeref'] = mean_size;
+
+var vs_layout = {
+  height: HEIGHT,
+  title: "Observed vs Expected Relatedness",
+  width: '50%',
+  xaxis: {
+    title: 'Observed Relatedness',
+    titlefont: {size: 19},
+    showline: false,
+    tickfont: {size: 12},
+    zeroline: true,
+    tickvals: [0, 0.125, 0.25, 0.5, 0.75, 1],
+
+  },
+  yaxis: {
+    title: 'Expected Relatedness',
+    titlefont: {size: 19},
+    showline: false,
+    tickfont: {size: 12},
+    tickvals: [0, 0.125, 0.25, 0.5, 0.75, 1],
+  },
+  margin: {t: 30},
+  legend: {x: 0.5, y: 0.9, bgcolor: '#EEE'},
+  hovermode: 'closest'
+};
+
+var yEqualsX = {
+    name: "observed == expected",
+    x: [0, 1],
+    y: [0, 1],
+    mode: 'lines',
+    marker: {color: '#cccccc'},
+    type: 'scatter'
+}
+
+Plotly.plot('vsplot', [yEqualsX, plotdata], vs_layout);
+</script>
+</html>

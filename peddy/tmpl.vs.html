@@ -5,10 +5,6 @@
         <meta charset="utf-8" />
         <title>$title</title>
 
- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.1.1/rangeslider.min.css">
- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.2.2/css/buttons.dataTables.min.css">
-
  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
  <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
 
@@ -20,7 +16,7 @@
 
 .cchild {
     display: table-cell;
-    width: 30%;
+    width: 95%;
 }   
 
 .dataTables_filter {
@@ -39,77 +35,158 @@ body {
 
 <body>
 <div class="plotdiv">
-  <div id="link"></div>
   <div class="container">
     <div class="cchild" id="vsplot"> </div>
   </div>
+  <div id="link"></div>
+  <button id="clear">clear selected points</button>
+  <div id="message">click on a point to see all points associated with those samples</div>
+  on click, color points with an abs(obs - exp) &gt; the value:
+  <select id="delta">
+    <option value=0.2 >0.2</option>
+    <option value=0.1 selected>0.1</option>
+    <option value=0.05>0.05</option>
+  <select>
 </div> <!-- plotdiv -->
 
 </body>
 <script>
 
-var HEIGHT = 450;
+var base_color = '#4daf4a'
+var a_color = '#af4d4a'
+var b_color = '#4a4aaf'
+
+var HEIGHT = 650;
 var vs_data = $data;
 var plotdata = {name: "sample-pairs", x:[], y:[], text: [], sample: [], mode:'markers', type:'scatter',
-                marker:{color:'#4daf4a', sizemode: 'area', sizeref: 0, size:[]}}
+                hoverinfo: "text",
+                sample_a: [], sample_b: [], delta: [],
+                marker:{color: [], size: 12}}
 
-var mean_size = 0
-var max_size = 0
+if(vs_data.length > 2000) {
+  plotdata.marker.size = 9
+}
+
+var CUTOFF = 2500
+
+var xmax = 0
+var ymax = 0
+if(vs_data.length > CUTOFF) {
+    document.getElementById('link').innerHTML = "many (" + vs_data.length + ") points, not plotting those where abs(obs - expected) < 0.03"
+}
+
 for(var i=0; v=vs_data[i], i<vs_data.length; i++){
-    mean_size += v['n'] / 10000;
-    max_size = Math.max(max_size, v['n'])
+    xmax = Math.max(v['rel'], xmax)
+    ymax = Math.max(v['pedigree_relatedness'], ymax)
+    // if we have a lot of points, skip those on the diagonal.
+    var delta = Math.abs(v['rel'] - v['pedigree_relatedness'])
+    if (vs_data.length > CUTOFF && delta < 0.03) {
+        continue
+    }
+    if (vs_data.length > 20000 && delta < 0.08 && v['pedigree_relatedness'] < 0.01) {
+        continue
+    }
     plotdata['x'].push(v['rel'])
+    plotdata['marker']['color'].push(base_color)
+    plotdata['sample_a'].push(v['sample_a'])
+    plotdata['sample_b'].push(v['sample_b'])
+    plotdata['delta'].push(delta)
     plotdata['y'].push(v['pedigree_relatedness'])
     plotdata['text'].push('<b>' + v['sample_a'] + "</b>:<b>" + v['sample_b'] + "</b>")
-    plotdata['marker']['size'].push(v['n'])
 }
 
-for(i=0; i<plotdata['marker']['size'].length; i++){
-    var v = Math.sqrt(plotdata['marker']['size'][i]) + 10;
-    plotdata['marker']['size'][i] = v;
+var zmax = Math.max(xmax, ymax)
+var tickvals = [0, 0.125, 0.25, 0.375, 0.5, 0.75, 1]
+var xy = [0, 0.99];
+if(zmax < 0.75) {
+    xy = [0, 0.74]
+    tickvals = [0, 0.125, 0.25, 0.375, 0.5, 0.75]
 }
-//console.log(plotdata['marker']['size'])
 
-mean_size /= vs_data.length
-mean_size *= 10000;
-mean_size /= 4400;
-
-plotdata['marker']['sizeref'] = mean_size;
+//plotdata['marker']['sizeref'] = mean_size;
 
 var vs_layout = {
   height: HEIGHT,
   title: "Observed vs Expected Relatedness",
-  width: '50%',
+  width: HEIGHT + 150,
   xaxis: {
     title: 'Observed Relatedness',
     titlefont: {size: 19},
     showline: false,
-    tickfont: {size: 12},
+    tickfont: {size: 13},
     zeroline: true,
-    tickvals: [0, 0.125, 0.25, 0.5, 0.75, 1],
-
+    tickvals: tickvals,
   },
   yaxis: {
     title: 'Expected Relatedness',
     titlefont: {size: 19},
     showline: false,
-    tickfont: {size: 12},
-    tickvals: [0, 0.125, 0.25, 0.5, 0.75, 1],
+    tickfont: {size: 13},
+    tickvals: tickvals,
   },
   margin: {t: 30},
-  legend: {x: 0.5, y: 0.9, bgcolor: '#EEE'},
   hovermode: 'closest'
 };
 
 var yEqualsX = {
     name: "observed == expected",
-    x: [0, 1],
-    y: [0, 1],
+    x: xy,
+    y: xy,
     mode: 'lines',
     marker: {color: '#cccccc'},
     type: 'scatter'
 }
 
 Plotly.plot('vsplot', [yEqualsX, plotdata], vs_layout);
+var vsp = document.getElementById('vsplot')
+var sample_a = "", sample_b = ""
+
+function set_points(sample_a, sample_b, delta) {
+    var points = []
+    var d = plotdata;
+    
+    for(var n=0; n < d['x'].length; n++){
+        var sa = d['sample_a'][n];
+        var sb = d['sample_b'][n];
+        if (d['delta'][n] < delta) {
+          plotdata['marker']['color'][n] = base_color;
+          continue;
+        }
+        if (sa == sample_a || sb == sample_a) {
+            plotdata['marker']['color'][n] = a_color;
+        } else if (sa == sample_b || sb == sample_b) {
+            plotdata['marker']['color'][n] = b_color;
+        } else {
+            plotdata['marker']['color'][n] = base_color;
+        }
+    }
+
+    Plotly.redraw(vsp)
+    var txt = 'showing points with samples <font color="' + a_color + '">' + sample_a + '</font>'
+    txt += ' and <font color="' + b_color + '">' + sample_b + '</font>'
+    msg.innerHTML = txt
+}
+
+jQuery('#clear').on('click', function() {
+    set_points('', '', -1)
+    msg.innerHTML = originalMessage;
+})
+jQuery('#delta').on('change', function() {
+    set_points(sample_a, sample_b, parseFloat(jQuery('#delta').val()))
+})
+
+
+var msg = document.getElementById('message')
+var originalMessage = msg.innerHTML
+
+vsp.on('plotly_click', function(data) {
+  var p = data.points[0];
+  var i = p.pointNumber;
+  sample_b = p.data.sample_a[i];
+  sample_a = p.data.sample_b[i];
+  var delta = parseFloat(jQuery('#delta').val())
+  set_points(sample_a, sample_b, delta)
+})
+
 </script>
 </html>

@@ -246,6 +246,8 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
     # output the new version with the extra columns.
     # avoid extra stuff to stderr
     vals['pedigree'] = Ped(new_pedf, warn=False).to_json(samples, exclude=('PC1', 'PC2', 'PC3'))
+    import os
+    vals['prefix'] = os.path.basename(prefix)
 
     excl = correct_sex_errors(ped_df)
 

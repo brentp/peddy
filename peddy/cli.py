@@ -92,13 +92,13 @@ def correct_sex_errors(ped_df):
             sel = (gt & sf & (sc == '1'))
             sc[sel] = '2'
             if sel.sum():
-                log.info("set sex of samples: %s to female in peddy.ped" 
+                log.info("set sex of samples: %s to female in peddy.ped"
                          % ",".join(map(str, ped_df.ix[1, sel])))
 
             sel = (gt & sf & (sc == '2'))
             sc[sel] = '1'
             if sel.sum():
-                log.info("set sex of samples: %s to male in peddy.ped" 
+                log.info("set sex of samples: %s to male in peddy.ped"
                          % ",".join(map(str, ped_df.ix[1, sel])))
         else:
             for (ifrom, ito) in ((1, 2), (2, 1)):
@@ -236,6 +236,12 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
             with open("%s.background_pca.json" % prefix, "w") as fh:
                 fh.write(vals["background_pca"])
 
+    ped_df.paternal_id = ped_df.paternal_id.astype(str)
+    ped_df.maternal_id = ped_df.maternal_id.astype(str)
+    ped_df.loc[ped_df.paternal_id == "", "paternal_id"] = "-9"
+    ped_df.loc[ped_df.maternal_id == "", "maternal_id"] = "-9"
+    ped_df.loc[ped_df.paternal_id == "nan", "paternal_id"] = "-9"
+    ped_df.loc[ped_df.maternal_id == "nan", "maternal_id"] = "-9"
     new_pedf = prefix + ".peddy.ped"
     cols = list(ped_df.columns)
     cols[0] = '#' + cols[0]

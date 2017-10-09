@@ -77,7 +77,7 @@ def lowest_common_ancestors(G, targets):
             n = q.popleft()
             if n in parents:
                 continue
-            for p in G.successors_iter(n):
+            for p in G.successors(n):
                 q.append(p)
             parents.add(n)
 
@@ -91,7 +91,7 @@ def lowest_common_ancestors(G, targets):
     lowest_common = set()
     if common_ancestors is not None:
         for p in common_ancestors:
-            if any(child not in common_ancestors and child in all_ancestors for child in G.predecessors_iter(p)):
+            if any(child not in common_ancestors and child in all_ancestors for child in G.predecessors(p)):
                 lowest_common.add(p)
 
     return lowest_common

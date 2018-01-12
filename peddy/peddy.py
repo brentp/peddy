@@ -832,11 +832,13 @@ class Ped(object):
         """
         kwargs is not used, but added here to allow same args as ped_check
         """
+
         import cyvcf2
         import numpy as np
         if ncpus > 16:
             ncpus = 16
 
+        sitesfile = sites.strip().split("/")[-1]
         samps = [x.sample_id for x in self.samples()]
         vcf = cyvcf2.VCF(vcf_path, gts012=True, samples=samps)
         if sorted(vcf.samples) != sorted(samps):
@@ -860,7 +862,7 @@ class Ped(object):
                 pca_plot = "%s.%s%s" % (pca_plot, "pca.", ext)
         else:
             pca_plot = False
-        pca_df, background_pca_df = pca(pca_plot, gt_types, sites)
+        pca_df, background_pca_df = pca(pca_plot, sitesfile, gt_types, sites)
 
         # not find outliers.
         depth = np.array([v['median_depth'] for v in sample_ranges.values()])
@@ -937,6 +939,7 @@ class Ped(object):
         :param min_depth int: minimum required depth.
         :return: pandas.DataFrame
         """
+
         import cyvcf2
         import numpy as np
         import pandas as pd

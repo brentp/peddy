@@ -24,7 +24,9 @@ def pca(fig_path, genotype_matrix=None, sites=None):
     f = op.join(HERE, "1kg.sites.bin.gz")
     t0 = time.time()
     tmp = np.fromstring(gzip.open(f, 'rb').read(), dtype=np.uint8).astype(np.int32)
-    genos1kg = tmp.reshape((23556, int(len(tmp) / 23556))).T
+#    genos1kg = tmp.reshape((23556, int(len(tmp) / 23556))).T
+#    genos1kg = tmp.reshape((23496, int(len(tmp) / 23496))).T
+    genos1kg = tmp.reshape((int(len(tmp) / 2504), 2504)).T ## 2504 samples in 1000G 
 
 
     if genotype_matrix is not None:

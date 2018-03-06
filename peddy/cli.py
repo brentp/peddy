@@ -242,6 +242,10 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
     ped_df.loc[ped_df.maternal_id == "", "maternal_id"] = "-9"
     ped_df.loc[ped_df.paternal_id == "nan", "paternal_id"] = "-9"
     ped_df.loc[ped_df.maternal_id == "nan", "maternal_id"] = "-9"
+
+    ped_df[ped_df.paternal_id == ""] = "-9"
+    ped_df[ped_df.maternal_id == ""] = "-9"
+
     new_pedf = prefix + ".peddy.ped"
     cols = list(ped_df.columns)
     cols[0] = '#' + cols[0]

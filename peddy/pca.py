@@ -9,7 +9,7 @@ import numpy as np
 import toolshed as ts
 from sklearn import svm
 from sklearn.pipeline import make_pipeline
-from sklearn.decomposition import RandomizedPCA
+from sklearn.decomposition import PCA
 try:
     import cPickle
 except ImportError:
@@ -19,9 +19,9 @@ log = logging.getLogger(__name__)
 
 HERE = op.dirname(op.abspath(__file__))
 
-def pca(fig_path, genotype_matrix=None, sites=None):
+def pca(fig_path, genotype_matrix=None, sites=None, sites_file="1kg.sites"):
 
-    f = op.join(HERE, "1kg.sites.bin.gz")
+    f = op.join(HERE, sites_file + ".bin.gz")
     t0 = time.time()
     tmp = np.fromstring(gzip.open(f, 'rb').read(), dtype=np.uint8).astype(np.int32)
     genos1kg = tmp.reshape((23556, int(len(tmp) / 23556))).T
@@ -54,7 +54,7 @@ def pca(fig_path, genotype_matrix=None, sites=None):
             (genos1kg.shape, time.time() - t0))
 
     t0 = time.time()
-    clf = make_pipeline(RandomizedPCA(n_components=4, whiten=True, copy=True),
+    clf = make_pipeline(PCA(n_components=4, whiten=True, copy=True, svd_solver="randomized"),
                     svm.SVC(C=2, probability=True))
     background_target = np.array([int(x) for x in _str.split("|")])
 
@@ -65,13 +65,13 @@ def pca(fig_path, genotype_matrix=None, sites=None):
     ipops = "AFR AMR EAS EUR SAS UNKNOWN".split()
 
     t0 = time.time()
-    background_tf = clf.named_steps['randomizedpca'].transform(genos1kg)
+    background_tf = clf.named_steps['pca'].transform(genos1kg)
 
     background_df, df = None, None
 
     if genotype_matrix is not None:
         import pandas as pd
-        tf = clf.named_steps['randomizedpca'].transform(genotype_matrix)
+        tf = clf.named_steps['pca'].transform(genotype_matrix)
         s = (genotype_matrix != 3).sum(axis=1)
         s = s / np.mean(s)
         s = s * 15

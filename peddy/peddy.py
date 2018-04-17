@@ -1039,7 +1039,7 @@ class Ped(object):
         #df['rel_difference'][df['rel_difference'] == 0] = 0.001
         df.loc[df['rel_difference'] == 0, 'rel_difference'] == 0.001
 
-        sub = df.eval('((rel > 0.1) & (pedigree_relatedness < 0.05)) | ((rel < 0.05) & (pedigree_relatedness > 0.1)) | (abs(rel_difference) > 0.1))')
+        sub = df.eval('((rel > 0.1) & (pedigree_relatedness < 0.05)) | ((rel < 0.05) & (pedigree_relatedness > 0.1)) | (abs(rel_difference) > 0.1)')
         da = df[sub].groupby('sample_a')['rel_difference'].agg(asum)
         db = df[sub].groupby('sample_b')['rel_difference'].agg(asum)
         diff = da.add(db, fill_value=0)

@@ -371,7 +371,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	var k = get_rel_key(p, prIndex, parentIndex);
 
 	if(peds[k] === undefined) {
-		peds[k] = {name: k, x:[], y:[], z: [], parent: [], save_text: [], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scatter',
+		peds[k] = {name: k, x:[], y:[], z: [], parent: [], save_text: [], text: [], sample_a: [], sample_b: [], mode:'markers', type:'scattergl',
 				   marker: {size: [], sizemode: "area", sizeref: 23556/($each * 100), save_size:[]}, hoverinfo: "text"}
 		// differentiate between parent-kid and sib-sib and use open for <= 0 relatedness
 		if(k.indexOf("sib") > -1){
@@ -379,7 +379,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 		} else if (k.indexOf("parent") > -1){
 			peds[k]["marker"]["symbol"] = "square"
 		} else if (parseFloat(k) <= 0) {
-			peds[k]["marker"]["symbol"] = "circle-open"
+			peds[k]["marker"]["symbol"] = "circle"
 		}
 
 		datas['ped'].push(peds[k]);

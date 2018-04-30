@@ -722,7 +722,12 @@ class Ped(object):
             if any(s <= variant.start and e >= variant.start for chrom, (s, e) in pars):
                 skipped += 1
                 continue
-            depth_filter = variant.gt_depths >= min_depth
+            if np.all(variant.gt_depths < 0):
+                # if not samples have depths, then we assume the vcf doesn't have them and
+                # we use all samples
+                depth_filter = np.ones_like(hom_ref)
+            else:
+                depth_filter = variant.gt_depths >= min_depth
             gt_types = variant.gt_types
 
             hom_ref += (gt_types == 0) & depth_filter
@@ -732,6 +737,7 @@ class Ped(object):
             if kept >= n_sites: break
 
         # this should be high for females and low for males
+        hom_alt[hom_alt == 0] = 1
         het_ratio = het.astype(float) / (hom_alt)
         log.info("sex-check: %s skipped / %d kept" % (skipped, kept))
 
@@ -1011,7 +1017,7 @@ class Ped(object):
 
             sampling_rate = 1 / (len(ped_samples)**0.6)
             ru = (np.random.uniform(size=df.shape[0]) < sampling_rate)
-            df['keep'] = df.eval('parent_error | sample_duplication_error | predicted_parents| @rd | @ru' +
+            df['keep'] = df.eval('parent_error | sample_duplication_error | predicted_parents| @rd | @ru ' +
                     '| (rel > 0.17) | (tmpibs0 < 0.04) | (pedigree_relatedness > 0)')
 
             df['keep'] |= same_fam
@@ -1033,8 +1039,10 @@ class Ped(object):
         sns.set_style('whitegrid')
 
         # get total rel_difference by sample. large values indicate the likely problem
-        df['rel_difference'][df['rel_difference'] == 0] = 0.001
-        sub = df.eval('((rel > 0.1) & (pedigree_relatedness < 0.05)) | ((rel < 0.05) & (pedigree_relatedness > 0.1)) | (rel_difference > 0.1) | (rel_difference < -0.1)')
+        #df['rel_difference'][df['rel_difference'] == 0] = 0.001
+        df.loc[df['rel_difference'] == 0, 'rel_difference'] == 0.001
+
+        sub = df.eval('((rel > 0.1) & (pedigree_relatedness < 0.05)) | ((rel < 0.05) & (pedigree_relatedness > 0.1)) | (abs(rel_difference) > 0.1)')
         da = df[sub].groupby('sample_a')['rel_difference'].agg(asum)
         db = df[sub].groupby('sample_b')['rel_difference'].agg(asum)
         diff = da.add(db, fill_value=0)

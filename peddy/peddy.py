@@ -838,7 +838,7 @@ class Ped(object):
         if ncpus > 16:
             ncpus = 16
 
-        sitesfile = sites.strip().split("/")[-1]
+        sitesfile = sites
         samps = [x.sample_id for x in self.samples()]
         vcf = cyvcf2.VCF(vcf_path, gts012=True, samples=samps)
         if sorted(vcf.samples) != sorted(samps):

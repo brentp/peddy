@@ -38,7 +38,7 @@ def run(args):
         plot = prefix + "." + check + ".png"
 
     if check in ("ped_check", "het_check"):
-        kwargs = {'sites': sites} #if check == 'ped_check' else {}
+        kwargs = {'sites': sites} if check == 'ped_check' else {}
         df = getattr(p, check)(vcf, plot=plot, each=each, ncpus=ncpus,
                                prefix=prefix, **kwargs)
         if check == "het_check":

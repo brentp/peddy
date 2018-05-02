@@ -833,7 +833,7 @@ class Ped(object):
         return pd.DataFrame(res)
 
     def het_check(self, vcf_path, plot=False, ncpus=1, min_depth=8,
-                  sites=op.join(op.dirname(__file__), '1kg.sites'),
+                  sites=op.join(op.dirname(__file__), 'GRCH37.sites'),
                   **kwargs):
         """
         kwargs is not used, but added here to allow same args as ped_check
@@ -933,7 +933,7 @@ class Ped(object):
 
     def ped_check(self, vcf, ncpus=1, plot=False, min_depth=5, each=1,
             prefix='',
-            sites=op.join(op.dirname(__file__), '1kg.sites')):
+            sites=op.join(op.dirname(__file__), 'GRCH37.sites')):
         """
         Given the current pedigree and a VCF of genotypes, find sample-pairs where
         the relationship reported in the pedigree file do not match those inferred

@@ -38,7 +38,7 @@ def run(args):
         plot = prefix + "." + check + ".png"
 
     if check in ("ped_check", "het_check"):
-        kwargs = {'sites': sites} if check == 'ped_check' else {}
+        kwargs = {'sites': sites}
         df = getattr(p, check)(vcf, plot=plot, each=each, ncpus=ncpus,
                                prefix=prefix, **kwargs)
         if check == "het_check":
@@ -136,9 +136,10 @@ def correct_sex_errors(ped_df):
     default=1
 )
 @click.option("--sites",
-    help=r"This is rarely used. The path to a file with alternative sites to"\
+    help=r"The path to a file with alternative sites to"\
           " use for calculating relatedness in format 1:234234\n1:45345345..."\
-          " with chrom:pos[:ref:alt] on each line",
+          " with chrom:pos[:ref:alt] on each line. The special-case of 'hg38'"\
+          " for this will use hg38 sites shipped with peddy.",
     default=op.join(op.dirname(__file__), 'GRCH37.sites')
 )
 @click.option('--loglevel',
@@ -153,6 +154,9 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
     coloredlogs.install(log_level=loglevel)
     log.info("Running Peddy version %s", __version__)
     prefix = prefix or vcf[:-6]
+
+    if sites == "hg38":
+        sites = op.join(op.dirname(__file__), 'GRCH38.sites')
 
     tmpl = string.Template(open(op.join(op.dirname(__file__), "tmpl.html")).read())
 

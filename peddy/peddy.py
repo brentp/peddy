@@ -551,6 +551,7 @@ class Ped(object):
         if a.mom is None and a.dad is None and b.mom is None and b.dad is None:
             return 'unrelated'
 
+        print("siblings?", a, b, file=sys.stderr)
         if a.mom == b.mom and a.dad == b.dad and None not in (a.mom, a.dad):
             return 'full siblings'
 
@@ -666,8 +667,9 @@ class Ped(object):
                   skip_missing=True,
                   plot=False,
                   cutoff=0.6,
-                  n_sites=100000,
-                  pars=('X:10000-2781479', 'X:155701382-156030895')):
+                  n_sites=10000,
+                  # these PARs work for GRCh37 and GRCh38
+                  pars=('X:10000-2781479', 'X:154931044-156030895')):
         """
         Check that the sex reported in the ped file matches that inferred
         using the genotypes in `vcf_path` using the ratio of HET / (HOM_REF +
@@ -694,6 +696,11 @@ class Ped(object):
         pars = [(x[0], [int(p) for p in x[1].split('-')]) for x in pars]
 
         chrom = pars[0][0]
+        # just skip the PAR with a query rather than iterating over it.
+        s, e = pars[0][1]
+        if s < 20000:
+            chrom += ":" + str(e + 1)
+
         try:
             next(vcf(chrom))
         except StopIteration:  # check for chrX
@@ -1011,7 +1018,7 @@ class Ped(object):
 
         pr = df['pedigree_relatedness']
         df["rel_difference"] = (pr - df['rel']).astype(np.float32)
-        # make the column order a bit more sane.
+
         if len(ped_samples) > 200:
             rd = np.abs(df['rel_difference']) > 0.17
 

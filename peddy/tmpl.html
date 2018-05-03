@@ -363,6 +363,7 @@ var yIndex = dIdxs[pedY]
 
 var PED_Y = 'ibs2'
 
+var max_size = 1;
 for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 
 	if (skip0 && p[pedRelIndex] == 0 && (p[relIndex] < -0.15 || Math.abs(p[relIndex]  - p[pedRelIndex]) < 0.1)){
@@ -391,6 +392,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	peds[k]['sample_a'].push(p[sampleAIndex])
 	peds[k]['parent'].push(p[parentIndex])
 	var sz = 50 + p[nIndex];
+    if (sz > max_size){ max_size = sz;}
 	peds[k]['marker']['size'].push(sz)
 	peds[k]['marker']['save_size'].push(sz)
 	peds[k]['sample_b'].push(p[sampleBIndex])
@@ -398,6 +400,9 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	peds[k]['text'].push(itxt);
 	peds[k]['save_text'].push(itxt);
 
+}
+for(k in peds){
+    peds[k].marker.sizeref = max_size / 100.
 }
 
 Plotly.plot('pedplot', datas['ped'], ped_layout);

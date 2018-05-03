@@ -6,3 +6,7 @@ include peddy/tmpl.html
 include peddy/tmpl.vs.html
 include peddy/1kg.sites.bin.gz
 include peddy/1kg.sites
+include peddy/GRCH37.sites
+include peddy/GRCH37.sites.bin.gz
+include peddy/GRCH38.sites
+include peddy/GRCH38.sites.bin.gz

@@ -139,7 +139,7 @@ def correct_sex_errors(ped_df):
     help=r"This is rarely used. The path to a file with alternative sites to"\
           " use for calculating relatedness in format 1:234234\n1:45345345..."\
           " with chrom:pos[:ref:alt] on each line",
-    default=op.join(op.dirname(__file__), '1kg.sites')
+    default=op.join(op.dirname(__file__), 'GRCH37.sites')
 )
 @click.option('--loglevel',
     default='INFO',

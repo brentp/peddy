@@ -116,7 +116,19 @@ def correct_sex_errors(ped_df):
         excl = ['sex_error']
     return excl
 
-
+class SitesPath(click.ParamType):
+    """Specify sites either a full path or reference to pre-bundled sites.
+    """
+    name = "path"
+    def convert(self, value, param, ctx):
+        if not op.isfile(value):
+            local_value = op.join(op.dirname(__file__), value)
+            if not op.isfile(local_value):
+                self.fail("Could not find specified sites file %s" % value)
+            else:
+                return local_value
+        else:
+            return value
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.argument('vcf')
 @click.argument('ped')
@@ -136,10 +148,11 @@ def correct_sex_errors(ped_df):
     default=1
 )
 @click.option("--sites",
-    help=r"This is rarely used. The path to a file with alternative sites to"\
+    help=r"The path to a file with alternative sites to"\
           " use for calculating relatedness in format 1:234234\n1:45345345..."\
-          " with chrom:pos[:ref:alt] on each line",
-    default=op.join(op.dirname(__file__), 'GRCH37.sites')
+          " with chrom:pos[:ref:alt] on each line."\
+          " Specify 'GRCH37.sites' and 'GRCH38.sites' to swap between human builds 37 and 38.",
+    default='GRCH37.sites', type=SitesPath()
 )
 @click.option('--loglevel',
     default='INFO',

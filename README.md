@@ -51,6 +51,15 @@ look at this extended ped file for an overview of likely problems**.
 
 See [the docs](http://peddy.readthedocs.io/en/latest/) for a walk-through and thorough explanation of each plot.
 
+hg38 or custom sites
+--------------------
+
+By default, peddy uses hg19/GRCh37. It can be forced to use sites for hg38 by passing `--sites hg38`.
+To create custom sites, have a look at [the sites files included with peddy](https://github.com/brentp/peddy/blob/master/peddy/GRCH37.sites) along
+with the corresponding .bin.gz which is just the raw binary alternate counts (gt_types) from thousand-genomes that have been written as uint8
+and gzipped.
+
+
 Speed
 -----
 

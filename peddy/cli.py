@@ -59,10 +59,9 @@ def run(args):
         unit = "minutes"
     log.info("ran in %.1f %s" % (d, unit))
     if df.shape[0] > 50000 and check == "ped_check":
-        # remove unknown relationships that aren't in error.
-        df = df[((df.pedigree_relatedness != -1) &
-                 (~df.parent_error) &
-                 (~df.sample_duplication_error))]
+        #  remove unknown relationships that aren't in error.
+        remove = (df.pedigree_relatedness == -1) & (~df.parent_error) & (~df.sample_duplication_error)
+        df = df[~remove]
 
     if check == "ped_check":
         # makes the plot nicer

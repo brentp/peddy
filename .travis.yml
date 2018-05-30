@@ -9,7 +9,7 @@ script:
     - pwd
     - python -m peddy data/ceph1463.peddy.vcf.gz data/ceph1463.ped
     - conda install -c bioconda htslib # for bgzip and tabix
-    - zcat data/ceph1463.peddy.vcf.gz | awk 'BEGIN{FS=OFS="\t"}{ if ($1 !~ /^#/){ $0="chr"$0 } print $0; }' | bgzip -c > chr.vcf.gz
+    - zcat data/ceph1463.peddy.vcf.gz | awk 'BEGIN{FS=OFS="\t"}{ if ($1 !~ /^#/){ $0="chr"$0 } print $0; }' | sed -e 's/contig=<ID=/contig=<ID=chr/' | bgzip -c > chr.vcf.gz
     - tabix chr.vcf.gz
     - python -m peddy chr.vcf.gz data/ceph1463.ped 2>e.log; tail e.log
 

@@ -23,17 +23,6 @@ def test_sample_str_and_from_row():
     assert s2.sex == s.sex
     assert s2.family_id == s.family_id
 
-def test_sex_check():
-    if sys.version_info[0] == 3:
-        return
-
-    p = Ped(op.join(HERE, 'peddy/tests/test.mendel.ped'))
-    df = p.sex_check(op.join(HERE, 'peddy/tests/test.mendel.vcf.gz'))
-
-    assert "predicted_sex" in df.columns
-    assert "ped_sex", df.columns
-    assert "error" in df.columns
-
 def test_dict():
     s = Sample('fam1', 'sample1', '-9', '-9', '2', '2')
     d = s.dict()

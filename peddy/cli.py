@@ -218,7 +218,8 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
             for col in keep_cols[check]:
                 c = check.split("_")[0] + "_"
                 col_name = col if col.startswith(("PC", c, "ancestry")) else c + col
-                ped_df[col_name] = list(df[col].ix[samples])
+                if col in df:
+                    ped_df[col_name] = list(df[col].ix[samples])
         elif any(df['sample_duplication_error']):
             da = df.ix[df['sample_duplication_error'], 'sample_a']
             db = df.ix[df['sample_duplication_error'], 'sample_b']
@@ -261,6 +262,9 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
     vals['pedigree'] = Ped(new_pedf, warn=False).to_json(samples, exclude=('PC1', 'PC2', 'PC3'))
     import os
     vals['prefix'] = os.path.basename(prefix)
+    if not 'background_pca' in vals:
+        vals['background_pca'] = '{}'
+
 
     excl = correct_sex_errors(ped_df)
 

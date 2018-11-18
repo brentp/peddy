@@ -172,6 +172,8 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
                            # if there's a header, we skip it as it's inidcated
                            # above.
                            index_col=False,
+                           dtype=dict(family_id=str, sample_id=str,
+                               paternal_id=str, maternal_id=str),
                            skiprows=1 if ped_obj.header else None,
                            sep="\t")
 

@@ -17,14 +17,17 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-HERE = op.dirname(op.abspath(__file__)) 
+HERE = op.dirname(op.abspath(__file__))
 
 def pca(fig_path, sitesfile, genotype_matrix=None, sites=None):
 
     f = sitesfile+".bin.gz"
     t0 = time.time()
+    if not op.exists(f):
+        sys.stderr.write("sites bin file not found, skipping PCA\n")
+        return None, None
     tmp = np.fromstring(gzip.open(f, 'rb').read(), dtype=np.uint8).astype(np.int32)
-    genos1kg = tmp.reshape((int(len(tmp) / 2504), 2504)).T ## 2504 samples in 1000G 
+    genos1kg = tmp.reshape((int(len(tmp) / 2504), 2504)).T ## 2504 samples in 1000G
 
 
     if genotype_matrix is not None:
@@ -50,7 +53,7 @@ def pca(fig_path, sitesfile, genotype_matrix=None, sites=None):
         genos1kg = np.array(genos1kg[:, idxs])
 
         assert genotype_matrix.shape[1] == genos1kg.shape[1]
-    log.info("loaded and subsetted thousand-genomes genotypes (shape: %s) in %.1f seconds" % 
+    log.info("loaded and subsetted thousand-genomes genotypes (shape: %s) in %.1f seconds" %
             (genos1kg.shape, time.time() - t0))
 
     t0 = time.time()
@@ -59,7 +62,7 @@ def pca(fig_path, sitesfile, genotype_matrix=None, sites=None):
     background_target = np.array([int(x) for x in _str.split("|")])
 
     clf.fit(genos1kg, background_target)
-    log.info("ran randomized PCA on thousand-genomes samples at %d sites in %.1f seconds" 
+    log.info("ran randomized PCA on thousand-genomes samples at %d sites in %.1f seconds"
              % (genos1kg.shape[1], time.time() - t0))
 
     ipops = "AFR AMR EAS EUR SAS UNKNOWN".split()

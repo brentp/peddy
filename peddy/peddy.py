@@ -1008,7 +1008,7 @@ class Ped(object):
             rels.append(max(0, self.relatedness_coefficient(aid, bid)))
 
         df.loc[np.asarray(parent_is), 'pedigree_parents'] = True
-        df.loc[idxs, 'pedigree_relatedness'] = np.asarray(rels, np.float32)
+        df.loc[idxs, 'pedigree_relatedness'] = np.maximum(np.array(-0.1), np.asarray(rels, np.float32))
 
 
         df['tmpibs0'] = (df['ibs0'] / df['n'].astype(np.float32)).astype(np.float32)

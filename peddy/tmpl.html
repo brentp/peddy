@@ -393,7 +393,7 @@ for(var i=0; i < ped_data['data'].length, p=ped_data['data'][i]; i++){
 	}
 	peds[k]['x'].push(p[xIndex].toPrecision(3))
 	peds[k]['y'].push(p[yIndex].toPrecision(3))
-	peds[k]['z'].push(p[relIndex].toPrecision(3))
+	peds[k]['z'].push(Math.max(-0.1, p[relIndex].toPrecision(3)))
 	peds[k]['sample_a'].push(p[sampleAIndex])
 	peds[k]['parent'].push(p[parentIndex])
 	var sz = 50 + p[nIndex];

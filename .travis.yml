@@ -29,7 +29,7 @@ install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
-    - conda create -q -n travis python=$TRAVIS_PYTHON_VERSION
+    - conda create -q -n travis python=$TRAVIS_PYTHON_VERSION nose
     - source activate travis
     - pip install '.'
     - pwd

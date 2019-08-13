@@ -29,10 +29,7 @@ install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
-    - conda create -q -n travis python=$TRAVIS_PYTHON_VERSION scipy scikit-learn cython pandas numpy networkx nose
+    - conda create -q -n travis python=$TRAVIS_PYTHON_VERSION nose
     - source activate travis
-    - pip install -U networkx
-    - conda install -c bioconda "cyvcf2>=0.5.3"
-    - pip install -r requirements.txt
-    - python setup.py install
+    - pip install '.'
     - pwd

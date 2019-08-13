@@ -2,6 +2,13 @@ import os
 
 from setuptools import setup
 
+
+def get_requirements():
+    """Get requirements from requirements.txt"""
+    with open("requirements.txt") as handle:
+        return [x.strip() for x in handle]
+
+
 def get_version():
     """Get the version info from the mpld3 package without importing it"""
     import ast
@@ -25,6 +32,7 @@ setup(
     long_description=open('README.md').read(),
     author="Brent Pedersen",
     author_email="bpederse@gmail.com",
+    install_requires=get_requirements(),
     zip_safe=False,
     test_suite='nose.collector',
     # To provide executable scripts, use entry points in preference to the

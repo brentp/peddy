@@ -1,35 +1,24 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>manipulation, validation and exploration of pedigrees &mdash; peddy 0.2.7 documentation</title>
-    
+    <meta charset="utf-8" />
+    <title>Table of Contents &#8212; peddy 0.4.3 documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.2.7',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="peddy 0.2.7 documentation" href="#" />
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="CSV Output" href="output.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
       <div class="header" role="banner"><h1 class="heading"><a href="#">
-          <span>peddy 0.2.7 documentation</span></a></h1>
-        <h2 class="heading"><span>manipulation, validation and exploration of pedigrees</span></h2>
+          <span>peddy 0.4.3 documentation</span></a></h1>
+        <h2 class="heading"><span>Table of Contents</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
       
@@ -40,17 +29,27 @@
         </p>
 
       </div>
-      <div class="content">
+      <div class="content" role="main">
         
         
-  <div class="section" id="manipulation-validation-and-exploration-of-pedigrees">
+  <div class="section" id="table-of-contents">
+<h1>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="output.html">CSV Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="html.html">Example HTML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resolve.html">Error Resolution</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="manipulation-validation-and-exploration-of-pedigrees">
 <h1>manipulation, validation and exploration of pedigrees<a class="headerlink" href="#manipulation-validation-and-exploration-of-pedigrees" title="Permalink to this headline">¶</a></h1>
-<p>peddy compares familial-relationships and sexes as reported in a <a class="reference external" href="http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#ped)">PED file</a>
+<p>peddy compares familial-relationships and sexes as reported in a <a class="reference external" href="https://www.cog-genomics.org/plink2/formats#fam">PED/FAM file</a>
 with those inferred from a VCF.</p>
 <p>It samples the VCF at about 25000 sites (plus chrX) to accurately estimate <strong>relatedness</strong>, <strong>IBS0</strong>, <strong>heterozygosity</strong>, <strong>sex</strong> and <strong>ancestry</strong>. It uses 2504 thousand genome samples as backgrounds to calibrate the relatedness calculation and to make ancestry predictions.</p>
 <p>It does this very quickly by sampling, by using C for computationally intensive parts, and by parallelization.</p>
 <p>The command-line usage looks like:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>python -m peddy -p <span class="m">4</span> --plot ceph1463.vcf.gz ceph1463.ped
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m peddy -p <span class="m">4</span> --plot ceph1463.vcf.gz ceph1463.ped
 </pre></div>
 </div>
 <p>This will use 4 cpus to run various checks and create <a class="reference external" href="_static/ceph.html">ceph1463.html</a> which
@@ -59,15 +58,15 @@ of samples, using more than 4 cpus will give only marginal improvement.</p>
 <p>It will also create create 4 csv files and 4 static QC plots that mirror those in the interactive html.
 These will indicate:</p>
 <ul class="simple">
-<li>discrepancies between ped-reported and genotype-inferred relations</li>
-<li>discrepancies between ped-reported and genotype-inferred sex</li>
-<li>samples with higher levels of HET calls, lower depth, or more variance in b-allele-frequency (alt / (ref + alt )) for het calls.</li>
-<li>an ancestry prediction based on projection onto the thousand genomes principal components</li>
+<li><p>discrepancies between ped-reported and genotype-inferred relations</p></li>
+<li><p>discrepancies between ped-reported and genotype-inferred sex</p></li>
+<li><p>samples with higher levels of HET calls, lower depth, or more variance in b-allele-frequency (alt / (ref + alt )) for het calls.</p></li>
+<li><p>an ancestry prediction based on projection onto the thousand genomes principal components</p></li>
 </ul>
 <p>Finally, it will create a new file ped file <cite>ceph1463.peddy.ped</cite> that also lists
 the most useful columns from the <cite>het-check</cite> and <cite>sex-check</cite>. Users can <strong>first
 look at this extended ped file for an overview of likely problems</strong>.</p>
-<p>The columns in the CSV output are documented in <a class="reference internal" href="resolve.html#output"><span class="std std-ref">Error Resolution</span></a></p>
+<p>The columns in the CSV output are documented in <a class="reference internal" href="output.html#output"><span class="std std-ref">CSV Output</span></a></p>
 <div class="section" id="static-images">
 <h2>Static Images<a class="headerlink" href="#static-images" title="Permalink to this headline">¶</a></h2>
 <p>This will create a number of images:</p>
@@ -78,7 +77,7 @@ chromosome and females should have relatively many. Here, we see, as expected
 that there are no sex issues in the CEPH cohort:</p>
 <img alt="_images/ceph.sex_check.png" src="_images/ceph.sex_check.png" />
 <p>If there are samples with unspecified sex in the ped file, they will appear
-in the center of the plot as &#8216;unknown&#8217;.</p>
+in the center of the plot as ‘unknown’.</p>
 </div>
 <div class="section" id="het-check">
 <h3>Het Check<a class="headerlink" href="#het-check" title="Permalink to this headline">¶</a></h3>
@@ -95,7 +94,7 @@ onto the principal components of the thousand genomes samples
 and then predict the ancestry of incoming samples:</p>
 <img alt="_images/ceph.pca_check.png" src="_images/ceph.pca_check.png" />
 <p>Note that, as expected all of the members of the CEPH pedigree
-are of &#8216;EUR&#8217;opean descent.</p>
+are of ‘EUR’opean descent.</p>
 </div>
 <div class="section" id="relatedness-check">
 <h3>Relatedness Check<a class="headerlink" href="#relatedness-check" title="Permalink to this headline">¶</a></h3>
@@ -116,14 +115,7 @@ both homozygous alternate.</p>
 <div class="section" id="csvs">
 <h3>CSVs<a class="headerlink" href="#csvs" title="Permalink to this headline">¶</a></h3>
 <p>For each of those images, there is a corresponding <cite>.csv</cite> file.
-See <cite>output</cite> for a description of the columns.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="output.html">CSV Output</a></li>
-<li class="toctree-l1"><a class="reference internal" href="html.html">Example HTML</a></li>
-<li class="toctree-l1"><a class="reference internal" href="resolve.html">Error Resolution</a></li>
-</ul>
-</div>
+See <a class="reference internal" href="output.html#output"><span class="std std-ref">CSV Output</span></a> for a description of the columns.</p>
 </div>
 </div>
 </div>
@@ -141,8 +133,8 @@ See <cite>output</cite> for a description of the columns.</p>
       </div>
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, Brent S Pedersen.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+        &#169; Copyright 2016, Brent S Pedersen.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

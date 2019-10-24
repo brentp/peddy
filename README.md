@@ -22,6 +22,8 @@ http://dx.doi.org/10.1016/j.ajhg.2017.01.017](http://www.cell.com/action/showFul
 [![Build Status](https://travis-ci.org/brentp/peddy.svg?branch=master)](https://travis-ci.org/brentp/peddy)
 -->
 
+Note that [somalier](https://github.com/brentp/somalier) is a more scalable, faster, replacement for peddy
+that uses some of the same methods as peddy along with some new ones.
 
 Quickstart
 ----------

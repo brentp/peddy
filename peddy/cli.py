@@ -51,7 +51,7 @@ def run(args):
 
     df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.4g")
     if 'keep' in df.columns:
-        df = df.ix[df['keep'], :]
+        df = df.iloc[df.loc['keep'], :]
         df.drop(['keep'], axis=1, inplace=True)
     d, unit = time.time() - t0, "seconds"
     if d > 100:
@@ -92,13 +92,13 @@ def correct_sex_errors(ped_df):
             sc[sel] = '2'
             if sel.sum():
                 log.info("set sex of samples: %s to female in peddy.ped"
-                         % ",".join(map(str, ped_df.ix[1, sel])))
+                         % ",".join(map(str, ped_df.iloc[1, sel])))
 
             sel = (gt & sf & (sc == '2'))
             sc[sel] = '1'
             if sel.sum():
                 log.info("set sex of samples: %s to male in peddy.ped"
-                         % ",".join(map(str, ped_df.ix[1, sel])))
+                         % ",".join(map(str, ped_df.iloc[1, sel])))
         else:
             for (ifrom, ito) in ((1, 2), (2, 1)):
                 sel = (gt & sf & (sc == ifrom))
@@ -106,7 +106,7 @@ def correct_sex_errors(ped_df):
                 if sel.sum():
                     # Should this be a warning?
                     log.info("changed sex of samples: %s to %s in peddy.ped" % (
-                          ",".join(map(str, ped_df.ix[sel, 1])),
+                          ",".join(map(str, ped_df.iloc[sel, 1])),
                           ["", "male", "female"][ito]))
 
 
@@ -195,7 +195,7 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
     # keep order.
     samples = [s for s in ped_df['sample_id'] if s in samples]
 
-    ped_df = ped_df.ix[samples, :]
+    ped_df = ped_df.loc[samples, :]
 
 
     keep_cols = {"ped_check": [],
@@ -221,10 +221,10 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
                 c = check.split("_")[0] + "_"
                 col_name = col if col.startswith(("PC", c, "ancestry")) else c + col
                 if col in df:
-                    ped_df[col_name] = list(df[col].ix[samples])
+                    ped_df[col_name] = list(df[col].loc[samples])
         elif any(df['sample_duplication_error']):
-            da = df.ix[df['sample_duplication_error'], 'sample_a']
-            db = df.ix[df['sample_duplication_error'], 'sample_b']
+            da = df.iloc[df['sample_duplication_error'], 'sample_a']
+            db = df.iloc[df['sample_duplication_error'], 'sample_b']
             d = defaultdict(list)
             for a, b in zip(da, db):
                 d[a].append(b)

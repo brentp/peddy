@@ -2,6 +2,7 @@ language: python
 python:
   - "2.7"
   - "3.5"
+  - "3.8"
 script: 
     - source activate travis
     - nosetests --with-doctest

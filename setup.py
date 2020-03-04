@@ -30,6 +30,7 @@ setup(
     description="pleasingly pythonic pedigree manipulation",
     packages=['peddy', 'peddy.tests'],
     long_description=open('README.md').read(),
+    long_description_content_type="text/markdown",
     author="Brent Pedersen",
     author_email="bpederse@gmail.com",
     install_requires=get_requirements(),

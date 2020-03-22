@@ -88,7 +88,7 @@ def correct_sex_errors(ped_df):
         sf = np.asarray(ped_df['sex_fixed'])
         gt = np.asarray(ped_df['sex_het_ratio'] > 0)
         if sc.dtype.char == 'S':
-            sel = (gt & sf & (sc == '1'))
+            sel = (gt & sf & (sc == '1')) != 0
             sc[sel] = '2'
             if sel.sum():
                 log.info("set sex of samples: %s to female in peddy.ped"
@@ -101,7 +101,7 @@ def correct_sex_errors(ped_df):
                          % ",".join(map(str, ped_df.iloc[1, sel])))
         else:
             for (ifrom, ito) in ((1, 2), (2, 1)):
-                sel = (gt & sf & (sc == ifrom))
+                sel = (gt & sf & (sc == ifrom)) != 0
                 osc[sel] = ito
                 if sel.sum():
                     # Should this be a warning?
@@ -223,8 +223,8 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
                 if col in df:
                     ped_df[col_name] = list(df[col].loc[samples])
         elif any(df['sample_duplication_error']):
-            da = df.iloc[df['sample_duplication_error'], 'sample_a']
-            db = df.iloc[df['sample_duplication_error'], 'sample_b']
+            da = df.loc[df['sample_duplication_error'], 'sample_a']
+            db = df.loc[df['sample_duplication_error'], 'sample_b']
             d = defaultdict(list)
             for a, b in zip(da, db):
                 d[a].append(b)

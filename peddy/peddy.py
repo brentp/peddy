@@ -799,6 +799,7 @@ class Ped(object):
 
         fcolors = [colors[1] if e else colors[0] for e in plot_vals['female_errors']]
         female_xs = (np.random.uniform(size=len(plot_vals['female'])) - 0.5) / 2.1
+        s = 17
         plt.scatter(female_xs, plot_vals['female'],
                     c=fcolors,
                     s=s,
@@ -1082,7 +1083,7 @@ class Ped(object):
                 ec = np.where(df.loc[sel, 'pedigree_parents'], 'k', 'none')
 
                 axes[k].scatter(df.loc[sel, 'rel'], df.loc[sel, key],
-                        c=colors[i], linewidth=1, edgecolors=ec,
+                        c=[colors[i]], linewidth=1, edgecolors=ec,
                         s=((mult * (i > 0 or len(df) < 36)) + mult * n[sel]),
                         zorder=i,
                         alpha=0.80,
@@ -1108,7 +1109,7 @@ class Ped(object):
                     #ec = ['k' if p else 'none' for p in df['pedigree_parents'][sel]]
                     ec = np.where(df.loc[sel, 'pedigree_parents'], 'k', 'none')
                     axes[k].scatter(df.loc[sel, 'ibs0'], df.loc[sel, key],
-                            c=colors[i], linewidth=1, edgecolors=ec,
+                            c=[colors[i]], linewidth=1, edgecolors=ec,
                             s=((mult * (i > 0 or len(df) < 36)) + mult * n[sel]),
                             zorder=i,
                             alpha=0.80,

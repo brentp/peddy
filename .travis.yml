@@ -8,7 +8,7 @@ script:
     - nosetests --with-doctest
     - python -m peddy -h
     - pwd
-    - python -m peddy data/ceph1463.peddy.vcf.gz data/ceph1463.ped
+    - python -m peddy --plot data/ceph1463.peddy.vcf.gz data/ceph1463.ped
     - conda install -c bioconda htslib # for bgzip and tabix
     - zcat data/ceph1463.peddy.vcf.gz | awk 'BEGIN{FS=OFS="\t"}{ if ($1 !~ /^#/){ $0="chr"$0 } print $0; }' | sed -e 's/contig=<ID=/contig=<ID=chr/' | bgzip -c > chr.vcf.gz
     - tabix chr.vcf.gz

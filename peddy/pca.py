@@ -113,12 +113,14 @@ def pca(fig_path, sitesfile, genotype_matrix=None, sites=None):
 
     for i, p in enumerate(ipops):
         subset = i == background_target
-        axes[0].scatter(background_tf[subset, 0], background_tf[subset, 1], c=pal[i],
+        axes[0].scatter(background_tf[subset, 0], background_tf[subset, 1],
+                c=[pal[i]],
                         edgecolor='none',
                         s=8,
                         label=p, alpha=0.15)
 
-        axes[1].scatter(background_tf[subset, 0], background_tf[subset, 2], c=pal[i],
+        axes[1].scatter(background_tf[subset, 0], background_tf[subset, 2],
+            c=[pal[i]],
                         edgecolor='none',
                         s=8,
                         label=p, alpha=0.15)
@@ -127,11 +129,12 @@ def pca(fig_path, sitesfile, genotype_matrix=None, sites=None):
 
 
         c = 'none' #(0.55, 0.55, 0.55)
+        s = 12
         for axi in range(2):
             for i, p in enumerate(ipops):
                 subset = i == pred
                 # plot the first vs 2nd, then 3rd pc
-                axes[axi].scatter(tf[subset, 0], tf[subset, axi + 1], c=c,
+                axes[axi].scatter(tf[subset, 0], tf[subset, axi + 1], c=[c],
                                   s=s,
                                   alpha=0.7,
                                   linewidth=1.4,

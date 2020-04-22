@@ -164,7 +164,7 @@ def peddy(vcf, ped, plot, procs, prefix, each, sites, loglevel):
 
     samples = VCF(vcf).samples
 
-    ped_df = pd.read_table(ped,
+    ped_df = pd.read_csv(ped,
                            header=None,
                            names=ped_obj.header or ['family_id', 'sample_id',
                                           'paternal_id', 'maternal_id',

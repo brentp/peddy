@@ -51,7 +51,7 @@ def run(args):
 
     df.to_csv(prefix + (".%s.csv" % check), sep=",", index=False, float_format="%.4g")
     if 'keep' in df.columns:
-        df = df.iloc[df.loc['keep'], :]
+        df = df.loc[df['keep'].astype("bool"), :]
         df.drop(['keep'], axis=1, inplace=True)
     d, unit = time.time() - t0, "seconds"
     if d > 100:

@@ -26,7 +26,7 @@ def pca(fig_path, sitesfile, genotype_matrix=None, sites=None):
     if not op.exists(f):
         sys.stderr.write("sites bin file not found, skipping PCA\n")
         return None, None
-    tmp = np.fromstring(gzip.open(f, 'rb').read(), dtype=np.uint8).astype(np.int32)
+    tmp = np.frombuffer(gzip.open(f, 'rb').read(), dtype=np.uint8).astype(np.int32)
     genos1kg = tmp.reshape((int(len(tmp) / 2504), 2504)).T ## 2504 samples in 1000G
 
 

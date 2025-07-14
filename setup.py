@@ -35,7 +35,6 @@ setup(
     author_email="bpederse@gmail.com",
     install_requires=get_requirements(),
     zip_safe=False,
-    test_suite='nose.collector',
     # To provide executable scripts, use entry points in preference to the
        # "scripts" keyword. Entry points provide cross-platform support and
        # allow pip to create the appropriate form of executable for the
@@ -46,7 +45,7 @@ setup(
         ],
     ),
     include_package_data=True,
-    tests_require='nose',
+    tests_require='pytest',
     classifiers=[
             'Development Status :: 4 - Beta',
             'Intended Audience :: Science/Research',

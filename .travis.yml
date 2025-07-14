@@ -1,12 +1,14 @@
 language: python
 python:
   - "2.7"
-  - "3.6"
-  - "3.7"
   - "3.8"
+  - "3.9"
+  - "3.10"
+  - "3.11"
+  - "3.12"
 script: 
     - source activate travis
-    - nosetests --with-doctest
+    - pytest
     - python -m peddy -h
     - pwd
     - python -m peddy --plot data/ceph1463.peddy.vcf.gz data/ceph1463.ped

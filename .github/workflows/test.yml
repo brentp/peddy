@@ -1,0 +1,50 @@
+name: Test
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+        activate-environment: test-env
+        auto-activate-base: true
+        
+    - name: Install conda dependencies
+      shell: bash -l {0}
+      run: |
+        conda install -c conda-forge -c bioconda  python=${{ matrix.python-version }} cyvcf2 pytest
+        
+    - name: Install package
+      shell: bash -l {0}
+      run: |
+        pip install '.'
+        
+    - name: Run tests
+      shell: bash -l {0}
+      run: |
+        pytest
+        python -m peddy -h
+        pwd
+        python -m peddy --plot data/ceph1463.peddy.vcf.gz data/ceph1463.ped
+        
+    - name: Install htslib and test with chr-prefixed VCF
+      shell: bash -l {0}
+      run: |
+        conda install -c bioconda htslib
+        zcat data/ceph1463.peddy.vcf.gz | awk 'BEGIN{FS=OFS="\t"}{ if ($1 !~ /^#/){ $0="chr"$0 } print $0; }' | sed -e 's/contig=<ID=/contig=<ID=chr/' | bgzip -c > chr.vcf.gz
+        tabix chr.vcf.gz
+        python -m peddy chr.vcf.gz data/ceph1463.ped 2>e.log; tail e.log 
